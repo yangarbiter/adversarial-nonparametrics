@@ -1,0 +1,269 @@
+from functools import partial
+from copy import deepcopy
+
+import tensorflow as tf
+import numpy as np
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import ParameterGrid, KFold
+from cleverhans.attacks import ProjectedGradientDescent
+from cleverhans.utils_keras import KerasModelWrapper
+
+from autovar import AutoVar
+from autovar.base import RegisteringChoiceType, VariableClass, register_var
+
+
+def exp_fn(auto_var, trnX, valX, trny, valy, eps:float):
+    auto_var.set_intermidiate_variable('sess', tf.Session())
+    auto_var.set_intermidiate_variable("trnX", trnX)
+    auto_var.set_intermidiate_variable("trny", trny)
+    model = auto_var.get_var('model')
+    model.fit(trnX, trny)
+    auto_var.set_intermidiate_variable('model', model)
+    attack = auto_var.get_var('attack')
+
+    pert = attack.perturb(valX, valy, eps=eps)
+
+    return (model.predict(valX + pert) == valy).mean()
+
+def cross_validation(auto_var: AutoVar, grid, valid_eps:float):
+    X = auto_var.get_intermidiate_variable('trnX')
+    y = auto_var.get_intermidiate_variable('trny')
+
+    # TODO add clone method
+    sess = auto_var.inter_var.pop('sess')
+    val_auto_var = deepcopy(auto_var)
+    auto_var.inter_var['sess'] = sess
+    val_auto_var._read_only = False
+    val_auto_var._no_hooks = True
+
+    # shuffle
+    kf = KFold(n_splits=3)
+    rets = []
+    for i, (train, test) in enumerate(kf.split(X)):
+        print(f"{i}-th cross validation.....")
+        fn = partial(exp_fn, trnX=X[train], trny=y[train],
+                     valX=X[test], valy=y[test], eps=valid_eps)
+
+        params, results = val_auto_var.run_grid_params(fn, grid_params=grid)
+        #params, ret = auto_var.run_grid_params(fn, grid)
+        rets.append(results)
+    scores = np.array(rets).mean(axis=0)
+    print("xvalidation results:", params, scores)
+    return params[np.argmax(scores)]
+
+
+class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
+    var_name = "model"
+
+    @register_var()
+    @staticmethod
+    def decision_tree(auto_var, var_value, inter_var):
+        from sklearn.tree import DecisionTreeClassifier
+        model = DecisionTreeClassifier(random_state=inter_var['random_state'])
+        auto_var.set_intermidiate_variable("tree_clf", model)
+        return model
+
+    @register_var(argument='(?P<train>[a-zA-Z0-9]+)_decision_tree_(?P<eps>\d+)')
+    @staticmethod
+    def adv_decision_tree(auto_var, var_value, inter_var, train, eps):
+        from .adversarial_dt import AdversarialDt
+        eps = int(eps) * 0.1
+
+        trnX, trny = inter_var['trnX'], inter_var['trny']
+        model = auto_var.get_var_with_argument("model", "decision_tree")
+        procX = inter_var['transformer'].transform(trnX)
+        model.fit(procX, trny)
+        auto_var.set_intermidiate_variable("tree_clf", model)
+        attack_model = auto_var.get_var("attack")
+        model = AdversarialDt(
+            train_type=train,
+            attack_model=attack_model,
+            eps=eps,
+            ord=auto_var.get_var("ord"),
+            random_state=inter_var['random_state'])
+        auto_var.set_intermidiate_variable("tree_clf", model)
+        return model
+
+    @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?decision_tree_xvalid_(?P<eps>\d+)')
+    @staticmethod
+    def adv_dt_xvalid(auto_var, var_value, inter_var, train, eps):
+        grid = {
+            'model': [
+                'decision_tree_1',
+                'decision_tree_5',
+                'decision_tree_10',
+                'decision_tree_15',
+                'decision_tree_20',
+            ]
+        }
+        valid_eps = float(eps) * 0.1
+        if train is not None:
+            for i in range(len(grid['model'])):
+                grid['model'][i] = train + grid['model'][i]
+        model_name = cross_validation(auto_var, grid, valid_eps)['model']
+        #auto_var.set_variable_value('model', 'model_name')
+        model = auto_var.get_var_with_argument('model', model_name)
+        auto_var.set_intermidiate_variable("tree_clf", model)
+        return model
+
+    #@register_var(argument=r"adv_robustv1nn_k(?P<n_neighbors>\d+)_xvalid")
+    #@staticmethod
+    #def adv_robustv1nn_xvalid(auto_var, var_value, inter_var, n_neighbors):
+    #    n_neighbors = int(n_neighbors)
+    #    grid = {
+    #        'model': [
+    #            f'adv_robustv1nn_k{n_neighbors}_1',
+    #            f'adv_robustv1nn_k{n_neighbors}_5',
+    #            f'adv_robustv1nn_k{n_neighbors}_10'
+    #            f'adv_robustv1nn_k{n_neighbors}_15'
+    #            f'adv_robustv1nn_k{n_neighbors}_20'
+    #        ]
+    #    }
+    #    cross_validation(auto_var, grid)
+
+    @register_var(argument='(?P<train>[a-zA-Z0-9]+)_kernel_sub_tf_c(?P<c>\d+)_(?P<eps>\d+)')
+    @staticmethod
+    def adv_kernel_sub_tf(auto_var, var_value, inter_var, train, eps, c):
+        from .kernel_sub_tf import KernelSubTFModel
+        c = float(c) * 0.1
+        eps = float(eps) * 0.1
+
+        clf = KernelSubTFModel(
+            c=c,
+            lbl_enc=inter_var['lbl_enc'],
+            sess=inter_var['sess'],
+            transformer=inter_var['transformer'],
+            train_type=train,
+            eps=eps,
+            ord=auto_var.get_var("ord"),
+        )
+        return clf
+
+    @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?kernel_sub_tf_xvalid_(?P<eps>\d+)')
+    @staticmethod
+    def adv_kernel_xvalid(auto_var, var_value, inter_var, train, eps):
+        grid = {
+            'model': [
+                'kernel_sub_tf_c1_1',
+                'kernel_sub_tf_c1_5',
+                'kernel_sub_tf_c1_10',
+                'kernel_sub_tf_c1_15',
+                'kernel_sub_tf_c1_20',
+            ]
+        }
+        valid_eps = float(eps) * 0.1
+        if train is not None:
+            for i in range(len(grid['model'])):
+                grid['model'][i] = train + grid['model'][i]
+        model_name = cross_validation(auto_var, grid, valid_eps)['model']
+        #auto_var.set_variable_value('model', 'model_name')
+        model = auto_var.get_var_with_argument('model', model_name)
+        auto_var.set_intermidiate_variable("tree_clf", model)
+        return model
+
+    @register_var()
+    @register_var(argument=r"robustnn_(?P<radius>\d+)")
+    @staticmethod
+    def robustnn_100(auto_var, var_value, inter_var, radius):
+        from .robust_nn import RobustNN
+        radius = float(radius) * 0.01
+        return RobustNN(Delta=0.45, delta=0.1, r=radius)
+
+    @register_var(argument=r"(?P<train>[a-zA-Z0-9]+_)nn_k(?P<n_neighbors>\d+)_(?P<radius>\d+)")
+    @staticmethod
+    def adv_robustv1nn(auto_var, var_value, inter_var, radius, n_neighbors, train):
+        from .adversarial_knn import AdversarialKnn
+        train = train[:-1]
+        return AdversarialKnn(
+            n_neighbors=int(n_neighbors),
+            train_type=train,
+            r=float(radius)*0.1)
+
+    @register_var(argument=r"adv_knn(?P<n_neighbors>\d+)_(?P<radius>\d+)")
+    @register_var()
+    @staticmethod
+    def adv_knn(auto_var, var_value, inter_var, n_neighbors, radius):
+        from .adversarial_knn import AdversarialKnn
+        n_neighbors = int(n_neighbors)
+        eps = float(radius) * 0.1
+        attack_model = auto_var.get_var("attack")
+        return AdversarialKnn(
+            n_neighbors=n_neighbors,
+            attack_model=attack_model,
+            ord=auto_var.get_var("ord"),
+            eps=0.1,
+        )
+
+    @register_var(argument='knn(?P<n_neighbors>\d+)')
+    @staticmethod
+    def knn(auto_var, var_value, inter_var, n_neighbors):
+        n_neighbors = int(n_neighbors)
+        return KNeighborsClassifier(n_neighbors=n_neighbors)
+
+    @register_var()
+    @staticmethod
+    def kernel_sub_tf(auto_var, var_value, inter_var):
+        from .kernel_sub_tf import KernelSubTFModel
+        clf = KernelSubTFModel(
+            c=0.1,
+            lbl_enc=inter_var['lbl_enc'],
+            sess=inter_var['sess'],
+            transformer=inter_var['transformer'],
+            ord=auto_var.get_var("ord"),
+        )
+        return clf
+
+    @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?sklr(?P<eps>_\d+)?')
+    @staticmethod
+    def sklr(auto_var, var_value, inter_var, train, eps):
+        from .sklr import SkLr
+        eps = float(eps[1:])*0.01 if eps else 0.
+        train = train[:-1] if train else None
+        clf = SkLr(
+            transformer=inter_var['transformer'],
+            ord=auto_var.get_var("ord"),
+            train_type=train,
+            eps=eps,
+        )
+        return clf
+
+    @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?sklinsvc(?P<eps>_\d+)?')
+    @staticmethod
+    def sklinsvc(auto_var, var_value, inter_var, train, eps):
+        from .sklinsvc import SkLinSVC
+        eps = float(eps[1:])*0.01 if eps else 0.
+        train = train[:-1] if train else None
+        clf = SkLinSVC(
+            transformer=inter_var['transformer'],
+            ord=auto_var.get_var("ord"),
+            train_type=train,
+            eps=eps,
+        )
+        return clf
+
+    @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?logistic_regression(?P<eps>_\d+)?')
+    @staticmethod
+    def adv_logistic_regression(auto_var, var_value, inter_var, train, eps):
+        from .keras_model import KerasModel
+        eps = float(eps[1:])*0.01 if eps else 0.
+        train = train[:-1] if train else None
+
+        n_features = inter_var['trnX'].shape[1:]
+        n_classes = len(set(inter_var['trny']))
+
+        model = KerasModel(
+            lbl_enc=inter_var['lbl_enc'],
+            n_features=n_features,
+            n_classes=n_classes,
+            sess=inter_var['sess'],
+            architecture='logistic_regression',
+            transformer=inter_var['transformer'],
+            train_type=train,
+            ord=auto_var.get_var("ord"),
+            eps=eps,
+            attacker=None,
+            eps_list=inter_var['eps_list'],
+            epochs=200,
+        )
+
+        return model
