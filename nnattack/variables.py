@@ -14,15 +14,14 @@ from .models import ModelVarClass
 from .attacks import AttackVarClass
 
 def get_file_name(auto_var, name_only=False):
-    transformer_name = auto_var.get_variable_value('transformer')
     dataset = auto_var.get_variable_value('dataset')
     model_name = auto_var.get_variable_value('model')
     attack_name = auto_var.get_variable_value('attack')
     ord = auto_var.get_variable_value('ord')
     random_seed = auto_var.get_variable_value('random_seed')
 
-    name = "%s-%s-%s-%s-rs%d" % (
-        dataset, model_name, attack_name, transformer_name, random_seed)
+    name = "%s-%s-%s-rs%d" % (
+        dataset, model_name, attack_name, random_seed)
     if ord == '1':
         name += "-l1"
     elif ord == '2':
@@ -71,6 +70,4 @@ auto_var.add_variable_class(OrdVarClass())
 auto_var.add_variable_class(DatasetVarClass())
 auto_var.add_variable_class(ModelVarClass())
 auto_var.add_variable_class(AttackVarClass())
-auto_var.add_variable('test_size', float)
 auto_var.add_variable('random_seed', int)
-auto_var.add_variable('eps', float)

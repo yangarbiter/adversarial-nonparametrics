@@ -2,7 +2,7 @@ import numpy as np
 
 from .hopcroftkarp import HopcroftKarp
 
-def build_collision_graph(eps, pts, y):
+def build_collision_graph(eps, pts, y, ord):
     '''
         This function builds the collision/conflict graph for the max-matching algorithm.
     '''
@@ -19,7 +19,7 @@ def build_collision_graph(eps, pts, y):
                 p1 = pts[i]
                 p2 = pts[j]
                 d = p1 - p2
-                dist = np.linalg.norm(d)
+                dist = np.linalg.norm(d, ord=ord)
                 if (dist <= 2*eps):
                     adj_lst[i].add(j)
                     adj_lst[j].add(i)
@@ -41,7 +41,7 @@ def find_matching(graph):
     #print 'Done: find matching'
     return match
 
-def find_num_collision(eps, pts, y):
+def find_num_collision(eps, pts, y, ord):
     '''
         This function finds the number of collision/conflicts of each vertex. 
         Output:
@@ -57,7 +57,7 @@ def find_num_collision(eps, pts, y):
                 p1 = pts[i]
                 p2 = pts[j]
                 d = p1 - p2
-                dist = np.linalg.norm(d) 
+                dist = np.linalg.norm(d, ord=ord) 
                 if (dist <= (2*eps)):
                     numCollision[i] += 1
                     numCollision[j] += 1
@@ -109,7 +109,7 @@ def find_min_cover(graph, adj_lst, y_pts):
     K = (L.difference(Z)).union(R.intersection(Z))
     return [matching, K]
 
-def find_eps_separated_set(pts, eps, y_pts):
+def find_eps_separated_set(pts, eps, y_pts, ord):
     '''
         This function finds the epsilon-separated subset with the largest cardinality.
         Args:
@@ -128,10 +128,10 @@ def find_eps_separated_set(pts, eps, y_pts):
             4) remove the min-cover from the original set pts.             
     '''
     y_pts = [1 if i>0 else -1 for i in y_pts]
-    hasCollision, numCollision = find_num_collision(eps, pts, y_pts)
-    adj_lst, graph = build_collision_graph(eps, pts, y_pts)
+    #hasCollision, numCollision = find_num_collision(eps, pts, y_pts,)
+    adj_lst, graph = build_collision_graph(eps, pts, y_pts, ord)
     matching, min_cover = find_min_cover(graph, adj_lst, y_pts)
     good_pts = np.delete(pts, list(min_cover), axis = 0)
     good_y = np.delete(y_pts, list(min_cover), axis = 0)
-    #print 'size of min_cover is: ', len(min_cover), 'size of matching is: ', len(matching)
+    #print('size of min_cover is: ', len(min_cover), 'size of matching is: ', len(matching))
     return good_pts, good_y

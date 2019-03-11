@@ -4,15 +4,16 @@ Download from https://raw.githubusercontent.com/EricYizhenWang/robust_nn_icml/ma
 
 from __future__ import division
 import numpy as np
-from eps_separation import find_eps_separated_set
 from sklearn.neighbors import NearestNeighbors, KNeighborsClassifier
 
+from .eps_separation import find_eps_separated_set
+
 class Robust_1NN:
-    def __init__(self, X, Y, Delta, delta, r, train_type='robust_v2'):
-        self.r = r
+    def __init__(self, X, Y, Delta, delta, ord, train_type='robust_v2'):
         self.X = X
         self.Y = Y * 2 -1 # to 1 -1
         #self.Y = Y
+        self.ord = ord
         self.Delta = Delta
         self.delta = delta
         n = X.shape[0]
@@ -39,9 +40,10 @@ class Robust_1NN:
         self.Y_hat = Y_hat
         return Y_hat
 
-    def find_red_points(self):
-        [X, Y, d, r, F] = [self.X, self.Y, self.d, self.r, self.Y_hat]
+    def find_red_points(self, eps):
+        [X, Y, d, r, F] = [self.X, self.Y, self.d, eps, self.Y_hat]
         n = X.shape[0]
+        # TODO this fits only for L2 norm
         is_close = (d<r)
         is_red = np.ones((n, 1))
         for i in range(n):
@@ -58,14 +60,14 @@ class Robust_1NN:
         [self.X_other, self.Y_other] = [other_pts[0], other_pts[1]]
         return [red_pts, other_pts]
 
-    def find_robust_training_set(self):
+    def find_robust_training_set(self, eps):
         if self.train_type == 'robust_v2':
             self.find_confident_label()
-            self.find_red_points()
-            [X, Y, r] = [self.X_other, self.Y_other, self.r]
+            self.find_red_points(eps)
+            [X, Y, r] = [self.X_other, self.Y_other, eps]
 
-        [X, Y, r] = [self.X, self.Y, self.r]
-        X, Y = find_eps_separated_set(X, r/2, Y)
+        [X, Y, r] = [self.X, self.Y, eps]
+        X, Y = find_eps_separated_set(X, eps/2, Y, ord=self.ord)
         if self.X_red.shape[0] > 0:
             self.X_train = np.concatenate([X, self.X_red])
             self.Y_train = np.concatenate([Y, self.Y_red])
@@ -74,11 +76,12 @@ class Robust_1NN:
             self.Y_train = Y
         return self.X_train, self.Y_train
 
-    def fit(self, X=None, Y=None):
-        self.find_robust_training_set()
+    def fit(self, X, Y, eps:float):
+        self.find_robust_training_set(eps)
         [X, Y] = [self.X_train, self.Y_train]
         self.neigh = KNeighborsClassifier(n_neighbors=1)
         self.neigh.fit(X, Y)
+        self.augX, self.augY = X, Y
 
     def predict(self, X):
         self.neigh.predict(X)
@@ -87,5 +90,5 @@ class Robust_1NN:
         return self.neigh
 
     def get_data(self):
-        return [self.X_train, self.Y_train]
+        return [self.X_train, (self.Y_train + 1) // 2]
 

@@ -46,11 +46,12 @@ def pass_random_state(fn, random_state):
 #@profile
 def eps_accuracy(auto_var):
     random_state = set_random_seed(auto_var)
-    eps = auto_var.get_var("eps")
     ord = auto_var.get_var("ord")
-    X, y = auto_var.get_var("dataset")
-    trnX, tstX, trny, tsty = train_test_split(
-        X, y, test_size=auto_var.get_var("test_size"), random_state=random_state)
+
+    X, y, eps_list = auto_var.get_var("dataset")
+    idxs = np.arange(len(X))
+    random_state.shuffle(idxs)
+    trnX, tstX, trny, tsty = X[idxs[:-100]], X[idxs[-100:]], y[idxs[:-100]], y[idxs[-100:]]
 
     scaler = MinMaxScaler()
     trnX = scaler.fit_transform(trnX)
@@ -61,45 +62,69 @@ def eps_accuracy(auto_var):
     lbl_enc.fit(trny.reshape(-1, 1))
 
     auto_var.set_intermidiate_variable("lbl_enc", lbl_enc)
-    auto_var.set_intermidiate_variable("trnX", trnX)
-    auto_var.set_intermidiate_variable("trny", trny)
 
-    model = auto_var.get_var("model")
-    auto_var.set_intermidiate_variable("model", model)
-    model.fit(trnX, trny)
+    model_name = auto_var.get_variable_value("model")
+    if ('adv' in model_name) or ('robust' in model_name):
+        ret = []
+        ord = auto_var.get_var("ord")
+        for i in range(len(eps_list)):
+            eps = eps_list[i]
 
-    if 'adv' in auto_var.get_variable_value("model") \
-        or 'robustv1' in auto_var.get_variable_value("model"):
-        auto_var.set_intermidiate_variable("trnX", model.augX)
-        auto_var.set_intermidiate_variable("trny", model.augy)
-        augX, augy = model.augX, model.augy
-    elif 'robustv1nn' in auto_var.get_variable_value("model"):
-        augX, augy = model.get_data()
-        augy = (augy + 1) // 2
-        auto_var.set_intermidiate_variable("trnX", augX)
-        auto_var.set_intermidiate_variable("trny", augy)
-        print(augy)
+            auto_var.set_intermidiate_variable("trnX", trnX)
+            auto_var.set_intermidiate_variable("trny", trny)
+            model = auto_var.get_var("model")
+            auto_var.set_intermidiate_variable("model", model)
+            model.fit(trnX, trny, eps=eps)
+
+            auto_var.set_intermidiate_variable("trnX", model.augX)
+            auto_var.set_intermidiate_variable("trny", model.augy)
+            augX, augy = model.augX, model.augy
+
+            attack_model = auto_var.get_var("attack")
+
+            tst_perturb = attack_model.perturb(tstX, y=tsty, eps=eps)
+
+            assert np.all(np.linalg.norm(tst_perturb, axis=1, ord=ord) <= (eps + 1e-6)), (np.linalg.norm(tst_perturb, axis=1, ord=ord), eps)
+            temp_tstX = tstX + tst_perturb
+
+            tst_pred = model.predict(temp_tstX)
+                                                                                    
+            ret.append({                                                             
+                'eps': eps_list[i],
+                'tst_acc': (tst_pred == tsty).mean(),                                
+            })                                                                       
+            print(ret[-1])
+
+        ret['aug_len'] = len(augX)                                               
+
     else:
-        augX, augy = None, None
-    attack_model = auto_var.get_var("attack")
+        auto_var.set_intermidiate_variable("trnX", trnX)
+        auto_var.set_intermidiate_variable("trny", trny)
+        model = auto_var.get_var("model")
+        auto_var.set_intermidiate_variable("model", model)
+        model.fit(trnX, trny)
 
-    #trn_perturbs = attack_model.perturb(trnX, y=trny, eps=eps)
-    tst_perturbs = attack_model.perturb(tstX, y=tsty, eps=eps)
+        attack_model = auto_var.get_var("attack")
 
-    ret = {}
-    assert np.all(np.linalg.norm(tst_perturbs, axis=1, ord=ord) <= (eps + 1e-6)), (np.linalg.norm(tst_perturbs, axis=1, ord=ord), eps)
-    temp_tstX = tstX + tst_perturbs
-    tst_pred = model.predict(temp_tstX)
+        tst_perturbs = attack_model.perturb(tstX, y=tsty, eps=eps_list)
 
-    ret['results'] = {
-        'eps': eps,
-        'tst_acc': (tst_pred == tsty).mean(),
-    }
-    print(ret[-1])
-
-    if augX is not None:
-        ret['aug_len'] = len(augX)
-    ret['trnX_len'] = len(trnX)
+        ret = []
+        ord = auto_var.get_var("ord")                                                
+        for i in range(len(eps_list)):                                                    
+            eps = eps_list[i]
+            assert np.all(np.linalg.norm(tst_perturbs[i], axis=1, ord=ord) <= (eps + 1e-6)), (np.linalg.norm(tst_perturbs[i], axis=1, ord=ord), eps)
+            temp_tstX = tstX + tst_perturbs[i]                                       
+                                                                                    
+            tst_pred = model.predict(temp_tstX)
+                                                                                    
+            ret.append({                                                             
+                'eps': eps_list[i],
+                'tst_acc': (tst_pred == tsty).mean(),                                
+            })                                                                       
+            print(ret[-1])                                                           
+                                                                                 
+    ret = {'results': ret}                                                       
+    ret['trnX_len'] = len(trnX)  
 
     print(json.dumps(auto_var.var_value))
     print(json.dumps(ret))

@@ -160,36 +160,27 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         return model
 
     @register_var()
-    @register_var(argument=r"robustnn_(?P<radius>\d+)")
+    @register_var(argument=r"robust1nn")
     @staticmethod
-    def robustnn(auto_var, var_value, inter_var, radius):
-        from .robust_nn import RobustNN
-        radius = float(radius) * 0.01
-        return RobustNN(Delta=0.45, delta=0.1, r=radius)
+    def robust1nn(auto_var, var_value, inter_var):
+        from .robust_nn import Robust_1NN
+        return Robust_1NN(Delta=0.45, delta=0.1, ord=auto_var.get_var("ord"))
 
-    @register_var(argument=r"(?P<train>[a-zA-Z0-9]+_)nn_k(?P<n_neighbors>\d+)_(?P<radius>\d+)")
+    @register_var(argument=r"(?P<train>[a-zA-Z0-9]+_)nn_k(?P<n_neighbors>\d+)")
     @staticmethod
-    def adv_robustv1nn(auto_var, var_value, inter_var, radius, n_neighbors, train):
+    def adv_robustnn(auto_var, var_value, inter_var, radius, n_neighbors, train):
         from .adversarial_knn import AdversarialKnn
         train = train[:-1]
-        return AdversarialKnn(
-            n_neighbors=int(n_neighbors),
-            train_type=train,
-            r=float(radius)*0.1)
-
-    @register_var(argument=r"adv_knn(?P<n_neighbors>\d+)_(?P<radius>\d+)")
-    @register_var()
-    @staticmethod
-    def adv_knn(auto_var, var_value, inter_var, n_neighbors, radius):
-        from .adversarial_knn import AdversarialKnn
         n_neighbors = int(n_neighbors)
-        eps = float(radius) * 0.1
-        attack_model = auto_var.get_var("attack")
+        attack_model = None
+        if train == 'adv':
+            attack_model = auto_var.get_var("attack")
+
         return AdversarialKnn(
             n_neighbors=n_neighbors,
+            train_type=train,
             attack_model=attack_model,
             ord=auto_var.get_var("ord"),
-            eps=0.1,
         )
 
     @register_var(argument='knn(?P<n_neighbors>\d+)')

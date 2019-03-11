@@ -17,7 +17,7 @@ solvers.options['reltol'] = 1e-7
 cvxopt.glpk.options["msg_lev"] = "GLP_MSG_OFF"
 
 
-def get_sol_l2(target_x, target_y, constraints, perm_values, tar_estimators, transformer):
+def get_sol_l2(target_x, target_y, constraints, perm_values, tar_estimators):
     fet_dim = target_x.shape[1]
     temp = (target_x, np.inf)
 
@@ -32,9 +32,7 @@ def get_sol_l2(target_x, target_y, constraints, perm_values, tar_estimators, tra
         c = matrix(np.concatenate((np.zeros(fet_dim), np.ones(1))), tc='d')
 
         Q = 2 * matrix(np.eye(fet_dim), tc='d')
-        T = matrix(transformer.astype(np.float64), tc='d')
 
-        G = G * T
         q = matrix(-2*target_x, tc='d')
 
         sol = solvers.qp(P=Q, q=q, G=G, h=temph)
@@ -50,7 +48,7 @@ def get_sol_l2(target_x, target_y, constraints, perm_values, tar_estimators, tra
     else:
         return np.zeros_like(target_x)
 
-def get_sol_linf(target_x, target_y, constraints, perm_values, tar_estimators, transformer):
+def get_sol_linf(target_x, target_y, constraints, perm_values, tar_estimators):
     fet_dim = target_x.shape[1]
     temp = (target_x, np.inf)
 
@@ -84,11 +82,10 @@ def get_sol_linf(target_x, target_y, constraints, perm_values, tar_estimators, t
 
 
 class ADAAttack():
-    def __init__(self, clf: AdaBoostClassifier, n_features: int, ord, transformer,
+    def __init__(self, clf: AdaBoostClassifier, n_features: int, ord,
                  random_state):
         self.clf = clf
         self.ord = ord
-        self.transformer = transformer
         self.random_state = random_state
         constraints = []
 
@@ -155,8 +152,7 @@ class ADAAttack():
             pert_x = get_sol_fn(target_x, y[sample_id],
                                 self.constraints,
                                 self.perm_values,
-                                self.tar_estimators,
-                                self.transformer)
+                                self.tar_estimators)
             if np.linalg.norm(pert_x) != 0:
                 assert self.clf.predict([X[sample_id] + pert_x])[0] != y[sample_id]
                 pert_X[sample_id, :] = pert_x # pylint: disable=unsupported-assignment-operation

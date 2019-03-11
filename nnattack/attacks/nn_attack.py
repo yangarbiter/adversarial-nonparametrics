@@ -376,7 +376,6 @@ def rev_get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
     if knn.predict(target_x.dot(transformer.T).reshape((1, -1)))[0] != target_y:
         return temp[0] - target_x
 
-
     if ord == 1:
         get_sol_fn = get_sol_l1
     elif ord == 2:

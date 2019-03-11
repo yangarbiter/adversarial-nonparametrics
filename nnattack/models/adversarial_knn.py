@@ -9,27 +9,30 @@ class AdversarialKnn(KNeighborsClassifier):
                 **kwargs):
         print(kwargs)
         self.ord = kwargs.pop("ord", np.inf)
-        self.eps = kwargs.pop("eps", 0.1)
         self.attack_model = kwargs.pop("attack_model", None)
 
         self.train_type = kwargs.pop("train_type", 'adv')
-        self.r = kwargs.pop("r", 0.1)
 
         super().__init__(n_neighbors=n_neighbors, weights=weights,
                     algorithm=algorithm, leaf_size=leaf_size, p=p, metric=metric,
                     metric_params=metric_params, n_jobs=n_jobs, **kwargs)
 
-    def fit(self, X, y):
+    def fit(self, X, y, eps:float=None):
         if self.train_type == 'adv':
-            advX = self.attack_model.perturb(X, y=y, eps=self.eps)
+            if eps is None:
+                raise ValueError("eps should not be None with train type %s", self.train_type)
+            advX = self.attack_model.perturb(X, y=y, eps=eps)
 
             ind = np.where(np.linalg.norm(advX, axis=1) != 0)
 
             self.augX = np.vstack((X, X[ind]+advX[ind]))
             self.augy = np.concatenate((y, y[ind]))
         elif self.train_type == 'robustv1':
+            if eps is None:
+                raise ValueError("eps should not be None with train type %s", self.train_type)
+                
             y = y.astype(int)*2-1
-            self.augX, self.augy = find_eps_separated_set(X, self.r/2, y)
+            self.augX, self.augy = find_eps_separated_set(X, eps/2, y, self.ord)
             self.augy = (self.augy+1)//2
         else:
             raise ValueError("Not supported training type %s", self.train_type)
