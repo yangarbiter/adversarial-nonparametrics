@@ -11,9 +11,8 @@ from cleverhans.utils_tf import clip_eta
 EPS = np.finfo(float).eps
 
 class KernelSubTf(object):
-    def __init__(self, sess, transformer, c=1.0, attack:str=None, ord=np.inf):
+    def __init__(self, sess, c=1.0, attack:str=None, ord=np.inf):
         self.sess = sess
-        self.transformer = tf.constant(transformer.transformer(), tf.float32)
         self.attack = attack
         self.ord = ord
         if isinstance(c, float):
@@ -31,10 +30,10 @@ class KernelSubTf(object):
             x = tf.constant(X, tf.float32)
             if self.attack == 'fgsm':
                 adv_x = fgm_perturb(x, y=tf.constant(y, tf.float32), eps=eps, ord=self.ord,
-                    loss_fn=partial(self._loss_fn, transformer=self.transformer, y=y, c=self.c))
+                    loss_fn=partial(self._loss_fn, y=y, c=self.c))
             elif self.attack == 'pgd':
                 adv_x = pgd_perturb(x, y=tf.constant(y, tf.float32), eps=eps, ord=self.ord,
-                    loss_fn=partial(self._loss_fn, transformer=self.transformer, y=y, c=self.c))
+                    loss_fn=partial(self._loss_fn, y=y, c=self.c))
             else:
                 raise ValueError("not supported attack method %s", self.attack)
             #return sess.run(adv_x, feed_dict={x: X})
@@ -50,8 +49,9 @@ class KernelSubTf(object):
 
         return ret
 
-    def _loss_fn(self, x, transformer, y, c):
-        X = tf.matmul(x, tf.transpose(transformer))
+    def _loss_fn(self, x, y, c):
+        #X = tf.matmul(x, tf.transpose(transformer))
+        X = x
         mask = tf.constant(y[:, tf.newaxis] == y[tf.newaxis, :], dtype=tf.float32)
 
         r = tf.reduce_sum(X*X, 1)[:, tf.newaxis]

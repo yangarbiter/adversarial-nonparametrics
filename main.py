@@ -17,7 +17,6 @@ import tensorflow.keras.backend
 #from tensorflow.python.platform import flags
 from bistiming import SimpleTimer
 
-from nnattack.utils import get_attack_model
 from nnattack.variables import auto_var
 
 
@@ -65,21 +64,9 @@ def eps_accuracy(auto_var):
     auto_var.set_intermidiate_variable("trnX", trnX)
     auto_var.set_intermidiate_variable("trny", trny)
 
-    transformer = auto_var.get_var("transformer")
-    auto_var.set_intermidiate_variable("transformer", transformer)
-    pass_random_state(transformer.fit, random_state)(trnX, trny)
-    if auto_var.get_variable_value("transformer") in ['mlkr']:
-        transformer.transformer_ = transformer.transformer_.T
-
     model = auto_var.get_var("model")
     auto_var.set_intermidiate_variable("model", model)
-    if 'decision_tree' in auto_var.get_variable_value("model"):
-        procX = transformer.transform(trnX)
-        model.fit(procX, trny)
-    elif 'kernel_sub' in auto_var.get_variable_value("model"):
-        model.fit(trnX, trny)
-    else:
-        model.fit(transformer.transform(trnX), trny)
+    model.fit(trnX, trny)
 
     if 'adv' in auto_var.get_variable_value("model") \
         or 'robustv1' in auto_var.get_variable_value("model"):
@@ -102,7 +89,7 @@ def eps_accuracy(auto_var):
     ret = {}
     assert np.all(np.linalg.norm(tst_perturbs, axis=1, ord=ord) <= (eps + 1e-6)), (np.linalg.norm(tst_perturbs, axis=1, ord=ord), eps)
     temp_tstX = tstX + tst_perturbs
-    tst_pred = model.predict(transformer.transform(temp_tstX))
+    tst_pred = model.predict(temp_tstX)
 
     ret['results'] = {
         'eps': eps,

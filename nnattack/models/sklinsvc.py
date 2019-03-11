@@ -8,12 +8,11 @@ from .robust_nn.eps_separation import find_eps_separated_set
 from .sklr import get_sol_l2, get_sol_linf
 
 class SkLinSVC(LinearSVC):
-    def __init__(self, transformer, **kwargs):
+    def __init__(self, **kwargs):
         print(kwargs)
         self.ord = kwargs.pop("ord", np.inf)
         self.eps = kwargs.pop("eps", 0.1)
         self.train_type = kwargs.pop("train_type", None)
-        self.transformer = transformer
         super().__init__(**kwargs)
 
     def fit(self, X, y):
@@ -57,9 +56,9 @@ class SkLinSVC(LinearSVC):
                 continue
             if model.decision_function(x.reshape(1, -1))[0] > 0:
                 # Gx + h
-                pert_x = get_sol_fn(x, G, -h, self.transformer)
+                pert_x = get_sol_fn(x, G, -h)
             else:
-                pert_x = get_sol_fn(x, -G, h, self.transformer)
+                pert_x = get_sol_fn(x, -G, h)
 
             assert model.predict([x + pert_x])[0] != yi
             pert_X[i, :] = pert_x

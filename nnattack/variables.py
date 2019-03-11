@@ -10,7 +10,6 @@ from autovar.hooks import (
 )
 
 from .datasets import DatasetVarClass
-from .metrics import TransformerVarClass
 from .models import ModelVarClass
 from .attacks import AttackVarClass
 
@@ -70,9 +69,8 @@ auto_var = AutoVar(
 
 auto_var.add_variable_class(OrdVarClass())
 auto_var.add_variable_class(DatasetVarClass())
-auto_var.add_variable_class(TransformerVarClass())
 auto_var.add_variable_class(ModelVarClass())
 auto_var.add_variable_class(AttackVarClass())
 auto_var.add_variable('test_size', float)
 auto_var.add_variable('random_seed', int)
-auto_var.add_variable('esp', float)
+auto_var.add_variable('eps', float)

@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.model_selection import train_test_split
 
 from autovar.base import RegisteringChoiceType, register_var, VariableClass
 
@@ -12,6 +13,19 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         n_samples = int(n_samples)
         X, y = make_moons(n_samples=n_samples, noise=0.25,
                 random_state=var_value['random_seed'])
+        
+        ord = auto_var.get_var("ord")
+
+        if auto_var.get_var("ord") == 2:                                             
+            if 'mnist' in auto_var.get_variable_value("dataset"):                    
+                eps = [0.1 * i for i in range(0, 41)]                                
+            else:                                                                    
+                eps = [0.01 * i for i in range(0, 41)]                               
+        elif auto_var.get_var("ord") == 1:                                           
+            eps = [0.01 * i for i in range(0, 41)]                                   
+        elif auto_var.get_var("ord") == np.inf:                                      
+            eps = [0.01 * i for i in range(0, 41)]                                   
+
         return X, y
 
     @register_var()

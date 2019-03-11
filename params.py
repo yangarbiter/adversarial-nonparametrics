@@ -185,3 +185,32 @@ def adv_lr():
 
     run_param = {'verbose': 1, 'n_jobs': 4,}
     return exp_fn, grid_param, run_param
+
+def adv_ada():
+    exp_fn = eps_accuracy
+    random_seed = list(range(4))
+    grid_param = []
+    grid_param.append({
+        'model': ['adadt_10'],
+        'ord': ['inf'],
+        'transformer': ['identity'],
+        'dataset': ['fashion_mnist06_2000_pca5',
+            'mnist17_2000_pca5', 'mnist35_2000_pca5', 'fashion_mnist35_2000_pca5'
+        ],
+        'attack': ['skada_opt'],
+        'eps': [0.1],
+        'test_size': [0.1],
+        'random_seed': random_seed
+    })
+    #grid_param.append({
+    #    'model': ['adv_logistic_regression_1', 'logistic_regression',
+    #        'robustv1_logistic_regression_1'],
+    #    'ord': ['inf'],
+    #    'transformer': ['identity'],
+    #    'dataset': ['halfmoon2000'],
+    #    'attack': ['pgd'],
+    #    'random_seed': random_seed
+    #})
+
+    run_param = {'verbose': 1, 'n_jobs': 4,}
+    return exp_fn, grid_param, run_param

@@ -10,7 +10,7 @@ from cleverhans.utils_tf import clip_eta
 from .robust_nn.eps_separation import find_eps_separated_set
 
 class KernelSubTFModel(object):
-    def __init__(self, c, sess, transformer, ord, lbl_enc:OneHotEncoder,
+    def __init__(self, c, sess, ord, lbl_enc:OneHotEncoder,
             train_type: str=None, eps:float = 0.1):
         """
         trnX: placeholder
@@ -19,7 +19,6 @@ class KernelSubTFModel(object):
         self.c = c
         self.sess = sess
         self.enc = lbl_enc
-        self.transformer = transformer.transformer()
         self.ord = ord
         self.train_type = train_type
         self.eps = eps
@@ -32,12 +31,10 @@ class KernelSubTFModel(object):
         if self.train_type == 'adv':
             enc_trny = self.enc.transform(y.reshape(-1, 1))
             x = tf.placeholder(tf.float32, shape=X.shape)
-            transformer = tf.constant(self.transformer, tf.float32)
             indices = tf.constant([[i, j] for i, j in enumerate(y)], tf.int32)
             def loss_fn(x):
                 d_fn = self._decision_fn(
                     x,
-                    transformer=transformer,
                     enc_trny=tf.constant(enc_trny, tf.float32),
                     trn_x=tf.constant(X, tf.float32),
                 )
@@ -68,9 +65,8 @@ class KernelSubTFModel(object):
 
     def predict_proba(self, X):
         x = tf.placeholder(tf.float32)
-        transformer = tf.constant(self.transformer, tf.float32)
 
-        proba = self._decision_fn(x, transformer=transformer,
+        proba = self._decision_fn(x,
                               enc_trny=tf.constant(self.enc_trny, tf.float32),
                               trn_x=tf.constant(self.trnX, tf.float32))
         ret = proba.eval(feed_dict={x: X}, session=self.sess)
@@ -84,13 +80,11 @@ class KernelSubTFModel(object):
 
     def perturb(self, X, y:np.array=None, eps=0.1):
         x = tf.placeholder(tf.float32, shape=X.shape)
-        transformer = tf.constant(self.transformer, tf.float32)
         indices = tf.constant([[i, j] for i, j in enumerate(y)], tf.int32)
 
         def loss_fn(x):
             d_fn = self._decision_fn(
                 x,
-                transformer=transformer,
                 enc_trny=tf.constant(self.enc_trny, tf.float32),
                 trn_x=tf.constant(self.trnX, tf.float32),
             )
@@ -119,9 +113,8 @@ class KernelSubTFModel(object):
         else:
             raise ValueError("No EPS provided.")
 
-    def _decision_fn(self, x, transformer, enc_trny, trn_x):
-        trnX = tf.matmul(trn_x, tf.transpose(transformer))
-        X = tf.matmul(x, tf.transpose(transformer))
+    def _decision_fn(self, x, enc_trny, trn_x):
+        trnX, X = trn_x, x
         #mask = tf.constant(y[:, tf.newaxis] == y[tf.newaxis, :], dtype=tf.float32)
 
         r1 = tf.reduce_sum(X*X, 1)[:, tf.newaxis]

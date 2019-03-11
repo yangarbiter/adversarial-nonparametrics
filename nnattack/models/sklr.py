@@ -8,12 +8,11 @@ import cvxopt
 from .robust_nn.eps_separation import find_eps_separated_set
 
 class SkLr(LogisticRegression):
-    def __init__(self, transformer, **kwargs):
+    def __init__(self, **kwargs):
         print(kwargs)
         self.ord = kwargs.pop("ord", np.inf)
         self.eps = kwargs.pop("eps", 0.1)
         self.train_type = kwargs.pop("train_type", None)
-        self.transformer = transformer
         super().__init__(**kwargs)
 
     def fit(self, X, y):
@@ -59,9 +58,9 @@ class SkLr(LogisticRegression):
                 continue
             if model.decision_function(x.reshape(1, -1))[0] > 0:
                 # Gx + h
-                pert_x = get_sol_fn(x, G, -h, self.transformer)
+                pert_x = get_sol_fn(x, G, -h)
             else:
-                pert_x = get_sol_fn(x, -G, h, self.transformer)
+                pert_x = get_sol_fn(x, -G, h)
 
             assert model.predict([x + pert_x])[0] != yi
             pert_X[i, :] = pert_x
@@ -85,7 +84,7 @@ class SkLr(LogisticRegression):
 
 
 
-def get_sol_l2(target_x, G, h, transformer):
+def get_sol_l2(target_x, G, h):
     G, h = matrix(G, tc='d'), matrix(h, tc='d')
     fet_dim = target_x.shape[0]
     temph = h - 1e-4
@@ -93,9 +92,7 @@ def get_sol_l2(target_x, G, h, transformer):
     c = matrix(np.concatenate((np.zeros(fet_dim), np.ones(1))), tc='d')
 
     Q = 2 * matrix(np.eye(fet_dim), tc='d')
-    T = matrix(transformer.astype(np.float64), tc='d')
 
-    G = G * T
     q = matrix(-2*target_x, tc='d')
 
     sol = solvers.qp(P=Q, q=q, G=G, h=temph)
@@ -106,7 +103,7 @@ def get_sol_l2(target_x, G, h, transformer):
     else:
         raise
 
-def get_sol_linf(target_x, G, h, transformer):
+def get_sol_linf(target_x, G, h):
     fet_dim = target_x.shape[0]
     c = matrix(np.concatenate((np.zeros(fet_dim), np.ones(1))), tc='d')
 

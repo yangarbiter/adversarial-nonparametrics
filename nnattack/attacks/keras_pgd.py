@@ -10,7 +10,7 @@ import numpy as np
 
 
 class KerasPGD(object):
-    def __init__(self, n_feats, n_classes, model, sess, lbl_enc, ord, transformer):
+    def __init__(self, n_feats, n_classes, model, sess, lbl_enc, ord):
         self.sess = sess
         self.model = model
         self.ord = ord
@@ -19,7 +19,6 @@ class KerasPGD(object):
 
         self.wrap = KerasModelWrapper(model)
         self.lbl_enc = lbl_enc
-        self.transformer = transformer
 
     def _get_pert(self, X, Y, eps):
         if eps == 0:

@@ -71,8 +71,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
         trnX, trny = inter_var['trnX'], inter_var['trny']
         model = auto_var.get_var_with_argument("model", "decision_tree")
-        procX = inter_var['transformer'].transform(trnX)
-        model.fit(procX, trny)
+        model.fit(trnX, trny)
         auto_var.set_intermidiate_variable("tree_clf", model)
         attack_model = auto_var.get_var("attack")
         model = AdversarialDt(
@@ -132,7 +131,6 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
             c=c,
             lbl_enc=inter_var['lbl_enc'],
             sess=inter_var['sess'],
-            transformer=inter_var['transformer'],
             train_type=train,
             eps=eps,
             ord=auto_var.get_var("ord"),
@@ -164,7 +162,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var()
     @register_var(argument=r"robustnn_(?P<radius>\d+)")
     @staticmethod
-    def robustnn_100(auto_var, var_value, inter_var, radius):
+    def robustnn(auto_var, var_value, inter_var, radius):
         from .robust_nn import RobustNN
         radius = float(radius) * 0.01
         return RobustNN(Delta=0.45, delta=0.1, r=radius)
@@ -208,7 +206,6 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
             c=0.1,
             lbl_enc=inter_var['lbl_enc'],
             sess=inter_var['sess'],
-            transformer=inter_var['transformer'],
             ord=auto_var.get_var("ord"),
         )
         return clf
@@ -220,12 +217,37 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         eps = float(eps[1:])*0.01 if eps else 0.
         train = train[:-1] if train else None
         clf = SkLr(
-            transformer=inter_var['transformer'],
             ord=auto_var.get_var("ord"),
             train_type=train,
             eps=eps,
         )
         return clf
+
+    @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?adadt_(?P<n_estimators>\d+)(?P<eps>_\d+)?')
+    @staticmethod
+    def skadadt(auto_var, var_value, inter_var, train, n_estimators, eps):
+        from .adversarial_adaboost import AdversarialAda
+        from sklearn.tree import DecisionTreeClassifier
+        eps = int(eps) * 0.1 if eps is not None else 0.
+        n_estimators = int(n_estimators)
+        train = train[1:] if train is not None else None
+
+        if train == 'adv':
+            # TODO
+            attack_model = None
+        else:
+            attack_model = None
+        model = AdversarialAda(
+            base_estimator=DecisionTreeClassifier(max_depth=1),
+            algorithm='SAMME',
+            n_estimators=n_estimators,
+            train_type=train,
+            attack_model=attack_model,
+            eps=eps,
+            ord=auto_var.get_var("ord"),
+            random_state=inter_var['random_state'])
+        auto_var.set_intermidiate_variable("tree_clf", model)
+        return model
 
     @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?sklinsvc(?P<eps>_\d+)?')
     @staticmethod
@@ -234,7 +256,6 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         eps = float(eps[1:])*0.01 if eps else 0.
         train = train[:-1] if train else None
         clf = SkLinSVC(
-            transformer=inter_var['transformer'],
             ord=auto_var.get_var("ord"),
             train_type=train,
             eps=eps,
@@ -257,7 +278,6 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
             n_classes=n_classes,
             sess=inter_var['sess'],
             architecture='logistic_regression',
-            transformer=inter_var['transformer'],
             train_type=train,
             ord=auto_var.get_var("ord"),
             eps=eps,

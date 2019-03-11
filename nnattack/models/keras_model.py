@@ -10,7 +10,7 @@ from cleverhans.utils_tf import initialize_uninitialized_global_variables
 import tensorflow as tf
 import tensorflow.keras as keras
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Dense, Reshape, Input
+from tensorflow.keras.layers import Dense, Input
 from tensorflow.keras.optimizers import Adam, Nadam
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.models import clone_model
@@ -21,47 +21,16 @@ from sklearn.linear_model import LogisticRegression
 
 from .robust_nn.eps_separation import find_eps_separated_set
 
-def relu_mlp(input_shape, n_classes, l2_weight=0.0, **kwargs):
-    inputs = Input(shape=input_shape)
-    transformer = kwargs['transformer'] # 2d array
-    inputs = Input(shape=input_shape)
-    x = Dense(transformer.shape[1], activation='linear',
-              kernel_initializer=keras.initializers.Constant(transformer),
-              bias_initializer=keras.initializers.Zeros(),
-              name='transformer', trainable=False)(inputs)
-    x = Dense(128, activation='relu', kernel_regularizer=l2(l2_weight))(x)
-    x = Dense(n_classes, activation='softmax', kernel_regularizer=l2(l2_weight))(x)
-
-    return Model(inputs=[inputs], outputs=[x]), None
-
-#def logistic_regression(input_shape, n_classes, l2_weight=0.0, **kwargs):
-#    inputs = Input(shape=input_shape)
-#    x = Dense(n_classes, activation='softmax')(inputs)
-#
-#    return Model(inputs=[inputs], outputs=[x]), None
-
 def logistic_regression(input_x, input_shape, n_classes, l2_weight=0.0, **kwargs):
-    transformer = kwargs['transformer'] # 2d array
-    inputs = Input(shape=input_shape, tensor=input_x)
-    x = Dense(transformer.shape[1], activation='linear',
-              kernel_initializer=keras.initializers.Constant(transformer),
-              bias_initializer=keras.initializers.Zeros(),
-              name='transformer', trainable=False)(inputs)
-    x = Dense(n_classes, activation='softmax', kernel_regularizer=l2(l2_weight))(x)
-
-    return Model(inputs=[inputs], outputs=[x]), None
-
-def logistic_regression(input_x, input_shape, n_classes, l2_weight=0.0, **kwargs):
-    transformer = kwargs['transformer'] # 2d array
     inputs = Input(shape=input_shape, tensor=input_x)
     x = Dense(n_classes, activation='softmax', kernel_regularizer=l2(l2_weight))(inputs)
 
     return Model(inputs=[inputs], outputs=[x]), None
 
 class KerasModel(BaseEstimator):
-    def __init__(self, lbl_enc, n_features, n_classes, sess, learning_rate=1e-3,
-            batch_size=128, epochs=20, optimizer='adam', l2_weight=1e-5,
-            architecture='arch_001', transformer=None, random_state=None,
+    def __init__(self, lbl_enc, n_features, n_classes, sess,
+            learning_rate=1e-3, batch_size=128, epochs=20, optimizer='adam',
+            l2_weight=1e-5, architecture='arch_001', random_state=None,
             attacker=None, callbacks=None, train_type:str=None, eps:float=0.1,
             ord=np.inf, eps_list=None):
         tf.keras.backend.set_session(sess)
@@ -86,16 +55,9 @@ class KerasModel(BaseEstimator):
         #init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
         #self.sess.run(init_op)
 
-        if transformer:
-            self.transformer = transformer.transformer()
-        else:
-            self.transformer = np.eye(n_features[0])
-        self.transformer = self.transformer.T
-
         input_shape = tuple(n_features)
         model, self.preprocess_fn = globals()[self.architecture](
-            None, input_shape, n_classes, self.l2_weight,
-            transformer=self.transformer)
+            None, input_shape, n_classes, self.l2_weight)
         #model.summary()
         self.model = model
 

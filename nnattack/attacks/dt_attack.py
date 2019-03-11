@@ -17,7 +17,7 @@ cvxopt.glpk.options["msg_lev"] = "GLP_MSG_OFF"
 
 
 
-def get_sol_l2(target_x, target_y, paths, tree, constraints, transformer):
+def get_sol_l2(target_x, target_y, paths, tree, constraints):
     value = tree.value
     fet_dim = tree.n_features
     temp = (target_x, np.inf)
@@ -31,9 +31,7 @@ def get_sol_l2(target_x, target_y, paths, tree, constraints, transformer):
             c = matrix(np.concatenate((np.zeros(fet_dim), np.ones(1))), tc='d')
 
             Q = 2 * matrix(np.eye(fet_dim), tc='d')
-            T = matrix(transformer.astype(np.float64), tc='d')
 
-            G = G * T
             q = matrix(-2*target_x, tc='d')
 
             sol = solvers.qp(P=Q, q=q, G=G, h=temph)
@@ -49,7 +47,7 @@ def get_sol_l2(target_x, target_y, paths, tree, constraints, transformer):
     else:
         return np.zeros_like(target_x)
 
-def get_sol_linf(target_x, target_y, paths, tree, constraints, transformer):
+def get_sol_linf(target_x, target_y, paths, tree, constraints):
     value = tree.value
     fet_dim = tree.n_features
     temp = (target_x, np.inf)
@@ -83,11 +81,9 @@ def get_sol_linf(target_x, target_y, paths, tree, constraints, transformer):
 
 
 class DTAttack():
-    def __init__(self, clf: DecisionTreeClassifier, ord, transformer,
-                 random_state):
+    def __init__(self, clf: DecisionTreeClassifier, ord, random_state):
         self.clf = clf
         self.ord = ord
-        self.transformer = transformer
         self.random_state = random_state
 
         tree = self.clf.tree_
@@ -169,7 +165,7 @@ class DTAttack():
                continue
             target_x = X[sample_id]
             pert_x = get_sol_fn(target_x, y[sample_id], self.paths,
-                                self.clf.tree_, self.constraints, self.transformer)
+                                self.clf.tree_, self.constraints)
             if np.linalg.norm(pert_x) != 0:
                 assert self.clf.predict([X[sample_id] + pert_x])[0] != y[sample_id]
                 pert_X[sample_id, :] = pert_x

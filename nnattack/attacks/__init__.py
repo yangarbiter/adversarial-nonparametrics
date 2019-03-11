@@ -127,3 +127,16 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @staticmethod
     def sklr_opt(auto_var, var_value, inter_var):
         return inter_var['model']
+
+    @register_var()
+    @staticmethod
+    def skada_opt(auto_var, var_value, inter_var):
+        from .ada_attack import ADAAttack
+        attack_model = ADAAttack(
+            clf=inter_var['tree_clf'],
+            ord=auto_var.get_var('ord'),
+            transformer=inter_var['transformer'],
+            n_features=inter_var['trnX'].shape[1],
+            random_state=inter_var['random_state'],
+        )
+        return attack_model
