@@ -89,9 +89,20 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
     @register_var()
     @staticmethod
+    def blackbox(auto_var, var_value, inter_var):
+        from .blackbox import BlackBoxAttack
+        ret = BlackBoxAttack(
+            model=inter_var['model'],
+            ord=auto_var.get_var('ord'),
+            random_state=inter_var['random_state'],
+        )
+        return ret
+
+    @register_var()
+    @staticmethod
     def dt_attack_opt(auto_var, var_value, inter_var):
-        from .dt_attack import DTAttack
-        attack_model = DTAttack(
+        from .dt_op import DTOpt
+        attack_model = DTOpt(
             clf=inter_var['tree_clf'],
             ord=auto_var.get_var('ord'),
             random_state=inter_var['random_state'],

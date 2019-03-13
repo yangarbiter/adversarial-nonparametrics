@@ -80,7 +80,7 @@ def get_sol_linf(target_x, target_y, paths, tree, constraints):
         return np.zeros_like(target_x)
 
 
-class DTAttack():
+class DTOpt():
     def __init__(self, clf: DecisionTreeClassifier, ord, random_state):
         self.clf = clf
         self.ord = ord
