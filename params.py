@@ -29,21 +29,27 @@ def dt_attack():
 
 def nn_k1():
     exp_fn = eps_accuracy
-    random_seed = list(range(1))
+    random_seed = list(range(2))
     grid_param = []
     grid_param.append({
         'model': ['knn1'],
         'ord': ['inf'],
-        'dataset': ['iris', 'wine', 'digits_pca5', 'abalone',
-            'mnist35_2000_pca5'],
-        'attack': ['rev_nnopt_k1_20', 'direct_k1', 'kernelsub_c100_pgd'],
+        'dataset': ['iris', 'wine', 'digits_pca5'],
+        'attack': ['rev_nnopt_k1_20', 'direct_k1', 'kernelsub_c1000_pgd', 'blackbox'],
+        'random_seed': random_seed,
+    })
+    grid_param.append({
+        'model': ['knn1'],
+        'ord': ['inf'],
+        'dataset': ['abalone', 'mnist35_2000_pca5'],
+        'attack': ['rev_nnopt_k1_20', 'direct_k1', 'kernelsub_c10_pgd', 'blackbox'],
         'random_seed': random_seed,
     })
     grid_param.append({
         'model': ['knn1'],
         'ord': ['inf'],
         'dataset': ['halfmoon_2000'],
-        'attack': ['rev_nnopt_k1_20', 'direct_k1', 'kernelsub_c10_pgd'],
+        'attack': ['rev_nnopt_k1_20', 'direct_k1', 'kernelsub_c1000_pgd', 'blackbox'],
         'random_seed': random_seed,
     })
 
@@ -52,21 +58,20 @@ def nn_k1():
 
 def robust_nn_k1():
     exp_fn = eps_accuracy
-    random_seed = list(range(1))
+    random_seed = list(range(2))
     grid_param = []
     grid_param.append({
-        'model': ['knn1'],
-        'ord': ['2'],
-        'dataset': ['iris', 'wine', 'digits_pca5', 'abalone',
-            'mnist35_2000_pca5'],
-        'attack': ['rev_nnopt_k1_20', 'direct_k1', 'kernelsub_c100_pgd'],
+        'model': ['robust1nn'],
+        'ord': ['inf'],
+        'dataset': ['abalone', 'mnist35_2000_pca5'],
+        'attack': ['rev_nnopt_k1_20', 'direct_k1', 'kernelsub_c100_pgd', 'blackbox'],
         'random_seed': random_seed,
     })
     grid_param.append({
-        'model': ['knn1'],
-        'ord': ['2'],
+        'model': ['robust1nn'],
+        'ord': ['inf'],
         'dataset': ['halfmoon_2000'],
-        'attack': ['rev_nnopt_k1_20', 'direct_k1', 'kernelsub_c10_pgd'],
+        'attack': ['rev_nnopt_k1_20', 'direct_k1', 'kernelsub_c10_pgd', 'blackbox'],
         'random_seed': random_seed,
     })
 

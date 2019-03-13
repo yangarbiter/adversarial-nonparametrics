@@ -159,7 +159,6 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         auto_var.set_intermidiate_variable("tree_clf", model)
         return model
 
-    @register_var()
     @register_var(argument=r"robust1nn")
     @staticmethod
     def robust1nn(auto_var, var_value, inter_var):

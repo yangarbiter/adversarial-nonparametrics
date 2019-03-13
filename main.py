@@ -95,9 +95,8 @@ def eps_accuracy(auto_var):
             })                                                                       
             print(ret[-1])
 
-        ret['aug_len'] = len(augX)                                               
-
     else:
+        augX = None
         auto_var.set_intermidiate_variable("trnX", trnX)
         auto_var.set_intermidiate_variable("trny", trny)
         model = auto_var.get_var("model")
@@ -109,22 +108,24 @@ def eps_accuracy(auto_var):
         tst_perturbs = attack_model.perturb(tstX, y=tsty, eps=eps_list)
 
         ret = []
-        ord = auto_var.get_var("ord")                                                
-        for i in range(len(eps_list)):                                                    
+        ord = auto_var.get_var("ord")
+        for i in range(len(eps_list)):
             eps = eps_list[i]
             assert np.all(np.linalg.norm(tst_perturbs[i], axis=1, ord=ord) <= (eps + 1e-6)), (np.linalg.norm(tst_perturbs[i], axis=1, ord=ord), eps)
-            temp_tstX = tstX + tst_perturbs[i]                                       
-                                                                                    
+            temp_tstX = tstX + tst_perturbs[i]
+
             tst_pred = model.predict(temp_tstX)
                                                                                     
-            ret.append({                                                             
+            ret.append({
                 'eps': eps_list[i],
-                'tst_acc': (tst_pred == tsty).mean(),                                
-            })                                                                       
-            print(ret[-1])                                                           
+                'tst_acc': (tst_pred == tsty).mean(),
+            })
+            print(ret[-1])
                                                                                  
-    ret = {'results': ret}                                                       
-    ret['trnX_len'] = len(trnX)  
+    ret = {'results': ret}
+    ret['trnX_len'] = len(trnX)
+    if augX is not None:
+        ret['aug_len'] = len(augX)                                               
 
     print(json.dumps(auto_var.var_value))
     print(json.dumps(ret))

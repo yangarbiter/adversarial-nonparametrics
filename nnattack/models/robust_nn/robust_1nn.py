@@ -5,22 +5,18 @@ Download from https://raw.githubusercontent.com/EricYizhenWang/robust_nn_icml/ma
 from __future__ import division
 import numpy as np
 from sklearn.neighbors import NearestNeighbors, KNeighborsClassifier
+from scipy.spatial.distance import cdist
 
 from .eps_separation import find_eps_separated_set
 
-class Robust_1NN:
-    def __init__(self, X, Y, Delta, delta, ord, train_type='robust_v2'):
-        self.X = X
-        self.Y = Y * 2 -1 # to 1 -1
-        #self.Y = Y
+class Robust_1NN():
+    def __init__(self, Delta, delta, ord, train_type='robust_v2'):
+        #self.X = X
+        #self.Y = Y * 2 -1 # to 1 -1
         self.ord = ord
         self.Delta = Delta
         self.delta = delta
-        n = X.shape[0]
-        self.n = n
-        self.k = min(int(3*np.log(n/delta)/(np.log(2)*(Delta**2))), n)
-        d = np.array([[np.linalg.norm(a-b) for a in X] for b in X])
-        self.d = d
+        
         self.train_type = train_type
 
     def find_confident_label(self):
@@ -28,7 +24,7 @@ class Robust_1NN:
                                self.k, self.delta,
                                self.n]
         thres = 2*self.Delta
-        print(thres, k)
+        #print(thres, k)
         neigh = NearestNeighbors(k)
         neigh.fit(X)
         nn = neigh.kneighbors(X, k, return_distance=False)
@@ -65,8 +61,8 @@ class Robust_1NN:
             self.find_confident_label()
             self.find_red_points(eps)
             [X, Y, r] = [self.X_other, self.Y_other, eps]
-
-        [X, Y, r] = [self.X, self.Y, eps]
+        else:
+            [X, Y, r] = [self.X, self.Y, eps]
         X, Y = find_eps_separated_set(X, eps/2, Y, ord=self.ord)
         if self.X_red.shape[0] > 0:
             self.X_train = np.concatenate([X, self.X_red])
@@ -77,14 +73,26 @@ class Robust_1NN:
         return self.X_train, self.Y_train
 
     def fit(self, X, Y, eps:float):
-        self.find_robust_training_set(eps)
-        [X, Y] = [self.X_train, self.Y_train]
-        self.neigh = KNeighborsClassifier(n_neighbors=1)
-        self.neigh.fit(X, Y)
-        self.augX, self.augY = X, Y
+        if eps == 0:
+            self.neigh = KNeighborsClassifier(n_neighbors=1)
+            self.neigh.fit(X, Y)
+            self.augX, self.augy = X, Y
+        else:
+            self.X = X
+            self.Y = Y * 2 -1 # to 1 -1
+            self.n = X.shape[0]
+            #self.d = np.array([[np.linalg.norm(a-b, ord=self.ord) for a in X] for b in X])
+            self.d = cdist(X, X, 'minkowski', self.ord)
+            self.k = min(int(3*np.log(self.n/self.delta)/(np.log(2)*(self.Delta**2))), self.n)
+
+            self.find_robust_training_set(eps)
+            [X, Y] = [self.X_train, (self.Y_train + 1)//2]
+            self.neigh = KNeighborsClassifier(n_neighbors=1)
+            self.neigh.fit(X, Y)
+            self.augX, self.augy = X, Y
 
     def predict(self, X):
-        self.neigh.predict(X)
+        return self.neigh.predict(X)
 
     def get_clf(self):
         return self.neigh
