@@ -22,6 +22,10 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+#import cvxopt.msk
+#from mosek import iparam
+#solvers.options['MOSEK'] = {iparam.log: 0}
+
 #import mosek
 #msk.options = {mosek.iparam.log: 0}
 #solvers.options['solver'] = 'glpk'
@@ -56,7 +60,7 @@ def get_sol(target_x, tuple_x, faropp, kdtree, transformer, init_x=None):
     G, h = matrix(G, tc='d'), matrix(h, tc='d')
 
     #assert (transformer.shape[1] == glob_trnX.shape[1])
-    n_emb = transformer.shape[0]
+    #n_emb = transformer.shape[0]
     n_fets = target_x.shape[0]
 
     #Q = 2 * matrix(np.eye(n_emb), tc='d')
@@ -122,7 +126,7 @@ def sol_sat_constraints(G, h):
 def get_sol_l1(target_x, tuple_x, faropp, kdtree, transformer, init_x=None):
     tuple_x = np.asarray(tuple_x)
     fet_dim = target_x.shape[0]
-    n_emb = transformer.shape[0]
+    #n_emb = transformer.shape[0]
 
     emb_tar = target_x.dot(transformer.T)
     trnX = glob_trnX.dot(transformer.T)
@@ -201,10 +205,10 @@ def get_sol_linf(target_x, tuple_x, faropp, kdtree, transformer, init_x=None):
 
     temph = h - 1e-4
     if init_x is not None:
-        sol = solvers.lp(c=c, G=G, h=temph, solver='glpk',
+        sol = solvers.lp(c=c, G=G, h=temph, solver='mosek',
                          initvals=init_x)
     else:
-        sol = solvers.lp(c=c, G=G, h=temph, solver='glpk')
+        sol = solvers.lp(c=c, G=G, h=temph, solver='mosek')
 
     if sol['status'] == 'optimal':
         ret = np.array(sol['x']).reshape(-1)
@@ -405,6 +409,8 @@ def rev_get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
             lp_sols[inds] = sol
         elif lp_sols[inds] is None:
             ret = False
+            #ret, sol = get_sol_fn(target_x, inds, faropp, kdtree,
+            #                        transformer)
         else:
             ret, sol = get_sol_fn(target_x, inds, faropp, kdtree,
                                     transformer, lp_sols[inds])
@@ -458,6 +464,8 @@ class RevNNAttack():
                 ret.append(rev_get_adv(target_x.astype(np.float64), target_y,
                         self.tree, self.farthest, self.K, self.faropp, transformer,
                         self.lp_sols, ord=self.ord, method=self.method, knn=knn))
+                #if np.linalg.norm(ret[-1]) == 0 and knn.predict([target_x]) == target_y:
+                #    import ipdb; ipdb.set_trace()
 
         ret = np.asarray(ret)
         if isinstance(eps, list):

@@ -44,6 +44,15 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
     @register_var()
     @staticmethod
+    def nnopt_k3_all(auto_var, var_value, inter_var):
+        from .nn_attack import NNAttack
+        n_neighbors = 3
+        return NNAttack(inter_var['trnX'], inter_var['trny'],
+            n_neighbors=n_neighbors, farthest=-1,
+            ord=auto_var.get_var('ord'))
+
+    @register_var()
+    @staticmethod
     def nnopt_k1_all(auto_var, var_value, inter_var):
         from .nn_attack import NNAttack
         n_neighbors = 1
@@ -101,7 +110,7 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var()
     @staticmethod
     def dt_attack_opt(auto_var, var_value, inter_var):
-        from .dt_op import DTOpt
+        from .dt_opt import DTOpt
         attack_model = DTOpt(
             clf=inter_var['tree_clf'],
             ord=auto_var.get_var('ord'),

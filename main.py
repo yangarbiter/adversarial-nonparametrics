@@ -123,6 +123,9 @@ def eps_accuracy(auto_var):
             print(ret[-1])
                                                                                  
     ret = {'results': ret}
+    if isinstance(tst_perturbs, list):
+        tst_perturbs = tst_perturbs[-1]
+    ret['avg_pert'] = np.linalg.norm(tst_perturbs, axis=1, ord=ord).mean()
     ret['trnX_len'] = len(trnX)
     if augX is not None:
         ret['aug_len'] = len(augX)                                               

@@ -9,6 +9,7 @@ import numpy as np
 from joblib import Parallel, delayed
 
 from ..base import AttackModel
+from .attackbox import OPT_attack_lf
 
 
 def attack_untargeted(model, train_dataset, x0, y0, ord, alpha=0.2, beta=0.001, iterations=1000):
@@ -83,12 +84,14 @@ def attack_untargeted(model, train_dataset, x0, y0, ord, alpha=0.2, beta=0.001, 
     
         for _ in range(15):
             new_theta = theta - alpha * gradient
+            if np.linalg.norm(new_theta, ord=ord) == 0:
+                break
             new_theta = new_theta/np.linalg.norm(new_theta, ord=ord)
             new_g2, count = fine_grained_binary_search_local(model, x0, y0, new_theta, initial_lbd = min_g2, tol=beta/500)
             opt_count += count
             alpha = alpha * 2
             if new_g2 < min_g2:
-                min_theta = new_theta 
+                min_theta = new_theta
                 min_g2 = new_g2
             else:
                 break
@@ -97,11 +100,13 @@ def attack_untargeted(model, train_dataset, x0, y0, ord, alpha=0.2, beta=0.001, 
             for _ in range(15):
                 alpha = alpha * 0.25
                 new_theta = theta - alpha * gradient
+                if np.linalg.norm(new_theta, ord=ord) == 0:
+                    break
                 new_theta = new_theta/np.linalg.norm(new_theta, ord=ord)
                 new_g2, count = fine_grained_binary_search_local(model, x0, y0, new_theta, initial_lbd = min_g2, tol=beta/500)
                 opt_count += count
                 if new_g2 < g2:
-                    min_theta = new_theta 
+                    min_theta = new_theta
                     min_g2 = new_g2
                     break
 
@@ -121,7 +126,7 @@ def attack_untargeted(model, train_dataset, x0, y0, ord, alpha=0.2, beta=0.001, 
             if (beta < 0.0005):
                 break
 
-    target = model.predict([x0 + g_theta*best_theta])
+    #target = model.predict([x0 + g_theta*best_theta])
     timeend = time.time()
     #print("\nAdversarial Example Found Successfully: distortion %.4f target %d queries %d \nTime: %.4f seconds" % (g_theta, target, query_count + opt_count, timeend-timestart))
     return x0 + g_theta*best_theta
@@ -179,6 +184,7 @@ def fine_grained_binary_search(model, x0, y0, theta, initial_lbd, current_best):
     return lbd_hi, nquery
 
 
+
 class BlackBoxAttack(AttackModel):
 
     def __init__(self, ord, model, random_state=None):
@@ -196,9 +202,15 @@ class BlackBoxAttack(AttackModel):
         #                          alpha=self.alpha, beta=self.beta, iterations=1500)
         #    ret.append(adv)
 
-        ret = Parallel(n_jobs=-1, verbose=5)(delayed(attack_untargeted)(
-            self.model, dataset, xi, yi, self.ord, alpha=self.alpha, beta=self.beta,
-            iterations=1500) for (xi, yi) in dataset)
+        if self.ord == np.inf:
+            attacker = OPT_attack_lf(self.model)
+            ret = Parallel(n_jobs=-1, verbose=5)(delayed(attacker)(
+                xi, yi, TARGETED=False) for (xi, yi) in dataset)
+
+        else:
+            ret = Parallel(n_jobs=-1, verbose=5)(delayed(attack_untargeted)(
+                self.model, dataset, xi, yi, self.ord, alpha=self.alpha, beta=self.beta,
+                iterations=1500) for (xi, yi) in dataset)
 
         ret = np.asarray(ret) - X
         if isinstance(eps, list):

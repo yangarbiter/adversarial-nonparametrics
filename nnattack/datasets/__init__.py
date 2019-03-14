@@ -13,12 +13,12 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         n_samples = int(n_samples)
         X, y = make_moons(n_samples=n_samples, noise=0.25,
                 random_state=var_value['random_seed'])
-        
-        if auto_var.get_var("ord") == 2:                                             
+
+        if auto_var.get_var("ord") == 2:
             eps = [0.01 * i for i in range(0, 41, 5)]
-        elif auto_var.get_var("ord") == 1:                                           
+        elif auto_var.get_var("ord") == 1:
             eps = [0.01 * i for i in range(0, 41, 5)]
-        elif auto_var.get_var("ord") == np.inf:                                      
+        elif auto_var.get_var("ord") == np.inf:
             eps = [0.01 * i for i in range(0, 41, 5)]
 
         return X, y, eps
@@ -36,7 +36,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
     def wine(auto_var, var_value, inter_var):
         from sklearn.datasets import load_wine
         X, y = load_wine(return_X_y=True)
-        eps = [0.01 * i for i in range(0, 41, 5)]                               
+        eps = [0.01 * i for i in range(0, 41, 5)]
         return X, y, eps
 
     @register_var()
@@ -51,7 +51,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         # half of the abalones are 11 years old and above, so the classification task is whether age >= 11
         y = np.array([1 if int(data[i][8]) >= 11 else 0 for i in range(len(data))])
 
-        eps = [0.01 * i for i in range(0, 41, 5)]                               
+        eps = [0.01 * i for i in range(0, 41, 5)]
 
         return X, y, eps
 
@@ -61,7 +61,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         from sklearn.datasets import load_digits
         from sklearn.decomposition import PCA
         X, y = load_digits(return_X_y=True)
-        eps = [0.01 * i for i in range(0, 41, 5)]                               
+        eps = [0.01 * i for i in range(0, 41, 5)]
 
         n_dims = int(n_dims[1:]) if not n_dims else None
         if not n_dims:
@@ -91,13 +91,13 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
             pca = PCA(n_components=n_dims, random_state=inter_var['random_state'])
             X = pca.fit_transform(X)
 
-        if auto_var.get_var("ord") == 2:                                             
-            eps = [0.1 * i for i in range(0, 41, 5)]  
+        if auto_var.get_var("ord") == 2:
+            eps = [0.1 * i for i in range(0, 41, 5)]
         else:
-            eps = [0.01 * i for i in range(0, 41, 5)]  
+            eps = [0.01 * i for i in range(0, 41, 5)]
 
         return X, y, eps
-        
+
     @register_var(argument=r"fashion_mnist06_(?P<n_samples>\d+)(?P<n_dims>_pca\d+)?")
     @staticmethod
     def fashion_mnist06(auto_var, var_value, inter_var, n_samples, n_dims):
@@ -121,13 +121,13 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
             pca = PCA(n_components=n_dims, random_state=inter_var['random_state'])
             X = pca.fit_transform(X)
 
-        if auto_var.get_var("ord") == 2:                                             
+        if auto_var.get_var("ord") == 2:
             eps = [0.1 * i for i in range(0, 41, 5)]
         else:
             eps = [0.01 * i for i in range(0, 41, 5)]
 
         return X, y, eps
-        
+
     @register_var(argument=r"fashion_mnist35_(?P<n_samples>\d+)(?P<n_dims>_pca\d+)?")
     @staticmethod
     def fashion_mnist35(auto_var, var_value, inter_var, n_samples, n_dims):

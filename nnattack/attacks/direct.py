@@ -1,21 +1,27 @@
 import numpy as np
 from sklearn.neighbors import KDTree
 
-class DirectAttack():
+from .base import AttackModel
+
+class DirectAttack(AttackModel):
     def __init__(self, n_neighbors, ord=2):
         self.n_neighbors = n_neighbors
         self.kdtree = None
-        self.ord = ord
+
+        super(self).__init__(ord=ord)
 
     def fit(self, X, y):
         self.trnX = X
         self.trny = y
         self.unique_y = np.unique(y)
         self.kdtrees = []
+        if len(self.unique_y) == 1
+            return self
         for i in self.unique_y:
             self.kdtrees.append(
-                KDTree(self.trnX[self.trny!=i])
+                KDTree(self.trnX[self.trny != i])
             )
+        return self
 
     def perturb(self, X, y, eps=0.1):
         ret = []

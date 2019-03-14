@@ -59,7 +59,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @staticmethod
     def decision_tree(auto_var, var_value, inter_var):
         from sklearn.tree import DecisionTreeClassifier
-        model = DecisionTreeClassifier(random_state=inter_var['random_state'])
+        model = DecisionTreeClassifier(criterion='entropy', random_state=inter_var['random_state'])
         auto_var.set_intermidiate_variable("tree_clf", model)
         return model
 
@@ -228,7 +228,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         else:
             attack_model = None
         model = AdversarialAda(
-            base_estimator=DecisionTreeClassifier(max_depth=1),
+            base_estimator=DecisionTreeClassifier(criterion='entropy', max_depth=1),
             algorithm='SAMME',
             n_estimators=n_estimators,
             train_type=train,
