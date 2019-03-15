@@ -63,6 +63,14 @@ def solve_lp(c, G, h, n):
     prob.solve(solver=cp.GUROBI)
     return prob.status, x.value
 
+def solve_qp(Q, q, G, h, n):
+    x = cp.Variable(shape=(n, 1))
+    obj = cp.Minimize(cp.sum(cp.square(x)) + q.T * x)
+    constraints = [G*x <= h]
+    prob = cp.Problem(obj, constraints)
+    prob.solve(solver=cp.GUROBI)
+    return prob.status, x.value
+
 
 #@profile
 def get_sol(target_x, tuple_x, faropp, kdtree, transformer, init_x=None):
@@ -86,46 +94,54 @@ def get_sol(target_x, tuple_x, faropp, kdtree, transformer, init_x=None):
     #q = matrix(-2*target_x.dot(transformer.T).dot(transformer), tc='d')
     q = matrix(-2*target_x, tc='d')
 
-    try:
-        c = matrix(np.zeros(target_x.shape[0]), tc='d')
-        temph = h - 1e-4 # make sure all constraints are met
-        if init_x is None:
-            lp_sol = solvers.lp(c=c, G=G, h=temph, solver='glpk')
-            if lp_sol['status'] == 'optimal':
-                init_x = lp_sol['x']
-            else:
-                init_x = None
+    temph = h - 1e-4 # make sure all constraints are met
 
-        if init_x is not None:
-            #sol2 = solve_qp(np.array(Q), np.array(q).flatten(), np.array(G).T,
-            #        np.array(temph).flatten())
-            sol = solvers.qp(P=Q, q=q, G=G, h=temph, initvals=init_x)
-
-            if sol['status'] == 'optimal':
-                ret = np.array(sol['x'], np.float64).reshape(-1)
-                if DEBUG:
-                    # sanity check for the correctness of objective
-                    print('1', sol['primal objective'] + np.dot(target_x, target_x))
-                    print('2', np.linalg.norm(target_x - ret, ord=2)**2)
-                    #print(sol['primal objective'], np.dot(target_x.dot(transformer.T), target_x.dot(transformer.T)))
-                    #print(sol['primal objective'] + np.dot(target_x.dot(transformer.T), target_x.dot(transformer.T)))
-                    #print(np.linalg.norm(target_x.dot(transformer.T) - ret.dot(transformer.T))**2)
-                    #assert np.isclose(np.linalg.norm(target_x.dot(transformer.T) - ret.dot(transformer.T))**2,
-                    #        sol['primal objective'] + np.dot(target_x.dot(transformer.T), target_x.dot(transformer.T)))
-                    assert np.isclose(np.linalg.norm(target_x - ret, ord=2)**2, sol['primal objective'] + np.dot(target_x, target_x))
-                    # check if constraints are all met
-                    h = np.array(h).flatten()
-                    G = np.array(G)
-                    a = check_feasibility(G, h, ret, G.shape[0], G.shape[1])
-                    assert a
-                return True, ret
-            return False, np.array(init_x, np.float64).reshape(-1)
-        else:
-            return False, None
-
-    except ValueError:
-        #logger.warning("solver error")
+    status, sol = solve_qp(np.array(Q), np.array(q), np.array(G),
+                           np.array(temph), n_fets)
+    if status == 'optimal':
+        ret = sol.reshape(-1)
+        return True, ret
+    else:
         return False, None
+
+    #try:
+    #    c = matrix(np.zeros(target_x.shape[0]), tc='d')
+    #    if init_x is None:
+    #        lp_sol = solvers.lp(c=c, G=G, h=temph, solver='glpk')
+    #        if lp_sol['status'] == 'optimal':
+    #            init_x = lp_sol['x']
+    #        else:
+    #            init_x = None
+
+    #    if init_x is not None:
+    #        #sol2 = solve_qp(np.array(Q), np.array(q).flatten(), np.array(G).T,
+    #        #        np.array(temph).flatten())
+    #        sol = solvers.qp(P=Q, q=q, G=G, h=temph, initvals=init_x)
+
+    #        if sol['status'] == 'optimal':
+    #            ret = np.array(sol['x'], np.float64).reshape(-1)
+    #            if DEBUG:
+    #                # sanity check for the correctness of objective
+    #                print('1', sol['primal objective'] + np.dot(target_x, target_x))
+    #                print('2', np.linalg.norm(target_x - ret, ord=2)**2)
+    #                #print(sol['primal objective'], np.dot(target_x.dot(transformer.T), target_x.dot(transformer.T)))
+    #                #print(sol['primal objective'] + np.dot(target_x.dot(transformer.T), target_x.dot(transformer.T)))
+    #                #print(np.linalg.norm(target_x.dot(transformer.T) - ret.dot(transformer.T))**2)
+    #                #assert np.isclose(np.linalg.norm(target_x.dot(transformer.T) - ret.dot(transformer.T))**2,
+    #                #        sol['primal objective'] + np.dot(target_x.dot(transformer.T), target_x.dot(transformer.T)))
+    #                assert np.isclose(np.linalg.norm(target_x - ret, ord=2)**2, sol['primal objective'] + np.dot(target_x, target_x))
+    #                # check if constraints are all met
+    #                h = np.array(h).flatten()
+    #                G = np.array(G)
+    #                a = check_feasibility(G, h, ret, G.shape[0], G.shape[1])
+    #                assert a
+    #            return True, ret
+    #        return False, np.array(init_x, np.float64).reshape(-1)
+    #    else:
+    #        return False, None
+    #except ValueError:
+    #    #logger.warning("solver error")
+    #    return False, None
 
 def sol_sat_constraints(G, h):
     fet_dim = G.shape[1]
