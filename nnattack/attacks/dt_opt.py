@@ -7,6 +7,8 @@ from cvxopt import matrix, solvers
 import cvxopt.glpk
 import cvxopt
 
+from .base import AttackModel
+
 solvers.options['maxiters'] = 30
 solvers.options['show_progress'] = False
 solvers.options['refinement'] = 0
@@ -80,10 +82,10 @@ def get_sol_linf(target_x, target_y, paths, tree, constraints):
         return np.zeros_like(target_x)
 
 
-class DTOpt():
+class DTOpt(AttackModel):
     def __init__(self, clf: DecisionTreeClassifier, ord, random_state):
+        super(self).__init__(ord=ord)
         self.clf = clf
-        self.ord = ord
         self.random_state = random_state
 
         tree = self.clf.tree_

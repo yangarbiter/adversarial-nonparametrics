@@ -6,8 +6,10 @@ from nnattack.variables import auto_var, get_file_name
 from main import eps_accuracy
 from params import (
     nn_k1,
-    robust_nn_k1,
     nn_k3,
+    nn_k5,
+    nn_k7,
+    robust_nn_k1,
     dt_attack,
     opt_of_nnopt,
 )
@@ -18,7 +20,7 @@ logging.basicConfig(level=logging.DEBUG)
 DEBUG = True if os.environ.get('DEBUG', False) else False
 
 def main():
-    experiments = [nn_k1, robust_nn_k1, nn_k3]
+    experiments = [nn_k1, robust_nn_k1, nn_k3, nn_k5, nn_k7]
     #experiments = [dt_attack]
     #experiments = [opt_of_nnopt]
     grid_params = []

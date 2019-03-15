@@ -54,8 +54,8 @@ DEBUG = False
 import cvxpy as cp
 
 def solve_lp(c, G, h, n):
-    c = np.array(c)
-    G, h = np.array(G), np.array(h)
+    #c = np.array(c)
+    #G, h = np.array(G), np.array(h)
     x = cp.Variable(shape=(n, 1))
     obj = cp.Minimize(c.T * x)
     constraints = [G*x <= h]
@@ -206,51 +206,50 @@ def get_sol_linf(target_x, tuple_x, faropp, kdtree, transformer, init_x=None):
     if init_x is None and not sol_sat_constraints(G, h):
         return False, None
 
-    c = matrix(np.concatenate((np.zeros(fet_dim), np.ones(1))), tc='d')
+    c = np.concatenate((np.zeros(fet_dim), np.ones(1))).reshape((-1, 1))
 
     G2 = np.hstack((np.eye(fet_dim), -np.ones((fet_dim, 1))))
     G3 = np.hstack((-np.eye(fet_dim), -np.ones((fet_dim, 1))))
     G = np.hstack((G, np.zeros((G.shape[0], 1))))
     G = np.vstack((G, G2, G3))
-    h = np.concatenate((h, target_x, -target_x))
-
-    G, h = matrix(G, tc='d'), matrix(h, tc='d')
+    h = np.concatenate((h, target_x, -target_x)).reshape((-1, 1))
 
     temph = h - 1e-4
 
-    #status, sol = solve_lp(c=c, G=G, h=temph, n=len(c))
-    #if status == 'optimal':
-    #    ret = np.array(sol).reshape(-1)
-    #    return True, ret[:-1]
-    #else:
-    #    #logger.warning("solver error")
-    #    return False, None
-
-    if init_x is not None:
-        sol = solvers.lp(c=c, G=G, h=temph, solver='glpk',
-                         initvals=init_x)
-    else:
-        sol = solvers.lp(c=c, G=G, h=temph, solver='glpk')
-    if sol['status'] == 'optimal':
-        ret = np.array(sol['x']).reshape(-1)
-        ### sanity check for the correctness of objective
-        if DEBUG:
-            # check if constraints are all met
-            h = np.array(h).flatten()
-            G = np.array(G)
-            a = check_feasibility(G, h, ret, G.shape[0], G.shape[1])
-            print(a)
-            print('1', sol['primal objective'])
-            print('2', np.linalg.norm(target_x - ret[:-1], ord=np.inf))
-            print('3', np.linalg.norm(target_x.dot(transformer.T) - (ret[:-1]).dot(transformer.T), ord=np.inf))
-            #print(target_x.dot(transformer.T))
-            #print(ret)
-            #assert np.isclose(np.linalg.norm(target_x.dot(transformer.T) - (ret[:-1]).dot(transformer.T), ord=np.inf),
-            #                  sol['primal objective'], rtol=1e-4)
+    status, sol = solve_lp(c=c, G=G, h=temph, n=len(c))
+    if status == 'optimal':
+        ret = np.array(sol).reshape(-1)
         return True, ret[:-1]
     else:
         #logger.warning("solver error")
         return False, None
+
+    #c, G, h = matrix(c, tc='d'), matrix(G, tc='d'), matrix(h, tc='d')
+    #if init_x is not None:
+    #    sol = solvers.lp(c=c, G=G, h=temph, solver='glpk',
+    #                     initvals=init_x)
+    #else:
+    #    sol = solvers.lp(c=c, G=G, h=temph, solver='glpk')
+    #if sol['status'] == 'optimal':
+    #    ret = np.array(sol['x']).reshape(-1)
+    #    ### sanity check for the correctness of objective
+    #    if DEBUG:
+    #        # check if constraints are all met
+    #        h = np.array(h).flatten()
+    #        G = np.array(G)
+    #        a = check_feasibility(G, h, ret, G.shape[0], G.shape[1])
+    #        print(a)
+    #        print('1', sol['primal objective'])
+    #        print('2', np.linalg.norm(target_x - ret[:-1], ord=np.inf))
+    #        print('3', np.linalg.norm(target_x.dot(transformer.T) - (ret[:-1]).dot(transformer.T), ord=np.inf))
+    #        #print(target_x.dot(transformer.T))
+    #        #print(ret)
+    #        #assert np.isclose(np.linalg.norm(target_x.dot(transformer.T) - (ret[:-1]).dot(transformer.T), ord=np.inf),
+    #        #                  sol['primal objective'], rtol=1e-4)
+    #    return True, ret[:-1]
+    #else:
+    #    #logger.warning("solver error")
+    #    return False, None
 
 
 #@profile

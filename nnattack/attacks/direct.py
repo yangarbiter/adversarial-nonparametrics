@@ -5,17 +5,16 @@ from .base import AttackModel
 
 class DirectAttack(AttackModel):
     def __init__(self, n_neighbors, ord=2):
+        super().__init__(ord=ord)
         self.n_neighbors = n_neighbors
         self.kdtree = None
-
-        super(self).__init__(ord=ord)
 
     def fit(self, X, y):
         self.trnX = X
         self.trny = y
         self.unique_y = np.unique(y)
         self.kdtrees = []
-        if len(self.unique_y) == 1
+        if len(self.unique_y) == 1:
             return self
         for i in self.unique_y:
             self.kdtrees.append(
@@ -24,6 +23,8 @@ class DirectAttack(AttackModel):
         return self
 
     def perturb(self, X, y, eps=0.1):
+        if len(self.unique_y) == 1:
+            return np.zeros_like(X)
         ret = []
         for i, x in enumerate(X):
             ind = self.kdtrees[y[i]].query(

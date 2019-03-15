@@ -19,7 +19,7 @@ def dt_attack():
 
 def nn_k1():
     exp_fn = eps_accuracy
-    random_seed = list(range(1))
+    random_seed = list(range(2))
     grid_param = []
     grid_param.append({
         'model': ['knn1'],
@@ -31,8 +31,9 @@ def nn_k1():
     grid_param.append({
         'model': ['knn1'],
         'ord': ['inf'],
-        'dataset': ['abalone', 'mnist35_2000_pca5'],
-        'attack': ['rev_nnopt_k1_20', 'direct_k1', 'kernelsub_c10000_pgd', 'blackbox'],
+        'dataset': ['abalone', 'mnist35_2000_pca5', 'fashion_mnist06_2000_pca5',
+            'fashion_mnist35_2000_pca5'],
+        'attack': ['rev_nnopt_k1_20', 'rev_nnopt_k1_50', 'direct_k1', 'kernelsub_c10000_pgd', 'blackbox'],
         'random_seed': random_seed,
     })
     grid_param.append({
@@ -48,7 +49,7 @@ def nn_k1():
 
 def robust_nn_k1():
     exp_fn = eps_accuracy
-    random_seed = list(range(1))
+    random_seed = list(range(2))
     grid_param = []
     grid_param.append({
         'model': ['robust1nn'],
@@ -68,15 +69,51 @@ def robust_nn_k1():
     run_param = {'verbose': 1, 'n_jobs': 4,}
     return exp_fn, grid_param, run_param
 
+def nn_k7():
+    exp_fn = eps_accuracy
+    random_seed = list(range(2))
+    grid_param = []
+    grid_param.append({
+        'model': ['knn5'],
+        'ord': ['inf'],
+        'dataset': ['iris', 'wine', 'digits_pca5', 'abalone',
+            'mnist35_2000_pca5', 'fashion_mnist35_2000_pca5',
+            'fashion_mnist06_2000_pca5', 'halfmoon_2000'],
+        'attack': ['rev_nnopt_k7_20', 'rev_nnopt_k7_50', 'direct_k7', 'blackbox'],
+        'random_seed': random_seed,
+    })
+
+    run_param = {'verbose': 1, 'n_jobs': 4,}
+    return exp_fn, grid_param, run_param
+
+def nn_k5():
+    exp_fn = eps_accuracy
+    random_seed = list(range(2))
+    grid_param = []
+    grid_param.append({
+        'model': ['knn5'],
+        'ord': ['inf'],
+        'dataset': ['iris', 'wine', 'digits_pca5', 'abalone',
+            'mnist35_2000_pca5', 'fashion_mnist35_2000_pca5',
+            'fashion_mnist06_2000_pca5', 'halfmoon_2000'],
+        'attack': ['rev_nnopt_k5_20', 'rev_nnopt_k5_50', 'direct_k5', 'blackbox'],
+        'random_seed': random_seed,
+    })
+
+    run_param = {'verbose': 1, 'n_jobs': 4,}
+    return exp_fn, grid_param, run_param
+
 
 def nn_k3():
     exp_fn = eps_accuracy
-    random_seed = list(range(1))
+    random_seed = list(range(2))
     grid_param = []
     grid_param.append({
         'model': ['knn3'],
         'ord': ['inf'],
-        'dataset': ['iris', 'wine', 'digits_pca5', 'abalone', 'mnist35_2000_pca5', 'halfmoon_2000'],
+        'dataset': ['iris', 'wine', 'digits_pca5', 'abalone',
+            'mnist35_2000_pca5', 'fashion_mnist35_2000_pca5',
+            'fashion_mnist06_2000_pca5', 'halfmoon_2000'],
         'attack': ['rev_nnopt_k3_20', 'rev_nnopt_k3_50', 'direct_k3', 'blackbox'],
         'random_seed': random_seed,
     })
