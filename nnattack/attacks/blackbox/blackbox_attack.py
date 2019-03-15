@@ -206,13 +206,13 @@ class BlackBoxAttack(AttackModel):
             attacker = OPT_attack_lf(self.model)
             ret = Parallel(n_jobs=-1, verbose=5)(delayed(attacker)(
                 xi, yi, TARGETED=False) for (xi, yi) in dataset)
-
         else:
             ret = Parallel(n_jobs=-1, verbose=5)(delayed(attack_untargeted)(
                 self.model, dataset, xi, yi, self.ord, alpha=self.alpha, beta=self.beta,
                 iterations=1500) for (xi, yi) in dataset)
 
         ret = np.asarray(ret) - X
+        self.perts = ret
         if isinstance(eps, list):
             rret = []
             norms = np.linalg.norm(ret, axis=1, ord=self.ord)

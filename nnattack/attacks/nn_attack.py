@@ -51,6 +51,19 @@ glob_trny = None
 
 DEBUG = False
 
+import cvxpy as cp
+
+def solve_lp(c, G, h, n):
+    c = np.array(c)
+    G, h = np.array(G), np.array(h)
+    x = cp.Variable(shape=(n, 1))
+    obj = cp.Minimize(c.T * x)
+    constraints = [G*x <= h]
+    prob = cp.Problem(obj, constraints)
+    prob.solve(solver=cp.GUROBI)
+    return prob.status, x.value
+
+
 #@profile
 def get_sol(target_x, tuple_x, faropp, kdtree, transformer, init_x=None):
     tuple_x = np.asarray(tuple_x)
@@ -204,12 +217,20 @@ def get_sol_linf(target_x, tuple_x, faropp, kdtree, transformer, init_x=None):
     G, h = matrix(G, tc='d'), matrix(h, tc='d')
 
     temph = h - 1e-4
+
+    #status, sol = solve_lp(c=c, G=G, h=temph, n=len(c))
+    #if status == 'optimal':
+    #    ret = np.array(sol).reshape(-1)
+    #    return True, ret[:-1]
+    #else:
+    #    #logger.warning("solver error")
+    #    return False, None
+
     if init_x is not None:
-        sol = solvers.lp(c=c, G=G, h=temph, solver='mosek',
+        sol = solvers.lp(c=c, G=G, h=temph, solver='glpk',
                          initvals=init_x)
     else:
-        sol = solvers.lp(c=c, G=G, h=temph, solver='mosek')
-
+        sol = solvers.lp(c=c, G=G, h=temph, solver='glpk')
     if sol['status'] == 'optimal':
         ret = np.array(sol['x']).reshape(-1)
         ### sanity check for the correctness of objective
@@ -468,6 +489,7 @@ class RevNNAttack():
                 #    import ipdb; ipdb.set_trace()
 
         ret = np.asarray(ret)
+        self.perts = ret
         if isinstance(eps, list):
             rret = []
             norms = np.linalg.norm(ret, axis=1, ord=self.ord)

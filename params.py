@@ -19,7 +19,7 @@ def dt_attack():
 
 def nn_k1():
     exp_fn = eps_accuracy
-    random_seed = list(range(2))
+    random_seed = list(range(1))
     grid_param = []
     grid_param.append({
         'model': ['knn1'],
@@ -48,7 +48,7 @@ def nn_k1():
 
 def robust_nn_k1():
     exp_fn = eps_accuracy
-    random_seed = list(range(2))
+    random_seed = list(range(1))
     grid_param = []
     grid_param.append({
         'model': ['robust1nn'],
@@ -71,7 +71,7 @@ def robust_nn_k1():
 
 def nn_k3():
     exp_fn = eps_accuracy
-    random_seed = list(range(2))
+    random_seed = list(range(1))
     grid_param = []
     grid_param.append({
         'model': ['knn3'],

@@ -63,9 +63,12 @@ def eps_accuracy(auto_var):
 
     auto_var.set_intermidiate_variable("lbl_enc", lbl_enc)
 
+    ret = {}
+    results = []
+
     model_name = auto_var.get_variable_value("model")
     if ('adv' in model_name) or ('robust' in model_name):
-        ret = []
+        ret['avg_pert'] = []
         ord = auto_var.get_var("ord")
         for i in range(len(eps_list)):
             eps = eps_list[i]
@@ -89,11 +92,16 @@ def eps_accuracy(auto_var):
 
             tst_pred = model.predict(temp_tstX)
                                                                                     
-            ret.append({                                                             
+            results.append({                                                             
                 'eps': eps_list[i],
                 'tst_acc': (tst_pred == tsty).mean(),                                
             })                                                                       
-            print(ret[-1])
+            if hasattr(attack_model, 'perts'):
+                ret['avg_pert'].append({
+                    'eps': eps,
+                    'avg': np.linalg.norm(attack_model.perts, axis=1, ord=ord).mean(),
+                })
+            print(results[-1])
 
     else:
         augX = None
@@ -106,8 +114,11 @@ def eps_accuracy(auto_var):
         attack_model = auto_var.get_var("attack")
 
         tst_perturbs = attack_model.perturb(tstX, y=tsty, eps=eps_list)
+        if hasattr(attack_model, 'perts'):
+            ret['avg_pert'] = {
+                'avg': np.linalg.norm(attack_model.perts, axis=1, ord=ord).mean(),
+            }
 
-        ret = []
         ord = auto_var.get_var("ord")
         for i in range(len(eps_list)):
             eps = eps_list[i]
@@ -116,16 +127,13 @@ def eps_accuracy(auto_var):
 
             tst_pred = model.predict(temp_tstX)
                                                                                     
-            ret.append({
+            results.append({
                 'eps': eps_list[i],
                 'tst_acc': (tst_pred == tsty).mean(),
             })
-            print(ret[-1])
+            print(results[-1])
                                                                                  
-    ret = {'results': ret}
-    if isinstance(tst_perturbs, list):
-        tst_perturbs = tst_perturbs[-1]
-    ret['avg_pert'] = np.linalg.norm(tst_perturbs, axis=1, ord=ord).mean()
+    ret['results'] = results
     ret['trnX_len'] = len(trnX)
     if augX is not None:
         ret['aug_len'] = len(augX)                                               

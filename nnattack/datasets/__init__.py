@@ -63,8 +63,8 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         X, y = load_digits(return_X_y=True)
         eps = [0.01 * i for i in range(0, 41, 5)]
 
-        n_dims = int(n_dims[1:]) if not n_dims else None
-        if not n_dims:
+        n_dims = int(n_dims[4:]) if n_dims else None
+        if n_dims:
             pca = PCA(n_components=n_dims, random_state=inter_var['random_state'])
             X = pca.fit_transform(X)
 
@@ -76,7 +76,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         from keras.datasets import mnist
         from sklearn.decomposition import PCA
         n_samples = int(n_samples)
-        n_dims = int(n_dims[1:]) if not n_dims else None
+        n_dims = int(n_dims[4:]) if n_dims else None
 
         (X, y), (_, _) = mnist.load_data()
         X = X.reshape(len(X), -1)
@@ -87,7 +87,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         X = np.vstack((X[idx1], X[idx2])).astype(np.float) / 255.
         y = np.concatenate((y[idx1], y[idx2]))
 
-        if not n_dims:
+        if n_dims:
             pca = PCA(n_components=n_dims, random_state=inter_var['random_state'])
             X = pca.fit_transform(X)
 
@@ -104,7 +104,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         from keras.datasets import fashion_mnist
         from sklearn.decomposition import PCA
         n_samples = int(n_samples)
-        n_dims = int(n_dims[1:]) if not n_dims else None
+        n_dims = int(n_dims[4:]) if n_dims else None
 
         (X, y), (_, _) =  fashion_mnist.load_data()
         X = X.reshape(len(X), -1)
@@ -117,7 +117,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         X = np.vstack((X[idx1], X[idx2])).astype(np.float) / 255.
         y = np.concatenate((y[idx1], y[idx2]))
 
-        if not n_dims:
+        if n_dims:
             pca = PCA(n_components=n_dims, random_state=inter_var['random_state'])
             X = pca.fit_transform(X)
 
@@ -134,7 +134,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         from keras.datasets import fashion_mnist
         from sklearn.decomposition import PCA
         n_samples = int(n_samples)
-        n_dims = int(n_dims[1:]) if not n_dims else None
+        n_dims = int(n_dims[4:]) if n_dims else None
 
         (X, y), (_, _) =  fashion_mnist.load_data()
         X = X.reshape(len(X), -1)
@@ -147,7 +147,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         X = np.vstack((X[idx1], X[idx2])).astype(np.float) / 255.
         y = np.concatenate((y[idx1], y[idx2]))
 
-        if not n_dims:
+        if n_dims:
             pca = PCA(n_components=n_dims, random_state=inter_var['random_state'])
             X = pca.fit_transform(X)
 
