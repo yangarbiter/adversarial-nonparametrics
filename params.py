@@ -79,7 +79,9 @@ def nn_k7():
         'dataset': ['iris', 'wine', 'digits_pca5', 'abalone',
             'mnist35_2000_pca5', 'fashion_mnist35_2000_pca5',
             'fashion_mnist06_2000_pca5', 'halfmoon_2000'],
-        'attack': ['rev_nnopt_k7_20', 'rev_nnopt_k7_50', 'direct_k7', 'blackbox'],
+        'attack': ['rev_nnopt_k7_20', 'rev_nnopt_k7_50',
+            'rev_nnopt_k7_20_region' 'rev_nnopt_k7_50_region', 'direct_k7',
+            'blackbox'],
         'random_seed': random_seed,
     })
 
@@ -96,7 +98,8 @@ def nn_k5():
         'dataset': ['iris', 'wine', 'digits_pca5', 'abalone',
             'mnist35_2000_pca5', 'fashion_mnist35_2000_pca5',
             'fashion_mnist06_2000_pca5', 'halfmoon_2000'],
-        'attack': ['rev_nnopt_k5_20', 'rev_nnopt_k5_50', 'direct_k5', 'blackbox'],
+        'attack': ['rev_nnopt_k5_20', 'rev_nnopt_k5_50',
+            'rev_nnopt_k5_50_region', 'direct_k5', 'blackbox'],
         'random_seed': random_seed,
     })
 
@@ -128,8 +131,9 @@ def opt_of_nnopt():
         'ord': ['inf'],
         'dataset': ['fashion_mnist35_200_pca5',
                     'mnist35_200_pca5', 'halfmoon_200'],
-        'attack': ['nnopt_k3_all', 'rev_nnopt_k3_50', 'rev_nnopt_k3_20'],
-        'random_seed': list(range(1))
+        'attack': ['nnopt_k3_all', 'rev_nnopt_k3_50', 'rev_nnopt_k3_20',
+            'rev_nnopt_k3_20_region', 'rev_nnopt_k3_50_region',],
+        'random_seed': list(range(2))
     }]
 
     run_param = {'verbose': 1, 'n_jobs': 2,}

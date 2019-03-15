@@ -60,7 +60,7 @@ class OPT_attack_lf(object):
         timeend = time.time()
         if g_theta == np.inf:
             #return "NA", float('inf'), 0
-            return "NA"
+            return x0
         #print("==========> Found best distortion %.4f in %.4f seconds using %d queries" % (g_theta, timeend-timestart, query_count))
     
         timestart = time.time()
