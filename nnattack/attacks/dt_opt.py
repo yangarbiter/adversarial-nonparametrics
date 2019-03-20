@@ -84,7 +84,7 @@ def get_sol_linf(target_x, target_y, paths, tree, constraints):
 
 class DTOpt(AttackModel):
     def __init__(self, clf: DecisionTreeClassifier, ord, random_state):
-        super(self).__init__(ord=ord)
+        super().__init__(ord=ord)
         self.clf = clf
         self.random_state = random_state
 

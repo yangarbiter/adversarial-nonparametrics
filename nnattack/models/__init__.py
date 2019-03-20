@@ -77,7 +77,6 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         model = AdversarialDt(
             train_type=train,
             attack_model=attack_model,
-            eps=eps,
             ord=auto_var.get_var("ord"),
             random_state=inter_var['random_state'])
         auto_var.set_intermidiate_variable("tree_clf", model)

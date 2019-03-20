@@ -337,73 +337,21 @@ def get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
 
     return temp[0] - target_x
 
-class NNAttack():
-    def __init__(self, trnX, trny, n_neighbors=3, farthest=-1, faropp=-1,
-            transformer=None, ord=2):
-        #furthest >= K
-        self.K = n_neighbors
-        self.trnX = trnX
-        self.trny = trny
-        self.farthest = min(farthest, len(trnX))
-        self.faropp = faropp
-        self.transformer = transformer
-        self.ord = ord
-        if transformer is not None:
-            self.tree = KDTree(self.transformer.transform(self.trnX))
-        else:
-            self.tree = KDTree(self.trnX)
-        self.lp_sols = {}
-        print(np.shape(self.trnX), len(self.trny))
-
-    #@profile
-    def perturb(self, X, y, eps=None, logging=False, n_jobs=1):
-        if logging:
-            self.logs = {
-                'local_opt': [],
-                'tuple_count': 0,
-            }
-        if self.transformer:
-            transformer = self.transformer.transformer()
-        else:
-            transformer = np.eye(self.trnX.shape[1])
-
-        global glob_trnX
-        global glob_trny
-        glob_trnX = self.trnX
-        glob_trny = self.trny
-
-        #ret = Parallel(n_jobs=-1, backend="threading", batch_size='auto',
-        #               verbose=5)(
-        #    delayed(get_adv)(target_x, target_y, self.tree, self.farthest, self.K,
-        #                     self.faropp, transformer, self.lp_sols,
-        #                     ord=self.ord) for target_x, target_y in zip(X, y))
-
-        #knn = KNeighborsClassifier(n_neighbors=self.K)
-        #knn.fit(glob_trnX.dot(transformer.T), glob_trny)
-
-        ret = []
-        with IterTimer("Perturbing", len(X)) as timer:
-            for i, (target_x, target_y) in enumerate(zip(X, y)):
-                timer.update(i)
-                #ret.append(get_adv(target_x, target_y, self.tree,
-                ret.append(get_adv(target_x.astype(np.float64), target_y, self.tree,
-                                   self.farthest, self.K, self.faropp,
-                                   transformer, self.lp_sols, ord=self.ord))
-
-        ret = np.asarray(ret)
-        if isinstance(eps, list):
-            rret = []
-            norms = np.linalg.norm(ret, axis=1, ord=self.ord)
-            for ep in eps:
-                t = np.copy(ret)
-                t[norms > ep, :] = 0
-                rret.append(t)
-            return rret
-        elif eps is not None:
-            ret[np.linalg.norm(ret, axis=1, ord=self.ord) > eps, :] = 0
-            return ret
-        else:
-            return ret
+def attack_with_eps_constraint(perts, ord, eps):
+    perts = np.asarray(perts)
+    if isinstance(eps, list):
+        rret = []
+        norms = np.linalg.norm(perts, axis=1, ord=ord)
+        for ep in eps:
+            t = np.copy(perts)
+            t[norms > ep, :] = 0
+            rret.append(t)
+        return rret
+    elif eps is not None:
+        perts[np.linalg.norm(perts, axis=1, ord=ord) > eps, :] = 0
+        return perts
+    else:
+        return perts
 
 #@profile
 def rev_get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
@@ -460,16 +408,15 @@ def rev_get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
 
     return temp[0] - target_x
 
-class RevNNAttack():
-    def __init__(self, trnX, trny, n_neighbors=3, farthest=5, faropp=-1,
-            transformer=None, ord=2, method='self'):
+class NNOptAttack():
+    def __init__(self, trnX, trny, n_neighbors=3, farthest=-1, faropp=-1,
+            transformer=None, ord=2):
         #furthest >= K
         self.K = n_neighbors
         self.trnX = trnX
         self.trny = trny
+        self.farthest = min(farthest, len(trnX))
         self.faropp = faropp
-        self.farthest = farthest
-        self.method = method
         self.transformer = transformer
         self.ord = ord
         if transformer is not None:
@@ -477,9 +424,63 @@ class RevNNAttack():
         else:
             self.tree = KDTree(self.trnX)
         self.lp_sols = {}
+        print(np.shape(self.trnX), len(self.trny))
+
+    def perturb(self, X, y, eps=None, logging=False, n_jobs=1):
+        raise NotImplementedError()
+
+
+class NNAttack(NNOptAttack):
+    def __init__(self, trnX, trny, n_neighbors=3, farthest=-1, faropp=-1,
+            transformer=None, ord=2):
+        super().__init__(trnX=trnX, trny=trny, n_neighbors=n_neighbors,
+                farthest=farthest, faropp=faropp, transformer=transformer,
+                ord=ord)
 
     #@profile
-    def perturb(self, X, y, eps=None, logging=False, n_jobs=1):
+    def perturb(self, X, y, eps=None, n_jobs=1):
+        if self.transformer:
+            transformer = self.transformer.transformer()
+        else:
+            transformer = np.eye(self.trnX.shape[1])
+
+        global glob_trnX
+        global glob_trny
+        glob_trnX = self.trnX
+        glob_trny = self.trny
+
+        #ret = Parallel(n_jobs=-1, backend="threading", batch_size='auto',
+        #               verbose=5)(
+        #    delayed(get_adv)(target_x, target_y, self.tree, self.farthest, self.K,
+        #                     self.faropp, transformer, self.lp_sols,
+        #                     ord=self.ord) for target_x, target_y in zip(X, y))
+
+        #knn = KNeighborsClassifier(n_neighbors=self.K)
+        #knn.fit(glob_trnX.dot(transformer.T), glob_trny)
+
+        ret = []
+        with IterTimer("Perturbing", len(X)) as timer:
+            for i, (target_x, target_y) in enumerate(zip(X, y)):
+                timer.update(i)
+                #ret.append(get_adv(target_x, target_y, self.tree,
+                ret.append(get_adv(target_x.astype(np.float64), target_y, self.tree,
+                                   self.farthest, self.K, self.faropp,
+                                   transformer, self.lp_sols, ord=self.ord))
+
+        self.perts = np.asarray(ret)
+        return attack_with_eps_constraint(self.perts, self.ord, eps)
+
+
+class RevNNAttack(NNOptAttack):
+    def __init__(self, trnX, trny, n_neighbors=3, farthest=-1, faropp=-1,
+            transformer=None, ord=2, method='self'):
+        super().__init__(trnX=trnX, trny=trny, n_neighbors=n_neighbors,
+                farthest=farthest, faropp=faropp, transformer=transformer,
+                ord=ord)
+        self.method = method
+
+    #@profile
+    def perturb(self, X, y, eps=None, n_jobs=1):
         if self.transformer:
             transformer = self.transformer.transformer()
         else:
@@ -500,21 +501,52 @@ class RevNNAttack():
                 ret.append(rev_get_adv(target_x.astype(np.float64), target_y,
                         self.tree, self.farthest, self.K, self.faropp, transformer,
                         self.lp_sols, ord=self.ord, method=self.method, knn=knn))
-                #if np.linalg.norm(ret[-1]) == 0 and knn.predict([target_x]) == target_y:
-                #    import ipdb; ipdb.set_trace()
 
-        ret = np.asarray(ret)
-        self.perts = ret
-        if isinstance(eps, list):
-            rret = []
-            norms = np.linalg.norm(ret, axis=1, ord=self.ord)
-            for ep in eps:
-                t = np.copy(ret)
-                t[norms > ep, :] = 0
-                rret.append(t)
-            return rret
-        elif eps is not None:
-            ret[np.linalg.norm(ret, axis=1, ord=self.ord) > eps, :] = 0
-            return ret
+        self.perts = np.asarray(ret)
+        return attack_with_eps_constraint(self.perts, self.ord, eps)
+
+class HybridNNAttack(NNOptAttack):
+    def __init__(self, trnX, trny, n_neighbors=3, farthest=-1, faropp=-1,
+            transformer=None, ord=2, method='self'):
+        super().__init__(trnX=trnX, trny=trny, n_neighbors=n_neighbors,
+                farthest=farthest, faropp=faropp, transformer=transformer,
+                ord=ord)
+        self.method = method
+
+    #@profile
+    def perturb(self, X, y, eps=None, n_jobs=1):
+        if self.transformer:
+            transformer = self.transformer.transformer()
         else:
-            return ret
+            transformer = np.eye(self.trnX.shape[1])
+
+        global glob_trnX
+        global glob_trny
+        glob_trnX = self.trnX
+        glob_trny = self.trny
+
+        knn = KNeighborsClassifier(n_neighbors=self.K)
+        knn.fit(glob_trnX.dot(transformer.T), glob_trny)
+
+        ret = []
+        perts = []
+        rev_perts = []
+        with IterTimer("Perturbing", len(X)) as timer:
+            for i, (target_x, target_y) in enumerate(zip(X, y)):
+                timer.update(i)
+                pert = get_adv(target_x.astype(np.float64), target_y, self.tree,
+                        self.farthest, self.K, self.faropp, transformer,
+                        self.lp_sols, ord=self.ord))
+                rev_pert = rev_get_adv(target_x.astype(np.float64), target_y,
+                        self.tree, self.farthest, self.K, self.faropp, transformer,
+                        self.lp_sols, ord=self.ord, method=self.method, knn=knn)
+                n_pert = np.linalg.norm(pert, ord=self.ord)
+                n_revpert = np.linalg.norm(revpert, ord=self.ord)
+                if n_pert == 0 or (n_pert > n_revpert):
+                    ret.append(rev_pert)
+                else:
+                    ret.append(pert)
+
+
+        self.perts = np.asarray(ret)
+        return attack_with_eps_constraint(self.perts, self.ord, eps)
