@@ -507,11 +507,12 @@ class RevNNAttack(NNOptAttack):
 
 class HybridNNAttack(NNOptAttack):
     def __init__(self, trnX, trny, n_neighbors=3, farthest=-1, faropp=-1,
-            transformer=None, ord=2, method='self'):
+            rev_farthest=-1, transformer=None, ord=2, method='self'):
         super().__init__(trnX=trnX, trny=trny, n_neighbors=n_neighbors,
                 farthest=farthest, faropp=faropp, transformer=transformer,
                 ord=ord)
         self.method = method
+        self.rev_farthest = rev_farthest
 
     #@profile
     def perturb(self, X, y, eps=None, n_jobs=1):
@@ -536,12 +537,12 @@ class HybridNNAttack(NNOptAttack):
                 timer.update(i)
                 pert = get_adv(target_x.astype(np.float64), target_y, self.tree,
                         self.farthest, self.K, self.faropp, transformer,
-                        self.lp_sols, ord=self.ord))
+                        self.lp_sols, ord=self.ord)
                 rev_pert = rev_get_adv(target_x.astype(np.float64), target_y,
-                        self.tree, self.farthest, self.K, self.faropp, transformer,
+                        self.tree, self.rev_farthest, self.K, self.faropp, transformer,
                         self.lp_sols, ord=self.ord, method=self.method, knn=knn)
                 n_pert = np.linalg.norm(pert, ord=self.ord)
-                n_revpert = np.linalg.norm(revpert, ord=self.ord)
+                n_revpert = np.linalg.norm(rev_pert, ord=self.ord)
                 if n_pert == 0 or (n_pert > n_revpert):
                     ret.append(rev_pert)
                 else:

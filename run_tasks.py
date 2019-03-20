@@ -21,7 +21,7 @@ DEBUG = True if os.environ.get('DEBUG', False) else False
 
 def main():
     #experiments = [opt_of_nnopt, nn_k1, robust_nn_k1, nn_k3, nn_k5, nn_k7]
-    experiments = [opt_of_nnopt]
+    experiments = [nn_k7]
     grid_params = []
     for exp in experiments:
         exp_fn, grid_param, run_param = exp()

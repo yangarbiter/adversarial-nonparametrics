@@ -30,6 +30,21 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
             n_neighbors=n_neighbors,
             ord=auto_var.get_var('ord'))
 
+    @register_var(argument=r"hybrid_nnopt_k(?P<n_neighbors>\d+)_(?P<n_search>\d+)_(?P<rev_n_search>\d+)")
+    @staticmethod
+    def hybrid_nnopt(auto_var, var_value, inter_var, n_neighbors, n_search,
+            rev_n_search):
+        from .nn_attack import HybridNNAttack
+        n_neighbors = int(n_neighbors)
+        n_search = int(n_search)
+        rev_n_search = int(rev_n_search)
+
+        return HybridNNAttack(inter_var['trnX'], inter_var['trny'],
+            farthest=n_search,
+            rev_farthest=rev_n_search,
+            n_neighbors=n_neighbors,
+            ord=auto_var.get_var('ord'))
+
     @register_var(argument=r"rev_nnopt_k(?P<n_neighbors>\d+)_(?P<n_search>\d+)")
     @staticmethod
     def rev_nnopt(auto_var, var_value, inter_var, n_neighbors, n_search):

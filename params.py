@@ -88,10 +88,11 @@ def nn_k7():
     exp_fn = eps_accuracy
     grid_param = []
     grid_param.append({
-        'model': ['knn5'],
+        'model': ['knn7'],
         'ord': ['inf'],
         'dataset': datasets,
         'attack': [
+            'hybrid_nnopt_k7_10_20',
             'rev_nnopt_k7_20', 'rev_nnopt_k7_50',
             'rev_nnopt_k7_20_region', 'rev_nnopt_k7_50_region', 'direct_k7',
             'blackbox',
