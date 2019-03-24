@@ -46,8 +46,8 @@ def opt_of_rf_attack():
         'ord': ['inf'],
         'dataset': ['fashion_mnist35_2000_pca5', 'mnist35_2000_pca5',
             'fashion_mnist06_2000_pca5', 'halfmoon_2000'],
-        'attack': ['rf_attack_rev', 'rf_attack_rev_100', 'rf_attack_rev_20',
-            'blackbox'],
+        'attack': ['rf_attack_all',
+            'rf_attack_rev', 'rf_attack_rev_100', 'rf_attack_rev_20', 'blackbox'],
         'random_seed': random_seed,
     })
 

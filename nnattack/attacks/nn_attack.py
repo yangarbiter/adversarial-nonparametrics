@@ -293,6 +293,7 @@ def get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
     combs = []
     for comb in itertools.combinations(range(farthest), n_neighbors):
         comb = list(comb)
+        # majority
         if target_y != np.argmax(np.bincount(glob_trny[ind[comb]])):
             combs.append(comb)
 

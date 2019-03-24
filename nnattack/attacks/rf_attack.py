@@ -1,3 +1,4 @@
+from itertools import product, permutations
 
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
@@ -72,13 +73,11 @@ def tree_instance_constraint(tree_clf, X):
 
     return Gs, hs
 
-def rev_get_sol_linf(target_x, target_y: int, pred_trn_y, regions, clf, trnX):
+def rev_get_sol_linf(target_x, target_y: int, pred_trn_y, regions, clf,
+        trnX=None):
     fet_dim = np.shape(target_x)[0]
     candidates = []
-    #regions = [regions[i] for i in np.where(pred_trn_y != target_y)[0]]
     for i, (G, h) in enumerate(regions):
-        ori_G = G
-        ori_h = h
         c = np.concatenate((np.zeros(fet_dim), np.ones(1))).reshape((-1, 1))
 
         G2 = np.hstack((np.eye(fet_dim), -np.ones((fet_dim, 1))))
@@ -87,12 +86,15 @@ def rev_get_sol_linf(target_x, target_y: int, pred_trn_y, regions, clf, trnX):
         G = np.vstack((G, G2, G3))
         h = np.concatenate((h, target_x, -target_x))
 
-        temph = (h - 1e-4).reshape((-1, 1))
+        temph = (h - 1e-6).reshape((-1, 1))
 
-        init_x = np.concatenate((
-            trnX[i],
-            [np.linalg.norm(trnX[i]-target_x, ord=np.inf)])).reshape((-1, 1))
-        status, sol = solve_lp(c, G, temph, len(c), init_x=init_x)
+        if trnX is None:
+            status, sol = solve_lp(c, G, temph, len(c))
+        else:
+            init_x = np.concatenate((
+                trnX[i],
+                [np.linalg.norm(trnX[i]-target_x, ord=np.inf)])).reshape((-1, 1))
+            status, sol = solve_lp(c, G, temph, len(c), init_x=init_x)
 
         if status == 'optimal':
             ret = np.array(sol).reshape(-1)[:-1]
@@ -105,6 +107,7 @@ def rev_get_sol_linf(target_x, target_y: int, pred_trn_y, regions, clf, trnX):
             assert clf.predict([ret])[0] != target_y
             candidates.append(ret - target_x)
         elif status == 'infeasible_inaccurate':
+            #print(status)
             pass
             #import ipdb; ipdb.set_trace()
             #ret = np.array(sol).reshape(-1)[:-1]
@@ -123,13 +126,13 @@ class RFAttack(AttackModel):
     def __init__(self, trnX, trny, clf: RandomForestClassifier, ord,
             method: str, n_searches=-1, random_state=None):
         super().__init__(ord=ord)
-        self.paths, self.constraints = [], []
+        paths, constraints = [], []
         self.clf = clf
         self.method = method
         self.n_searches = n_searches
         self.trnX = trnX
         self.trny = trny
-        print(n_searches)
+        self.random_state = random_state
         if self.n_searches != -1:
             self.kd_tree = KDTree(self.trnX)
         else:
@@ -138,12 +141,36 @@ class RFAttack(AttackModel):
         if self.method == 'all':
             for tree_clf in clf.estimators_:
                 path, constraint = get_tree_constraints(tree_clf)
-                self.paths.append(path)
-                self.constraints.append(constraint)
+                paths.append(path)
+                constraints.append(constraint)
 
-            self.regions = [union_constraints(np.vstack(Gs), np.concatenate(hs)) \
-                            for Gs, hs in zip(Gss, hss)]
+            n_classes = clf.n_classes_
+            n_estimators = len(clf.estimators_)
+            self.regions = []
+            self.region_preds = []
 
+            for res in product(range(n_classes), repeat=n_estimators):
+                perm_consts = [list() for _ in range(n_estimators)]
+
+                for i in range(n_estimators):
+                    value = clf.estimators_[i].tree_.value
+                    path = paths[i]
+                    constraint = constraints[i]
+
+                    for p in range(len(path)):
+                        if np.argmax(value[path[p][-1]]) == res[i]:
+                            perm_consts[i].append(constraint[p])
+
+                for pro in product(*perm_consts):
+                    self.region_preds.append(np.argmax(np.bincount(res)))
+                    self.regions.append(
+                        union_constraints(
+                            np.vstack([j[0] for j in pro]),
+                            np.concatenate([j[1] for j in pro]),
+                        )
+                    )
+
+            print(f"number of regions: {len(self.regions)}")
 
         elif self.method == 'rev':
             Gss, hss = [list() for _ in trnX], [list() for _ in trnX]
@@ -164,27 +191,30 @@ class RFAttack(AttackModel):
     def perturb(self, X, y, eps=0.1):
         pert_X = np.zeros_like(X)
 
-        if self.method == 'all':
-            pass
-        elif self.method == 'rev':
+        if self.ord == 2:
+            get_sol_fn = rev_get_sol_l2
+        elif self.ord == np.inf:
+            get_sol_fn = rev_get_sol_linf
+        else:
+            raise ValueError("ord %s not supported", self.ord)
 
-            if self.ord == 2:
-                get_sol_fn = rev_get_sol_l2
-            elif self.ord == np.inf:
-                get_sol_fn = rev_get_sol_linf
-            else:
-                raise ValueError("ord %s not supported", self.ord)
+        pred_y = self.clf.predict(X)
+        pred_trn_y = self.clf.predict(self.trnX)
 
-            pred_y = self.clf.predict(X)
-            pred_trn_y = self.clf.predict(self.trnX)
+        with IterTimer("Perturbing", len(X)) as timer:
+            for sample_id in range(len(X)):
+                timer.update(sample_id)
+                if pred_y[sample_id] != y[sample_id]:
+                    continue
+                target_x, target_y = X[sample_id], y[sample_id]
 
-            with IterTimer("Perturbing", len(X)) as timer:
-                for sample_id in range(len(X)):
-                    timer.update(sample_id)
-                    if pred_y[sample_id] != y[sample_id]:
-                        continue
-                    target_x, target_y = X[sample_id], y[sample_id]
-
+                if self.method == 'all':
+                    temp_regions = [self.regions[i] \
+                            for i in range(len(self.regions)) \
+                                if self.region_preds[i] != target_y]
+                    pert_x = get_sol_fn(target_x, y[sample_id],
+                            pred_trn_y, temp_regions, self.clf)
+                elif self.method == 'rev':
                     if self.n_searches != -1:
                         ind = self.kd_tree.query(
                                 target_x.reshape((1, -1)),
@@ -194,30 +224,19 @@ class RFAttack(AttackModel):
                     else:
                         ind = list(filter(lambda x: pred_trn_y[x] != target_y, np.arange(len(self.trnX))))
                     temp_regions = [self.regions[i] for i in ind]
-                    assert len(temp_regions) == self.n_searches
-
                     pert_x = get_sol_fn(target_x, y[sample_id],
                             pred_trn_y, temp_regions,
                             self.clf, self.trnX[ind])
-                    pert_X[sample_id] = pert_x
+                else:
+                    raise ValueError("Not supported method %s", self.method)
 
-                    if np.linalg.norm(pert_x) != 0:
-                        assert self.clf.predict([X[sample_id] + pert_x])[0] != y[sample_id]
-                        pert_X[sample_id, :] = pert_x
-                    else:
-                        raise ValueError("shouldn't happen")
+                pert_X[sample_id] = pert_x
 
-            #if len(self.clf.tree_.feature) == 1 and self.clf.tree_.feature[0] == -2:
-            #    # only root and root don't split
-            #    rret = []
-            #    if isinstance(eps, list):
-            #        for ep in eps:
-            #            rret.append(pert_X)
-            #        return rret
-            #    else:
-            #        return pert_X
-        else:
-            raise ValueError("Not supported method: %s", self.method)
+                if np.linalg.norm(pert_x) != 0:
+                    assert self.clf.predict([X[sample_id] + pert_x])[0] != y[sample_id]
+                    pert_X[sample_id, :] = pert_x
+                else:
+                    raise ValueError("shouldn't happen")
         
         if isinstance(eps, list):
             rret = []

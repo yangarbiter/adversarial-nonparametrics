@@ -135,13 +135,13 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
     @register_var(argument=r"rf_attack_all")
     @staticmethod
-    def rf_attack_rev(auto_var, var_value, inter_var):
+    def rf_attack_all(auto_var, var_value, inter_var):
         from .rf_attack import RFAttack
 
         attack_model = RFAttack(
             trnX=inter_var['trnX'],
             trny=inter_var['trny'],
-            n_searches=n_search,
+            n_searches=-1,
             method='all',
             clf=inter_var['tree_clf'],
             ord=auto_var.get_var('ord'),
