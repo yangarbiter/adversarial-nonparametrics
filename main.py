@@ -11,7 +11,7 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler, LabelBinarizer,
 from sklearn.metrics import pairwise_distances
 #import matplotlib.pyplot as plt
 import tensorflow as tf
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import keras.backend
 import tensorflow.keras.backend
 #from tensorflow.python.platform import flags
@@ -91,11 +91,11 @@ def eps_accuracy(auto_var):
             temp_tstX = tstX + tst_perturb
 
             tst_pred = model.predict(temp_tstX)
-                                                                                    
-            results.append({                                                             
+
+            results.append({
                 'eps': eps_list[i],
-                'tst_acc': (tst_pred == tsty).mean(),                                
-            })                                                                       
+                'tst_acc': (tst_pred == tsty).mean(),
+            })
             if hasattr(attack_model, 'perts'):
                 ret['avg_pert'].append({
                     'eps': eps,

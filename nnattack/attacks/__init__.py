@@ -133,6 +133,39 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
         )
         return attack_model
 
+    @register_var(argument=r"rf_attack_all")
+    @staticmethod
+    def rf_attack_rev(auto_var, var_value, inter_var):
+        from .rf_attack import RFAttack
+
+        attack_model = RFAttack(
+            trnX=inter_var['trnX'],
+            trny=inter_var['trny'],
+            n_searches=n_search,
+            method='all',
+            clf=inter_var['tree_clf'],
+            ord=auto_var.get_var('ord'),
+            random_state=inter_var['random_state'],
+        )
+        return attack_model
+
+    @register_var(argument=r"rf_attack_rev(?P<n_search>_\d+)?")
+    @staticmethod
+    def rf_attack_rev(auto_var, var_value, inter_var, n_search):
+        from .rf_attack import RFAttack
+        n_search = int(n_search[1:]) if n_search is not None else -1
+
+        attack_model = RFAttack(
+            trnX=inter_var['trnX'],
+            trny=inter_var['trny'],
+            n_searches=n_search,
+            method='rev',
+            clf=inter_var['tree_clf'],
+            ord=auto_var.get_var('ord'),
+            random_state=inter_var['random_state'],
+        )
+        return attack_model
+
     @register_var()
     @staticmethod
     def sklinsvc_opt(auto_var, var_value, inter_var):

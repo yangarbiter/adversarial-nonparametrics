@@ -81,6 +81,53 @@ def get_sol_linf(target_x, target_y, paths, tree, constraints):
     else:
         return np.zeros_like(target_x)
 
+def _get_path_constraints(clf, path, direction):
+    direction = np.asarray(direction)
+    path = np.asarray(path)[:-1]
+
+    tree = clf.tree_
+    threshold = tree.threshold
+    feature = tree.feature
+
+    h = threshold[path]
+    G = np.zeros((len(path), tree.n_features), np.float64)
+    G[np.arange(len(path)), feature[path]] = 1
+
+    h = h * direction
+    G = G * direction.reshape((-1, 1))
+
+    return G, h
+
+def get_tree_constraints(clf: DecisionTreeClassifier):
+    tree = clf.tree_
+    children_left = tree.children_left
+    children_right = tree.children_right
+    paths: list = []
+    directions: list = []
+
+    path = []
+    direction = []
+
+    def _dfs(node_id):
+        path.append(node_id)
+
+        if children_left[node_id] != children_right[node_id]:
+            direction.append(1)
+            _dfs(children_left[node_id])
+            direction[-1] = -1
+            _dfs(children_right[node_id])
+            direction.pop()
+        else:
+            paths.append(deepcopy(path))
+            directions.append(deepcopy(direction))
+
+        path.pop()
+    _dfs(0)
+
+    constraints = Parallel(n_jobs=1)(
+        delayed(_get_path_constraints)(clf, p, d) for p, d in zip(paths, directions))
+    return paths, constraints
+
 
 class DTOpt(AttackModel):
     def __init__(self, clf: DecisionTreeClassifier, ord, random_state):
@@ -88,55 +135,7 @@ class DTOpt(AttackModel):
         self.clf = clf
         self.random_state = random_state
 
-        tree = self.clf.tree_
-        children_left = tree.children_left
-        children_right = tree.children_right
-        self.paths: list = []
-        self.directions: list = []
-
-        path = []
-        direction = []
-
-        def _dfs(node_id):
-            path.append(node_id)
-
-            if (children_left[node_id] != children_right[node_id]):
-                direction.append(1)
-                _dfs(children_left[node_id])
-                direction[-1] = -1
-                _dfs(children_right[node_id])
-                direction.pop()
-            else:
-                self.paths.append(deepcopy(path))
-                self.directions.append(deepcopy(direction))
-
-            path.pop()
-        _dfs(0)
-
-        #self.constraints = []
-        #for p, d in zip(self.paths, self.directions):
-        #    self.constraints.append(self._get_path_constraints(p, d))
-
-        self.constraints = Parallel(n_jobs=1)(
-            delayed(self._get_path_constraints)(p, d) for p, d in zip(self.paths, self.directions))
-
-
-    def _get_path_constraints(self, path, direction):
-        direction = np.asarray(direction)
-        path = np.asarray(path)[:-1]
-
-        tree = self.clf.tree_
-        threshold = tree.threshold
-        feature = tree.feature
-
-        h = threshold[path]
-        G = np.zeros((len(path), tree.n_features), np.float64)
-        G[np.arange(len(path)), feature[path]] = 1
-
-        h = h * direction
-        G = G * direction.reshape((-1, 1))
-
-        return G, h
+        self.paths, self.constraints = get_tree_constraints(clf)
 
     def fit(self, X, y):
         pass

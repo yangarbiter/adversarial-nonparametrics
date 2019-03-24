@@ -55,11 +55,27 @@ def cross_validation(auto_var: AutoVar, grid, valid_eps:float):
 class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
     var_name = "model"
 
+    @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?random_forest_(?P<n_trees>\d+)(?P<eps>_\d+)?')
+    @staticmethod
+    def random_forest(auto_var, var_value, inter_var, train, eps, n_trees):
+        from sklearn.ensemble import RandomForestClassifier
+        eps = float(eps[1:])*0.01 if eps else 0.
+        train = train[:-1] if train else None
+        n_trees = int(n_trees)
+
+        model = RandomForestClassifier(
+                n_estimators=n_trees,
+                criterion='entropy',
+                random_state=inter_var['random_state'])
+        auto_var.set_intermidiate_variable("tree_clf", model)
+        return model
+
     @register_var()
     @staticmethod
     def decision_tree(auto_var, var_value, inter_var):
         from sklearn.tree import DecisionTreeClassifier
-        model = DecisionTreeClassifier(criterion='entropy', random_state=inter_var['random_state'])
+        model = DecisionTreeClassifier(criterion='entropy',
+                random_state=inter_var['random_state'])
         auto_var.set_intermidiate_variable("tree_clf", model)
         return model
 

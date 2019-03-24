@@ -1,5 +1,7 @@
 from main import eps_accuracy
 
+random_seed = list(range(4))
+
 def dt_attack():
     exp_fn = eps_accuracy
     random_seed = list(range(2))
@@ -17,10 +19,44 @@ def dt_attack():
     run_param = {'verbose': 1, 'n_jobs': 4,}
     return exp_fn, grid_param, run_param
 
-random_seed = list(range(4))
+def rf_attack():
+    exp_fn = eps_accuracy
+    exp_name = "random_forest"
+    random_seed = list(range(1))
+    grid_param = []
+    grid_param.append({
+        'model': ['random_forest_100'],
+        'ord': ['inf'],
+        'dataset': ['fashion_mnist35_2000_pca5', 'mnist35_2000_pca5',
+            'fashion_mnist06_2000_pca5', 'halfmoon_2000'],
+        'attack': ['rf_attack_rev_100', 'rf_attack_rev_20', 'blackbox'],
+        'random_seed': random_seed,
+    })
+
+    run_param = {'verbose': 1, 'n_jobs': 4,}
+    return exp_fn, exp_name, grid_param, run_param
+
+def opt_of_rf_attack():
+    exp_fn = eps_accuracy
+    exp_name = "random_forest"
+    random_seed = list(range(1))
+    grid_param = []
+    grid_param.append({
+        'model': ['random_forest_3'],
+        'ord': ['inf'],
+        'dataset': ['fashion_mnist35_2000_pca5', 'mnist35_2000_pca5',
+            'fashion_mnist06_2000_pca5', 'halfmoon_2000'],
+        'attack': ['rf_attack_rev', 'rf_attack_rev_100', 'rf_attack_rev_20',
+            'blackbox'],
+        'random_seed': random_seed,
+    })
+
+    run_param = {'verbose': 1, 'n_jobs': 4,}
+    return exp_fn, exp_name, grid_param, run_param
 
 def nn_k1():
     exp_fn = eps_accuracy
+    exp_name = "1nn"
     grid_param = []
     grid_param.append({
         'model': ['knn1'],
@@ -49,10 +85,11 @@ def nn_k1():
     })
 
     run_param = {'verbose': 1, 'n_jobs': 4,}
-    return exp_fn, grid_param, run_param
+    return exp_fn, exp_name, grid_param, run_param
 
 def robust_nn_k1():
     exp_fn = eps_accuracy
+    exp_name = "Robust1nn"
     grid_param = []
     grid_param.append({
         'model': ['robust1nn'],
@@ -73,7 +110,7 @@ def robust_nn_k1():
     })
 
     run_param = {'verbose': 1, 'n_jobs': 4,}
-    return exp_fn, grid_param, run_param
+    return exp_fn, exp_name, grid_param, run_param
 
 datasets = [
     'iris', 'wine', 'digits_pca5', 'abalone',
@@ -86,6 +123,7 @@ datasets = [
 
 def nn_k7():
     exp_fn = eps_accuracy
+    exp_name = "7nn"
     grid_param = []
     grid_param.append({
         'model': ['knn7'],
@@ -102,10 +140,11 @@ def nn_k7():
     })
 
     run_param = {'verbose': 1, 'n_jobs': 4,}
-    return exp_fn, grid_param, run_param
+    return exp_fn, exp_name, grid_param, run_param
 
 def nn_k5():
     exp_fn = eps_accuracy
+    exp_name = "5nn"
     grid_param = []
     grid_param.append({
         'model': ['knn5'],
@@ -120,11 +159,12 @@ def nn_k5():
     })
 
     run_param = {'verbose': 1, 'n_jobs': 4,}
-    return exp_fn, grid_param, run_param
+    return exp_fn, exp_name, grid_param, run_param
 
 
 def nn_k3():
     exp_fn = eps_accuracy
+    exp_name = "3nn"
     grid_param = []
     grid_param.append({
         'model': ['knn3'],
@@ -135,10 +175,11 @@ def nn_k3():
     })
 
     run_param = {'verbose': 1, 'n_jobs': 4,}
-    return exp_fn, grid_param, run_param
+    return exp_fn, exp_name, grid_param, run_param
 
 def opt_of_nnopt():
     exp_fn = eps_accuracy
+    exp_name = "OptimalityNNOPT"
     grid_param = [{
         'model': ['knn3'],
         'ord': ['inf'],
@@ -151,4 +192,4 @@ def opt_of_nnopt():
     }]
 
     run_param = {'verbose': 1, 'n_jobs': 4,}
-    return exp_fn, grid_param, run_param
+    return exp_fn, exp_name, grid_param, run_param

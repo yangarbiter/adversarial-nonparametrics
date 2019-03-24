@@ -53,14 +53,18 @@ DEBUG = False
 
 import cvxpy as cp
 
-def solve_lp(c, G, h, n):
+def solve_lp(c, G, h, n, init_x=None):
     #c = np.array(c)
     #G, h = np.array(G), np.array(h)
     x = cp.Variable(shape=(n, 1))
     obj = cp.Minimize(c.T * x)
     constraints = [G*x <= h]
     prob = cp.Problem(obj, constraints)
-    prob.solve(solver=cp.GUROBI)
+    if init_x is not None:
+        x.value = init_x
+        prob.solve(solver=cp.GUROBI, warm_start=True)
+    else:
+        prob.solve(solver=cp.GUROBI)
     return prob.status, x.value
 
 def solve_qp(Q, q, G, h, n):
