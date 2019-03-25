@@ -105,7 +105,7 @@ def nn_k1():
         'ord': ['inf'],
         'dataset': ['abalone',
             'mnist35_2000_pca5', 'fashion_mnist06_2000_pca5', 'fashion_mnist35_2000_pca5',
-            'mnist35_2000_pca15', 'fashion_mnist06_2000_pca15',
+            #'mnist35_2000_pca15', 'fashion_mnist06_2000_pca15',
             'fashion_mnist35_2000_pca15',
         ],
         'attack': ['rev_nnopt_k1_20', 'rev_nnopt_k1_50', 'direct_k1', 'kernelsub_c10000_pgd', 'blackbox'],
@@ -205,7 +205,9 @@ def nn_k3():
         'model': ['knn3'],
         'ord': ['inf'],
         'dataset': datasets,
-        'attack': ['rev_nnopt_k3_20', 'rev_nnopt_k3_50', 'direct_k3', 'blackbox'],
+        'attack': [
+            #'rev_nnopt_k3_20',
+            'rev_nnopt_k3_50', 'direct_k3', 'blackbox'],
         'random_seed': random_seed,
     })
 
@@ -219,7 +221,7 @@ def opt_of_nnopt():
         'model': ['knn3'],
         'ord': ['inf'],
         'dataset': ['fashion_mnist35_200_pca5', 'mnist35_200_pca5',
-            'fashion_mnist35_200_pca15', 'mnist35_200_pca15',
+            #'fashion_mnist35_200_pca15', 'mnist35_200_pca15',
             'halfmoon_200'],
         'attack': ['nnopt_k3_all', 'rev_nnopt_k3_50', 'rev_nnopt_k3_20',
             'rev_nnopt_k3_20_region', 'rev_nnopt_k3_50_region',],

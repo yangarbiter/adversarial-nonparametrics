@@ -93,6 +93,7 @@ def eps_accuracy(auto_var):
                 'tst_acc': (tst_pred == tsty).mean(),
             })
             if hasattr(attack_model, 'perts'):
+                assert (model.predict(tstX + attack_model.perts) == tsty).sum() == 0
                 ret['avg_pert'].append({
                     'eps': eps,
                     'avg': np.linalg.norm(attack_model.perts, axis=1, ord=ord).mean(),
