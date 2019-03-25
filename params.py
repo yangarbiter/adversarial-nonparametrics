@@ -22,14 +22,46 @@ def dt_attack():
 def rf_attack():
     exp_fn = eps_accuracy
     exp_name = "random_forest"
-    random_seed = list(range(1))
     grid_param = []
     grid_param.append({
         'model': ['random_forest_100'],
         'ord': ['inf'],
-        'dataset': ['fashion_mnist35_2000_pca5', 'mnist35_2000_pca5',
-            'fashion_mnist06_2000_pca5', 'halfmoon_2000'],
-        'attack': ['rf_attack_rev_100', 'rf_attack_rev_20', 'blackbox'],
+        'dataset': [
+            'fashion_mnist35_2000_pca5',
+            'mnist35_2000_pca5',
+            'fashion_mnist06_2000_pca5',
+            'fashion_mnist35_2000_pca10',
+            'mnist35_2000_pca10',
+            'fashion_mnist06_2000_pca10',
+            'halfmoon_2000'
+        ],
+        'attack': [
+            'rf_attack_rev_100',
+            'rf_attack_rev_20',
+            'blackbox'],
+        'random_seed': random_seed,
+    })
+
+    run_param = {'verbose': 1, 'n_jobs': 4,}
+    return exp_fn, exp_name, grid_param, run_param
+
+def rf500_attack():
+    exp_fn = eps_accuracy
+    exp_name = "rf500"
+    grid_param = []
+    grid_param.append({
+        'model': ['random_forest_500'],
+        'ord': ['inf'],
+        'dataset': [
+            'fashion_mnist35_2000_pca5',
+            'mnist35_2000_pca5',
+            'fashion_mnist06_2000_pca5',
+            'halfmoon_2000'
+        ],
+        'attack': [
+            'rf_attack_rev_100',
+            'rf_attack_rev_20',
+            'blackbox'],
         'random_seed': random_seed,
     })
 
@@ -38,16 +70,19 @@ def rf_attack():
 
 def opt_of_rf_attack():
     exp_fn = eps_accuracy
-    exp_name = "random_forest"
-    random_seed = list(range(1))
+    exp_name = "optimality_rf"
     grid_param = []
     grid_param.append({
         'model': ['random_forest_3'],
         'ord': ['inf'],
-        'dataset': ['fashion_mnist35_2000_pca5', 'mnist35_2000_pca5',
-            'fashion_mnist06_2000_pca5', 'halfmoon_2000'],
+        'dataset': [
+            'fashion_mnist35_200_pca5',
+            'mnist35_200_pca5',
+            'fashion_mnist06_200_pca5',
+            'halfmoon_200'
+        ],
         'attack': ['rf_attack_all',
-            'rf_attack_rev', 'rf_attack_rev_100', 'rf_attack_rev_20', 'blackbox'],
+            'rf_attack_rev', 'rf_attack_rev_50', 'rf_attack_rev_20', 'blackbox'],
         'random_seed': random_seed,
     })
 

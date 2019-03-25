@@ -64,9 +64,10 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         n_trees = int(n_trees)
 
         model = RandomForestClassifier(
-                n_estimators=n_trees,
-                criterion='entropy',
-                random_state=inter_var['random_state'])
+            n_estimators=n_trees,
+            criterion='entropy',
+            random_state=auto_var.get_var("random_seed"),
+        )
         auto_var.set_intermidiate_variable("tree_clf", model)
         return model
 
@@ -75,7 +76,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
     def decision_tree(auto_var, var_value, inter_var):
         from sklearn.tree import DecisionTreeClassifier
         model = DecisionTreeClassifier(criterion='entropy',
-                random_state=inter_var['random_state'])
+                random_state=auto_var.get_var("random_seed"))
         auto_var.set_intermidiate_variable("tree_clf", model)
         return model
 
@@ -94,7 +95,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
             train_type=train,
             attack_model=attack_model,
             ord=auto_var.get_var("ord"),
-            random_state=inter_var['random_state'])
+            random_state=auto_var.get_var("random_seed"))
         auto_var.set_intermidiate_variable("tree_clf", model)
         return model
 
@@ -250,7 +251,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
             attack_model=attack_model,
             eps=eps,
             ord=auto_var.get_var("ord"),
-            random_state=inter_var['random_state'])
+            random_state=auto_var.get_var("random_seed"))
         auto_var.set_intermidiate_variable("tree_clf", model)
         return model
 

@@ -9,24 +9,20 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, StandardScaler, LabelBinarizer, MinMaxScaler
 from sklearn.metrics import pairwise_distances
-#import matplotlib.pyplot as plt
 import tensorflow as tf
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import keras.backend
 import tensorflow.keras.backend
-#from tensorflow.python.platform import flags
 from bistiming import SimpleTimer
 
 from nnattack.variables import auto_var
 
 
-global random_seed
-random_seed = 1126
-np.random.seed(random_seed)
-#tf.set_random_seed(random_seed)
-
 def set_random_seed(auto_var):
-    tf.set_random_seed(auto_var.get_var("random_seed"))
+    random_seed = auto_var.get_var("random_seed")
+
+    tf.set_random_seed(random_seed)
+    np.random.seed(random_seed)
+
     sess = tf.Session()
     keras.backend.set_session(sess)
     keras.layers.core.K.set_learning_phase(0)
@@ -115,6 +111,7 @@ def eps_accuracy(auto_var):
 
         tst_perturbs = attack_model.perturb(tstX, y=tsty, eps=eps_list)
         if hasattr(attack_model, 'perts'):
+            assert (model.predict(tstX + attack_model.perts) == tsty).sum() == 0
             ret['avg_pert'] = {
                 'avg': np.linalg.norm(attack_model.perts, axis=1, ord=ord).mean(),
             }
@@ -126,7 +123,7 @@ def eps_accuracy(auto_var):
             temp_tstX = tstX + tst_perturbs[i]
 
             tst_pred = model.predict(temp_tstX)
-                                                                                    
+
             results.append({
                 'eps': eps_list[i],
                 'tst_acc': (tst_pred == tsty).mean(),

@@ -12,7 +12,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         from sklearn.datasets import make_moons
         n_samples = int(n_samples)
         X, y = make_moons(n_samples=n_samples, noise=0.25,
-                random_state=var_value['random_seed'])
+                          random_state=auto_var.get_var("random_seed"))
 
         if auto_var.get_var("ord") == 2:
             eps = [0.01 * i for i in range(0, 41, 5)]
@@ -65,7 +65,8 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
         n_dims = int(n_dims[4:]) if n_dims else None
         if n_dims:
-            pca = PCA(n_components=n_dims, random_state=inter_var['random_state'])
+            pca = PCA(n_components=n_dims,
+                    random_state=auto_var.get_var("random_seed"))
             X = pca.fit_transform(X)
 
         return X, y, eps
@@ -88,7 +89,8 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         y = np.concatenate((y[idx1], y[idx2]))
 
         if n_dims:
-            pca = PCA(n_components=n_dims, random_state=inter_var['random_state'])
+            pca = PCA(n_components=n_dims,
+                    random_state=auto_var.get_var("random_seed"))
             X = pca.fit_transform(X)
 
         if auto_var.get_var("ord") == 2:
@@ -118,7 +120,8 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         y = np.concatenate((y[idx1], y[idx2]))
 
         if n_dims:
-            pca = PCA(n_components=n_dims, random_state=inter_var['random_state'])
+            pca = PCA(n_components=n_dims,
+                    random_state=auto_var.get_var("random_seed"))
             X = pca.fit_transform(X)
 
         if auto_var.get_var("ord") == 2:
@@ -148,7 +151,8 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         y = np.concatenate((y[idx1], y[idx2]))
 
         if n_dims:
-            pca = PCA(n_components=n_dims, random_state=inter_var['random_state'])
+            pca = PCA(n_components=n_dims,
+                    random_state=auto_var.get_var("random_seed"))
             X = pca.fit_transform(X)
 
         if auto_var.get_var("ord") == 2:

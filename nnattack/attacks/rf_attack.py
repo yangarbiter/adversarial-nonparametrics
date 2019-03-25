@@ -189,8 +189,6 @@ class RFAttack(AttackModel):
             raise ValueError("Not supported method: %s", self.method)
 
     def perturb(self, X, y, eps=0.1):
-        pert_X = np.zeros_like(X)
-
         if self.ord == 2:
             get_sol_fn = rev_get_sol_l2
         elif self.ord == np.inf:
@@ -201,20 +199,31 @@ class RFAttack(AttackModel):
         pred_y = self.clf.predict(X)
         pred_trn_y = self.clf.predict(self.trnX)
 
-        with IterTimer("Perturbing", len(X)) as timer:
-            for sample_id in range(len(X)):
-                timer.update(sample_id)
-                if pred_y[sample_id] != y[sample_id]:
-                    continue
-                target_x, target_y = X[sample_id], y[sample_id]
+        if self.method == 'all':
+            def _helper(target_x, target_y, pred_yi):
+                if pred_yi != target_y:
+                    return np.zeros_like(target_x)
+                temp_regions = [self.regions[i] for i in range(len(self.regions)) \
+                            if self.region_preds[i] != target_y]
+                return get_sol_fn(target_x, target_y,
+                                  pred_trn_y, temp_regions, self.clf)
 
-                if self.method == 'all':
-                    temp_regions = [self.regions[i] \
-                            for i in range(len(self.regions)) \
-                                if self.region_preds[i] != target_y]
-                    pert_x = get_sol_fn(target_x, y[sample_id],
-                            pred_trn_y, temp_regions, self.clf)
-                elif self.method == 'rev':
+            pert_xs = Parallel(n_jobs=4, verbose=5)(
+                delayed(_helper)(X[i], y[i], pred_y[i]) for i in range(len(X)))
+            pert_X = np.array(pert_xs)
+
+            assert np.all(self.clf.predict(X + pert_X) != y)
+
+        elif self.method == 'rev':
+            pert_X = np.zeros_like(X)
+            pert_X2 = np.zeros_like(X)
+            with IterTimer("Perturbing", len(X)) as timer:
+                for sample_id in range(len(X)):
+                    timer.update(sample_id)
+                    if pred_y[sample_id] != y[sample_id]:
+                        continue
+                    target_x, target_y = X[sample_id], y[sample_id]
+
                     if self.n_searches != -1:
                         ind = self.kd_tree.query(
                                 target_x.reshape((1, -1)),
@@ -225,19 +234,27 @@ class RFAttack(AttackModel):
                         ind = list(filter(lambda x: pred_trn_y[x] != target_y, np.arange(len(self.trnX))))
                     temp_regions = [self.regions[i] for i in ind]
                     pert_x = get_sol_fn(target_x, y[sample_id],
-                            pred_trn_y, temp_regions,
-                            self.clf, self.trnX[ind])
-                else:
-                    raise ValueError("Not supported method %s", self.method)
+                                        pred_trn_y, temp_regions,
+                                        self.clf, self.trnX[ind])
 
-                pert_X[sample_id] = pert_x
+                    #temp_regions = [self.regions[i] for i in ind[:20]]
+                    #pert_x2 = get_sol_fn(target_x, y[sample_id],
+                    #                    pred_trn_y, temp_regions,
+                    #                    self.clf, self.trnX[ind])
+                    #pert_X2[sample_id, :] = pert_x2
+                    #print(np.linalg.norm(pert_x, np.inf), np.linalg.norm(pert_x2, np.inf))
+                    #print(np.linalg.norm(pert_x, np.inf) <= np.linalg.norm(pert_x2, np.inf))
 
-                if np.linalg.norm(pert_x) != 0:
-                    assert self.clf.predict([X[sample_id] + pert_x])[0] != y[sample_id]
-                    pert_X[sample_id, :] = pert_x
-                else:
-                    raise ValueError("shouldn't happen")
-        
+                    if np.linalg.norm(pert_x) != 0:
+                        assert self.clf.predict([X[sample_id] + pert_x])[0] != y[sample_id]
+                        pert_X[sample_id, :] = pert_x
+                    else:
+                        raise ValueError("shouldn't happen")
+        else:
+            raise ValueError("Not supported method %s", self.method)
+
+        self.perts = pert_X
+
         if isinstance(eps, list):
             rret = []
             norms = np.linalg.norm(pert_X, axis=1, ord=self.ord)

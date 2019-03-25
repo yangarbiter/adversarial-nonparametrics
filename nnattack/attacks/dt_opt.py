@@ -17,8 +17,6 @@ solvers.options['abstol'] = 1e-7
 solvers.options['reltol'] = 1e-7
 cvxopt.glpk.options["msg_lev"] = "GLP_MSG_OFF"
 
-
-
 def get_sol_l2(target_x, target_y, paths, tree, constraints):
     value = tree.value
     fet_dim = tree.n_features
@@ -170,6 +168,10 @@ class DTOpt(AttackModel):
             if np.linalg.norm(pert_x) != 0:
                 assert self.clf.predict([X[sample_id] + pert_x])[0] != y[sample_id]
                 pert_X[sample_id, :] = pert_x
+            else:
+                raise ValueError("shouldn't happend")
+
+        self.perts = pert_X
         
         if isinstance(eps, list):
             rret = []
