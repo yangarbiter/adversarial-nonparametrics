@@ -39,6 +39,22 @@ def pass_random_state(fn, random_state):
         return partial(fn, random_state=random_state)
     return fn
 
+def estimate_model_roubstness(model, X, y, perturbs, eps_list):
+    assert len(eps_list) == len(perturbs)
+    ret = []
+    for i, eps in enumerate(eps_list):
+        assert np.all(np.linalg.norm(perturbs[i], axis=1, ord=ord) <= (eps + 1e-6)), (np.linalg.norm(perturbs[i], axis=1, ord=ord), eps)
+        temp_tstX = X + perturbs[i]
+
+        pred = model.predict(temp_tstX)
+
+        ret.append({
+            'eps': eps_list[i],
+            'tst_acc': (pred == y).mean(),
+        })
+        print(ret[-1])
+    return ret
+
 #@profile
 def eps_accuracy(auto_var):
     random_state = set_random_seed(auto_var)
@@ -93,11 +109,20 @@ def eps_accuracy(auto_var):
                 'tst_acc': (tst_pred == tsty).mean(),
             })
             if hasattr(attack_model, 'perts'):
-                assert (model.predict(tstX + attack_model.perts) == tsty).sum() == 0
-                ret['avg_pert'].append({
-                    'eps': eps,
-                    'avg': np.linalg.norm(attack_model.perts, axis=1, ord=ord).mean(),
-                })
+                perts = attack_model.perts
+                if (model.predict(tstX + perts) == tsty).sum() == 0:
+                    ret['avg_pert'] = {
+                        'eps': eps,
+                        'avg': np.linalg.norm(perts, axis=1, ord=ord).mean(),
+                    }
+                else:
+                    missed_count = (model.predict(tstX + perts) == tsty).sum()
+                    perts = perts[model.predict(tstX + perts) != tsty]
+                    ret['avg_pert'] = {
+                        'eps': eps,
+                        'avg': np.linalg.norm(perts, axis=1, ord=ord).mean(),
+                        'missed_count': int(missed_count),
+                    }
             print(results[-1])
 
     else:
@@ -112,29 +137,39 @@ def eps_accuracy(auto_var):
 
         tst_perturbs = attack_model.perturb(tstX, y=tsty, eps=eps_list)
         if hasattr(attack_model, 'perts'):
-            assert (model.predict(tstX + attack_model.perts) == tsty).sum() == 0
-            ret['avg_pert'] = {
-                'avg': np.linalg.norm(attack_model.perts, axis=1, ord=ord).mean(),
-            }
+            perts = attack_model.perts
+            if (model.predict(tstX + perts) == tsty).sum() == 0:
+                ret['avg_pert'] = {
+                    'avg': np.linalg.norm(perts, axis=1, ord=ord).mean(),
+                }
+            else:
+                missed_count = (model.predict(tstX + perts) == tsty).sum()
+                perts = perts[model.predict(tstX + perts) != tsty]
+                ret['avg_pert'] = {
+                    'avg': np.linalg.norm(perts, axis=1, ord=ord).mean(),
+                    'missed_count': int(missed_count),
+                }
+                
+        results = estimate_model_roubstness(
+                model, tstX, tsty, tst_perturbs, eps_list, ord)
 
-        ord = auto_var.get_var("ord")
-        for i in range(len(eps_list)):
-            eps = eps_list[i]
-            assert np.all(np.linalg.norm(tst_perturbs[i], axis=1, ord=ord) <= (eps + 1e-6)), (np.linalg.norm(tst_perturbs[i], axis=1, ord=ord), eps)
-            temp_tstX = tstX + tst_perturbs[i]
+        #for i in range(len(eps_list)):
+        #    eps = eps_list[i]
+        #    assert np.all(np.linalg.norm(tst_perturbs[i], axis=1, ord=ord) <= (eps + 1e-6)), (np.linalg.norm(tst_perturbs[i], axis=1, ord=ord), eps)
+        #    temp_tstX = tstX + tst_perturbs[i]
 
-            tst_pred = model.predict(temp_tstX)
+        #    tst_pred = model.predict(temp_tstX)
 
-            results.append({
-                'eps': eps_list[i],
-                'tst_acc': (tst_pred == tsty).mean(),
-            })
-            print(results[-1])
-                                                                                 
+        #    results.append({
+        #        'eps': eps_list[i],
+        #        'tst_acc': (tst_pred == tsty).mean(),
+        #    })
+        #    print(results[-1])
+
     ret['results'] = results
     ret['trnX_len'] = len(trnX)
     if augX is not None:
-        ret['aug_len'] = len(augX)                                               
+        ret['aug_len'] = len(augX)
 
     print(json.dumps(auto_var.var_value))
     print(json.dumps(ret))

@@ -24,8 +24,8 @@ DEBUG = True if os.environ.get('DEBUG', False) else False
 
 def main():
     experiments = [
-        #opt_of_nnopt,
-        #nn_k1,
+        opt_of_nnopt,
+        nn_k1,
         robust_nn_k1, nn_k3, nn_k5, nn_k7
     ]
     #experiments = [

@@ -151,9 +151,9 @@ datasets = [
     'iris', 'wine', 'digits_pca5', 'abalone',
     'mnist35_2000_pca5', 'fashion_mnist35_2000_pca5',
     'fashion_mnist06_2000_pca5',
-    'mnist35_2000_pca15', 'fashion_mnist35_2000_pca15',
-    'fashion_mnist06_2000_pca15',
-    'halfmoon_2000'
+    #'mnist35_2000_pca15', 'fashion_mnist35_2000_pca15',
+    #'fashion_mnist06_2000_pca15',
+    'halfmoon_2000',
 ]
 
 def nn_k7():
@@ -165,9 +165,10 @@ def nn_k7():
         'ord': ['inf'],
         'dataset': datasets,
         'attack': [
-            'hybrid_nnopt_k7_10_20',
+            #'hybrid_nnopt_k7_10_20',
             'rev_nnopt_k7_20', 'rev_nnopt_k7_50',
-            'rev_nnopt_k7_20_region', 'rev_nnopt_k7_50_region', 'direct_k7',
+            'rev_nnopt_k7_20_region', 'rev_nnopt_k7_50_region',
+            'direct_k7',
             'blackbox',
             #'nnopt_k7_20', 'nnopt_k7_50'
         ],
@@ -207,7 +208,28 @@ def nn_k3():
         'dataset': datasets,
         'attack': [
             #'rev_nnopt_k3_20',
-            'rev_nnopt_k3_50', 'direct_k3', 'blackbox'],
+            'rev_nnopt_k3_50', 'direct_k3', 'blackbox'
+            'rev_nnopt_k3_50_region',
+        ],
+        'random_seed': random_seed,
+    })
+
+    run_param = {'verbose': 1, 'n_jobs': 4,}
+    return exp_fn, exp_name, grid_param, run_param
+
+def robust_nn_k3():
+    exp_fn = eps_accuracy
+    exp_name = "Robust-3nn"
+    grid_param = []
+    grid_param.append({
+        'model': ['knn3'],
+        'ord': ['inf'],
+        'dataset': datasets,
+        'attack': [
+            #'rev_nnopt_k3_20',
+            'rev_nnopt_k3_50', 'direct_k3', 'blackbox'
+            'rev_nnopt_k3_50_region',
+        ],
         'random_seed': random_seed,
     })
 
