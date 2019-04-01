@@ -10,7 +10,9 @@ from params import (
     nn_k5,
     nn_k7,
     robust_nn_k1,
+    robust_nn_k3,
     dt_attack,
+    robust_rf,
     rf_attack,
     rf500_attack,
     opt_of_nnopt,
@@ -24,15 +26,22 @@ DEBUG = True if os.environ.get('DEBUG', False) else False
 
 def main():
     experiments = [
-        opt_of_nnopt,
-        nn_k1,
-        robust_nn_k1, nn_k3, nn_k5, nn_k7
+        #opt_of_nnopt,
+        nn_k1, nn_k3, nn_k5,
+        nn_k7
     ]
-    #experiments = [
-    #    rf_attack,
-    #    opt_of_rf_attack,
-    #    #rf500_attack,
-    #]
+    experiments += [
+        robust_nn_k1,
+        robust_nn_k3
+    ]
+    experiments += [
+        robust_rf,
+    ]
+    experiments += [
+        rf_attack,
+        opt_of_rf_attack,
+        #rf500_attack,
+    ]
     grid_params = []
     for exp in experiments:
         exp_fn, _, grid_param, run_param = exp()

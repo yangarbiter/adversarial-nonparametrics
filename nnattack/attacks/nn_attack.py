@@ -378,12 +378,13 @@ def rev_get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
     else:
         raise ValueError("Unsupported ord %d" % ord)
 
-    #knn = KNeighborsClassifier(n_neighbors=n_neighbors)
-    #knn.fit(glob_trnX.dot(transformer.T), glob_trny)
+    knn = KNeighborsClassifier(n_neighbors=n_neighbors)
+    knn.fit(glob_trnX.dot(transformer.T), glob_trny)
+    pred_trny = knn.predict(glob_trnX.dot(transformer.T))
 
     ind = kdtree.query(target_x.dot(transformer.T).reshape((1, -1)),
                        k=len(glob_trnX), return_distance=False)[0]
-    ind = list(filter(lambda x: glob_trny[x] != target_y, ind))[:farthest]
+    ind = list(filter(lambda x: pred_trny[x] != target_y, ind))[:farthest]
 
     for i in ind:
         if method == 'self':
@@ -393,23 +394,33 @@ def rev_get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
             inds = kdtree.query(procedX, k=n_neighbors, return_distance=False)[0]
         inds = tuple([_ for _ in inds])
 
-        if inds not in lp_sols:
-            ret, sol = get_sol_fn(target_x, inds, faropp, kdtree, transformer)
-            lp_sols[inds] = sol
-        elif lp_sols[inds] is None:
-            ret = False
-            #ret, sol = get_sol_fn(target_x, inds, faropp, kdtree,
-            #                        transformer)
-        else:
-            ret, sol = get_sol_fn(target_x, inds, faropp, kdtree,
-                                    transformer, lp_sols[inds])
+        ret, sol = get_sol_fn(target_x, inds, faropp, kdtree, transformer,
+                init_x=glob_trnX[i])
 
-        if ret:
+        if method == 'region':
+            assert ret
+            proc = np.array([sol]).dot(transformer.T)
+            assert knn.predict(proc)[0] != target_y
+            eps = np.linalg.norm(sol - target_x, ord=ord)
+            if eps < temp[1]:
+                temp = (sol, eps)
+        elif ret: # method == 'self'
             proc = np.array([sol]).dot(transformer.T)
             if knn.predict(proc)[0] != target_y:
                 eps = np.linalg.norm(sol - target_x, ord=ord)
                 if eps < temp[1]:
                     temp = (sol, eps)
+
+        #if inds not in lp_sols:
+        #    ret, sol = get_sol_fn(target_x, inds, faropp, kdtree, transformer)
+        #    lp_sols[inds] = sol
+        #elif lp_sols[inds] is None:
+        #    ret = False
+        #    #ret, sol = get_sol_fn(target_x, inds, faropp, kdtree,
+        #    #                        transformer)
+        #else:
+        #    ret, sol = get_sol_fn(target_x, inds, faropp, kdtree,
+        #                            transformer, lp_sols[inds])
 
     return temp[0] - target_x
 
@@ -482,6 +493,7 @@ class RevNNAttack(NNOptAttack):
         super().__init__(trnX=trnX, trny=trny, n_neighbors=n_neighbors,
                 farthest=farthest, faropp=faropp, transformer=transformer,
                 ord=ord)
+        print(method)
         self.method = method
 
     #@profile

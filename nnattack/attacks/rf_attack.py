@@ -68,8 +68,10 @@ def tree_instance_constraint(tree_clf, X):
                 G[-1][feature[node_id]] = -1
                 h.append(-threshold[node_id] - 1e-9) # excluding equality
 
-        Gs.append(np.array(G))
-        hs.append(np.array(h))
+        #Gs.append(np.array(G))
+        #hs.append(np.array(h))
+        Gs.append(np.array(G) if len(G) > 0 else np.empty((0, n_dims)))
+        hs.append(np.array(h) if len(h) > 0 else np.empty((0)))
 
     return Gs, hs
 
@@ -176,15 +178,17 @@ class RFAttack(AttackModel):
             Gss, hss = [list() for _ in trnX], [list() for _ in trnX]
             for tree_clf in clf.estimators_:
                 Gs, hs = tree_instance_constraint(tree_clf, trnX)
+                #print(len(Gs[0]))
                 for i, (G, h) in enumerate(zip(Gs, hs)):
                     Gss[i].append(G)
                     hss[i].append(h)
+            import ipdb; ipdb.set_trace()
             self.regions = [union_constraints(np.vstack(Gs), np.concatenate(hs)) \
                             for Gs, hs in zip(Gss, hss)]
 
             for i in range(len(trnX)):
                 G, h = self.regions[i]
-                assert np.all(np.dot(G, trnX[i]) <= h)
+                assert np.all(np.dot(G, trnX[i]) <= (h+1e-8))
         else:
             raise ValueError("Not supported method: %s", self.method)
 

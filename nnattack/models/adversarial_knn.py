@@ -5,11 +5,12 @@ from .robust_nn.eps_separation import find_eps_separated_set
 
 class AdversarialKnn(KNeighborsClassifier):
     def __init__(self, n_neighbors=5, weights='uniform', algorithm='auto',
-                leaf_size=30, p=2, metric='minkowski', metric_params=None, n_jobs=1,
-                **kwargs):
+                leaf_size=30, p=2, metric='minkowski', metric_params=None,
+                n_jobs=1, eps:float = None, **kwargs):
         print(kwargs)
         self.ord = kwargs.pop("ord", np.inf)
         self.attack_model = kwargs.pop("attack_model", None)
+        self.eps = eps
 
         self.train_type = kwargs.pop("train_type", 'adv')
 
@@ -19,8 +20,10 @@ class AdversarialKnn(KNeighborsClassifier):
 
     def fit(self, X, y, eps:float=None):
         if self.train_type == 'adv':
-            if eps is None:
+            if eps is None and self.eps is None:
                 raise ValueError("eps should not be None with train type %s", self.train_type)
+            elif eps is None:
+                eps = self.eps
             advX = self.attack_model.perturb(X, y=y, eps=eps)
 
             ind = np.where(np.linalg.norm(advX, axis=1) != 0)
@@ -28,12 +31,16 @@ class AdversarialKnn(KNeighborsClassifier):
             self.augX = np.vstack((X, X[ind]+advX[ind]))
             self.augy = np.concatenate((y, y[ind]))
         elif self.train_type == 'robustv1':
-            if eps is None:
+            if eps is None and self.eps is None:
                 raise ValueError("eps should not be None with train type %s", self.train_type)
+            elif eps is None:
+                eps = self.eps
                 
             y = y.astype(int)*2-1
             self.augX, self.augy = find_eps_separated_set(X, eps/2, y, self.ord)
             self.augy = (self.augy+1)//2
+        elif self.train_type is None:
+            self.augX, self.augy = X, y
         else:
             raise ValueError("Not supported training type %s", self.train_type)
 

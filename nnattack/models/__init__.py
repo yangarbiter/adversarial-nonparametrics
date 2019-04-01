@@ -55,17 +55,39 @@ def cross_validation(auto_var: AutoVar, grid, valid_eps:float):
 class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
     var_name = "model"
 
-    @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?random_forest_(?P<n_trees>\d+)(?P<eps>_\d+)?')
+    @register_var(argument='random_forest_(?P<n_trees>\d+)')
     @staticmethod
-    def random_forest(auto_var, var_value, inter_var, train, eps, n_trees):
+    def random_forest(auto_var, var_value, inter_var, n_trees):
         from sklearn.ensemble import RandomForestClassifier
-        eps = float(eps[1:])*0.01 if eps else 0.
-        train = train[:-1] if train else None
         n_trees = int(n_trees)
 
         model = RandomForestClassifier(
             n_estimators=n_trees,
             criterion='entropy',
+            random_state=auto_var.get_var("random_seed"),
+        )
+        auto_var.set_intermidiate_variable("tree_clf", model)
+        return model
+
+    @register_var(argument=r"(?P<train>[a-zA-Z0-9]+_)?rf_(?P<n_trees>\d+)_(?P<eps>\d+)")
+    @staticmethod
+    def adv_robustrf(auto_var, var_value, inter_var, train, eps, n_trees):
+        from .adversarial_dt import AdversarialRf
+        eps = int(eps) * 0.01
+        train = train[:-1] if train else None
+        n_trees = int(n_trees)
+
+        attack_model = None
+        if train == 'adv':
+            attack_model = auto_var.get_var("attack")
+
+        model = AdversarialRf(
+            n_estimators=n_trees,
+            criterion='entropy',
+            train_type=train,
+            attack_model=attack_model,
+            ord=auto_var.get_var("ord"),
+            eps=eps,
             random_state=auto_var.get_var("random_seed"),
         )
         auto_var.set_intermidiate_variable("tree_clf", model)
@@ -98,43 +120,6 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
             random_state=auto_var.get_var("random_seed"))
         auto_var.set_intermidiate_variable("tree_clf", model)
         return model
-
-    @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?decision_tree_xvalid_(?P<eps>\d+)')
-    @staticmethod
-    def adv_dt_xvalid(auto_var, var_value, inter_var, train, eps):
-        grid = {
-            'model': [
-                'decision_tree_1',
-                'decision_tree_5',
-                'decision_tree_10',
-                'decision_tree_15',
-                'decision_tree_20',
-            ]
-        }
-        valid_eps = float(eps) * 0.1
-        if train is not None:
-            for i in range(len(grid['model'])):
-                grid['model'][i] = train + grid['model'][i]
-        model_name = cross_validation(auto_var, grid, valid_eps)['model']
-        #auto_var.set_variable_value('model', 'model_name')
-        model = auto_var.get_var_with_argument('model', model_name)
-        auto_var.set_intermidiate_variable("tree_clf", model)
-        return model
-
-    #@register_var(argument=r"adv_robustv1nn_k(?P<n_neighbors>\d+)_xvalid")
-    #@staticmethod
-    #def adv_robustv1nn_xvalid(auto_var, var_value, inter_var, n_neighbors):
-    #    n_neighbors = int(n_neighbors)
-    #    grid = {
-    #        'model': [
-    #            f'adv_robustv1nn_k{n_neighbors}_1',
-    #            f'adv_robustv1nn_k{n_neighbors}_5',
-    #            f'adv_robustv1nn_k{n_neighbors}_10'
-    #            f'adv_robustv1nn_k{n_neighbors}_15'
-    #            f'adv_robustv1nn_k{n_neighbors}_20'
-    #        ]
-    #    }
-    #    cross_validation(auto_var, grid)
 
     @register_var(argument='(?P<train>[a-zA-Z0-9]+)_kernel_sub_tf_c(?P<c>\d+)_(?P<eps>\d+)')
     @staticmethod
@@ -181,12 +166,14 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         from .robust_nn import Robust_1NN
         return Robust_1NN(Delta=0.45, delta=0.1, ord=auto_var.get_var("ord"))
 
-    @register_var(argument=r"(?P<train>[a-zA-Z0-9]+_)nn_k(?P<n_neighbors>\d+)")
+    @register_var(argument=r"(?P<train>[a-zA-Z0-9]+_)?nn_k(?P<n_neighbors>\d+)_(?P<eps>\d+)")
     @staticmethod
-    def adv_robustnn(auto_var, var_value, inter_var, radius, n_neighbors, train):
+    def adv_robustnn(auto_var, var_value, inter_var, n_neighbors, train, eps):
         from .adversarial_knn import AdversarialKnn
-        train = train[:-1]
+        eps = int(eps) * 0.01
+        train = train[:-1] if train else None
         n_neighbors = int(n_neighbors)
+
         attack_model = None
         if train == 'adv':
             attack_model = auto_var.get_var("attack")
@@ -196,6 +183,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
             train_type=train,
             attack_model=attack_model,
             ord=auto_var.get_var("ord"),
+            eps=eps,
         )
 
     @register_var(argument='knn(?P<n_neighbors>\d+)')
@@ -293,3 +281,40 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         )
 
         return model
+
+    @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?decision_tree_xvalid_(?P<eps>\d+)')
+    @staticmethod
+    def adv_dt_xvalid(auto_var, var_value, inter_var, train, eps):
+        grid = {
+            'model': [
+                'decision_tree_1',
+                'decision_tree_5',
+                'decision_tree_10',
+                'decision_tree_15',
+                'decision_tree_20',
+            ]
+        }
+        valid_eps = float(eps) * 0.1
+        if train is not None:
+            for i in range(len(grid['model'])):
+                grid['model'][i] = train + grid['model'][i]
+        model_name = cross_validation(auto_var, grid, valid_eps)['model']
+        #auto_var.set_variable_value('model', 'model_name')
+        model = auto_var.get_var_with_argument('model', model_name)
+        auto_var.set_intermidiate_variable("tree_clf", model)
+        return model
+
+    #@register_var(argument=r"adv_robustv1nn_k(?P<n_neighbors>\d+)_xvalid")
+    #@staticmethod
+    #def adv_robustv1nn_xvalid(auto_var, var_value, inter_var, n_neighbors):
+    #    n_neighbors = int(n_neighbors)
+    #    grid = {
+    #        'model': [
+    #            f'adv_robustv1nn_k{n_neighbors}_1',
+    #            f'adv_robustv1nn_k{n_neighbors}_5',
+    #            f'adv_robustv1nn_k{n_neighbors}_10'
+    #            f'adv_robustv1nn_k{n_neighbors}_15'
+    #            f'adv_robustv1nn_k{n_neighbors}_20'
+    #        ]
+    #    }
+    #    cross_validation(auto_var, grid)

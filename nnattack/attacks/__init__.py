@@ -17,7 +17,6 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
             n_neighbors=n_neighbors, farthest=n_search,
             ord=auto_var.get_var('ord'))
 
-    @register_var()
     @register_var(argument=r"rev_nnopt_k(?P<n_neighbors>\d+)_(?P<n_search>\d+)_region")
     @staticmethod
     def rev_nnopt_region(auto_var, var_value, inter_var, n_neighbors, n_search):

@@ -24,7 +24,10 @@ class DirectAttack(AttackModel):
 
     def perturb(self, X, y, eps=0.1):
         if len(self.unique_y) == 1:
-            return np.zeros_like(X)
+            if isinstance(eps, list):
+                return np.zeros([len(eps)] + list(X.shape))
+            else:
+                return np.zeros_like(X)
         ret = []
         for i, x in enumerate(X):
             ind = self.kdtrees[y[i]].query(
@@ -32,6 +35,7 @@ class DirectAttack(AttackModel):
             ret.append(self.trnX[self.trny!=y[i]][ind[0]].mean(0) - x)
         ret = np.asarray(ret)
         dist = np.linalg.norm(ret, ord=self.ord, axis=1)
+
         if isinstance(eps, list):
             rret = []
             for ep in eps:

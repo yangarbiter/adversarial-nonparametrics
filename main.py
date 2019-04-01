@@ -34,13 +34,23 @@ def set_random_seed(auto_var):
 
     return random_state
 
+def baseline_pert(model, trnX, tstX, tsty, perts, ord):
+    pred_trn = model.predict(trnX)
+    ret = np.copy(perts)
+    for i in np.where(model.predict(tstX + perts) == tsty)[0]:
+        tX = trnX[pred_trn != tsty[i]]
+        norms = np.linalg.norm(tX - tstX[i], ord=ord, axis=1)
+        ret[i] = tX[norms.argmin()] - tstX[i]
+    return ret, (model.predict(tstX + perts) == tsty).sum()
+
+
 def pass_random_state(fn, random_state):
     if 'random_state' in inspect.getfullargspec(fn).args:
         return partial(fn, random_state=random_state)
     return fn
 
-def estimate_model_roubstness(model, X, y, perturbs, eps_list):
-    assert len(eps_list) == len(perturbs)
+def estimate_model_roubstness(model, X, y, perturbs, eps_list, ord):
+    assert len(eps_list) == len(perturbs), (eps_list, perturbs.shape)
     ret = []
     for i, eps in enumerate(eps_list):
         assert np.all(np.linalg.norm(perturbs[i], axis=1, ord=ord) <= (eps + 1e-6)), (np.linalg.norm(perturbs[i], axis=1, ord=ord), eps)
@@ -63,7 +73,8 @@ def eps_accuracy(auto_var):
     X, y, eps_list = auto_var.get_var("dataset")
     idxs = np.arange(len(X))
     random_state.shuffle(idxs)
-    trnX, tstX, trny, tsty = X[idxs[:-100]], X[idxs[-100:]], y[idxs[:-100]], y[idxs[-100:]]
+    #trnX, tstX, trny, tsty = X[idxs[:-100]], X[idxs[-100:]], y[idxs[:-100]], y[idxs[-100:]]
+    trnX, tstX, trny, tsty = X[idxs[:-200]], X[idxs[-200:]], y[idxs[:-200]], y[idxs[-200:]]
 
     scaler = MinMaxScaler()
     trnX = scaler.fit_transform(trnX)
@@ -78,80 +89,55 @@ def eps_accuracy(auto_var):
     ret = {}
     results = []
 
+    auto_var.set_intermidiate_variable("trnX", trnX)
+    auto_var.set_intermidiate_variable("trny", trny)
+
     model_name = auto_var.get_variable_value("model")
+    attack_name = auto_var.get_variable_value("attack")
+    if 'adv_rf' in model_name:
+        pre_model = auto_var.get_var_with_argument('model', model_name[4:])
+        pre_model.fit(trnX, trny)
+        if 'blackbox' in attack_name:
+            auto_var.set_intermidiate_variable("model", pre_model)
+    elif 'adv_nn' in model_name and 'blackbox' in attack_name:
+        pre_model = auto_var.get_var_with_argument('model', model_name[4:])
+        pre_model.fit(trnX, trny)
+        auto_var.set_intermidiate_variable("model", pre_model)
+
+    model = auto_var.get_var("model")
+    auto_var.set_intermidiate_variable("model", model)
+    model.fit(trnX, trny)
+
+    pred = model.predict(tstX)
+    idxs = np.where(pred == tsty)[0]
+    random_state.shuffle(idxs)
+    tstX, tsty = tstX[idxs[:100]], tsty[idxs[:100]]
+
     if ('adv' in model_name) or ('robust' in model_name):
-        ret['avg_pert'] = []
-        ord = auto_var.get_var("ord")
-        for i in range(len(eps_list)):
-            eps = eps_list[i]
-
-            auto_var.set_intermidiate_variable("trnX", trnX)
-            auto_var.set_intermidiate_variable("trny", trny)
-            model = auto_var.get_var("model")
-            auto_var.set_intermidiate_variable("model", model)
-            model.fit(trnX, trny, eps=eps)
-
-            auto_var.set_intermidiate_variable("trnX", model.augX)
-            auto_var.set_intermidiate_variable("trny", model.augy)
-            augX, augy = model.augX, model.augy
-
-            attack_model = auto_var.get_var("attack")
-
-            tst_perturb = attack_model.perturb(tstX, y=tsty, eps=eps)
-
-            assert np.all(np.linalg.norm(tst_perturb, axis=1, ord=ord) <= (eps + 1e-6)), (np.linalg.norm(tst_perturb, axis=1, ord=ord), eps)
-            temp_tstX = tstX + tst_perturb
-
-            tst_pred = model.predict(temp_tstX)
-
-            results.append({
-                'eps': eps_list[i],
-                'tst_acc': (tst_pred == tsty).mean(),
-            })
-            if hasattr(attack_model, 'perts'):
-                perts = attack_model.perts
-                if (model.predict(tstX + perts) == tsty).sum() == 0:
-                    ret['avg_pert'] = {
-                        'eps': eps,
-                        'avg': np.linalg.norm(perts, axis=1, ord=ord).mean(),
-                    }
-                else:
-                    missed_count = (model.predict(tstX + perts) == tsty).sum()
-                    perts = perts[model.predict(tstX + perts) != tsty]
-                    ret['avg_pert'] = {
-                        'eps': eps,
-                        'avg': np.linalg.norm(perts, axis=1, ord=ord).mean(),
-                        'missed_count': int(missed_count),
-                    }
-            print(results[-1])
-
+        assert hasattr(model, 'augX')
+        auto_var.set_intermidiate_variable("trnX", model.augX)
+        auto_var.set_intermidiate_variable("trny", model.augy)
+        augX, augy = model.augX, model.augy
     else:
         augX = None
-        auto_var.set_intermidiate_variable("trnX", trnX)
-        auto_var.set_intermidiate_variable("trny", trny)
-        model = auto_var.get_var("model")
-        auto_var.set_intermidiate_variable("model", model)
-        model.fit(trnX, trny)
 
-        attack_model = auto_var.get_var("attack")
+    attack_model = auto_var.get_var("attack")
 
-        tst_perturbs = attack_model.perturb(tstX, y=tsty, eps=eps_list)
-        if hasattr(attack_model, 'perts'):
-            perts = attack_model.perts
-            if (model.predict(tstX + perts) == tsty).sum() == 0:
-                ret['avg_pert'] = {
-                    'avg': np.linalg.norm(perts, axis=1, ord=ord).mean(),
-                }
-            else:
-                missed_count = (model.predict(tstX + perts) == tsty).sum()
-                perts = perts[model.predict(tstX + perts) != tsty]
-                ret['avg_pert'] = {
-                    'avg': np.linalg.norm(perts, axis=1, ord=ord).mean(),
-                    'missed_count': int(missed_count),
-                }
-                
-        results = estimate_model_roubstness(
-                model, tstX, tsty, tst_perturbs, eps_list, ord)
+    tst_perturbs = attack_model.perturb(tstX, y=tsty, eps=eps_list)
+
+    if hasattr(attack_model, 'perts'):
+        perts = attack_model.perts
+    else:
+        perts = np.copy(tst_perturbs[-1])
+    perts, missed_count = baseline_pert(model, trnX, tstX, tsty, perts, ord)
+    assert (model.predict(tstX + perts) == tsty).sum() == 0
+    ret['avg_pert'] = {
+        'avg': np.linalg.norm(perts, axis=1, ord=ord).mean(),
+        'missed_count': int(missed_count),
+    }
+
+    results = estimate_model_roubstness(
+            model, tstX, tsty, tst_perturbs, eps_list, ord)
 
         #for i in range(len(eps_list)):
         #    eps = eps_list[i]
