@@ -34,12 +34,14 @@ def set_random_seed(auto_var):
 
     return random_state
 
-def baseline_pert(model, trnX, tstX, tsty, perts, ord):
+def baseline_pert(model, trnX, tstX, tsty, perts, ord, constraint=None):
     pred_trn = model.predict(trnX)
     ret = np.copy(perts)
     for i in np.where(model.predict(tstX + perts) == tsty)[0]:
         tX = trnX[pred_trn != tsty[i]]
         norms = np.linalg.norm(tX - tstX[i], ord=ord, axis=1)
+        if constraint is not None and norms.min() > constraint:
+            continue
         ret[i] = tX[norms.argmin()] - tstX[i]
     return ret, (model.predict(tstX + perts) == tsty).sum()
 
@@ -49,12 +51,18 @@ def pass_random_state(fn, random_state):
         return partial(fn, random_state=random_state)
     return fn
 
-def estimate_model_roubstness(model, X, y, perturbs, eps_list, ord):
+def estimate_model_roubstness(model, X, y, perturbs, eps_list, ord,
+        with_baseline=False, trnX=None):
     assert len(eps_list) == len(perturbs), (eps_list, perturbs.shape)
     ret = []
     for i, eps in enumerate(eps_list):
         assert np.all(np.linalg.norm(perturbs[i], axis=1, ord=ord) <= (eps + 1e-6)), (np.linalg.norm(perturbs[i], axis=1, ord=ord), eps)
-        temp_tstX = X + perturbs[i]
+        if with_baseline:
+            assert trnX is not None
+            pert, _ = baseline_pert(model, trnX, X, y, perturbs[i], ord, eps)
+            temp_tstX = X + pert
+        else:
+            temp_tstX = X + perturbs[i]
 
         pred = model.predict(temp_tstX)
 
@@ -137,7 +145,11 @@ def eps_accuracy(auto_var):
     }
 
     results = estimate_model_roubstness(
-            model, tstX, tsty, tst_perturbs, eps_list, ord)
+        model, tstX, tsty, tst_perturbs, eps_list, ord, with_baseline=False)
+    ret['results'] = results
+    baseline_results = estimate_model_roubstness(
+        model, tstX, tsty, tst_perturbs, eps_list, ord, with_baseline=True, trnX=trnX)
+    ret['baseline_results'] = baseline_results
 
         #for i in range(len(eps_list)):
         #    eps = eps_list[i]
@@ -152,7 +164,6 @@ def eps_accuracy(auto_var):
         #    })
         #    print(results[-1])
 
-    ret['results'] = results
     ret['trnX_len'] = len(trnX)
     if augX is not None:
         ret['aug_len'] = len(augX)

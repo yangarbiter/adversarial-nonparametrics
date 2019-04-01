@@ -97,7 +97,8 @@ def nn_k1():
         'ord': ['inf'],
         'dataset': [#'iris', 'wine',
             'digits_pca5'],
-        'attack': ['rev_nnopt_k1_20', 'rev_nnopt_k1_50', 'direct_k1', 'kernelsub_c1000_pgd', 'blackbox'],
+        #'attack': ['rev_nnopt_k1_20', 'rev_nnopt_k1_50', 'direct_k1', 'kernelsub_c1000_pgd', 'blackbox'],
+        'attack': ['kernelsub_c1000_pgd', 'blackbox'],
         'random_seed': random_seed,
     })
     grid_param.append({
