@@ -97,8 +97,7 @@ def nn_k1():
         'ord': ['inf'],
         'dataset': [#'iris', 'wine',
             'digits_pca5'],
-        #'attack': ['rev_nnopt_k1_20', 'rev_nnopt_k1_50', 'direct_k1', 'kernelsub_c1000_pgd', 'blackbox'],
-        'attack': ['kernelsub_c1000_pgd', 'blackbox'],
+        'attack': ['rev_nnopt_k1_20', 'rev_nnopt_k1_50', 'direct_k1', 'kernelsub_c1000_pgd', 'blackbox'],
         'random_seed': random_seed,
     })
     grid_param.append({
@@ -107,8 +106,10 @@ def nn_k1():
         'dataset': ['abalone',
             'mnist35_2200_pca5', 'fashion_mnist06_2200_pca5',
             'fashion_mnist35_2200_pca5',
+            #'mnist35_2200_pca25', 'fashion_mnist06_2200_pca25',
+            #'fashion_mnist35_2200_pca25',
             #'mnist35_2200_pca15', 'fashion_mnist06_2200_pca15',
-            'fashion_mnist35_2200_pca15',
+            #'fashion_mnist35_2200_pca15',
         ],
         'attack': ['rev_nnopt_k1_20', 'rev_nnopt_k1_50', 'direct_k1', 'kernelsub_c10000_pgd', 'blackbox'],
         'random_seed': random_seed,

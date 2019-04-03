@@ -39,6 +39,8 @@ def baseline_pert(model, trnX, tstX, tsty, perts, ord, constraint=None):
     ret = np.copy(perts)
     for i in np.where(model.predict(tstX + perts) == tsty)[0]:
         tX = trnX[pred_trn != tsty[i]]
+        if len(tX) == 0:
+            continue
         norms = np.linalg.norm(tX - tstX[i], ord=ord, axis=1)
         if constraint is not None and norms.min() > constraint:
             continue
@@ -138,7 +140,11 @@ def eps_accuracy(auto_var):
     else:
         perts = np.copy(tst_perturbs[-1])
     perts, missed_count = baseline_pert(model, trnX, tstX, tsty, perts, ord)
-    assert (model.predict(tstX + perts) == tsty).sum() == 0
+    if len(np.unique(model.predict(trnX))) > 1:
+        assert (model.predict(tstX + perts) == tsty).sum() == 0
+    else:
+        # ignore single label case
+        ret['single_label'] = True
     ret['avg_pert'] = {
         'avg': np.linalg.norm(perts, axis=1, ord=ord).mean(),
         'missed_count': int(missed_count),

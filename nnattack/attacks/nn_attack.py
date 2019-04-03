@@ -98,7 +98,7 @@ def get_sol(target_x, tuple_x, faropp, kdtree, transformer, init_x=None):
     #q = matrix(-2*target_x.dot(transformer.T).dot(transformer), tc='d')
     q = matrix(-2*target_x, tc='d')
 
-    temph = h - 1e-4 # make sure all constraints are met
+    temph = h - 5e-6 # make sure all constraints are met
 
     status, sol = solve_qp(np.array(Q), np.array(q), np.array(G),
                            np.array(temph), n_fets)
@@ -151,7 +151,7 @@ def sol_sat_constraints(G, h):
     fet_dim = G.shape[1]
     c = matrix(np.zeros(fet_dim), tc='d')
     G = matrix(G, tc='d')
-    temph = matrix(h - 1e-4, tc='d')
+    temph = matrix(h - 5e-6, tc='d')
     sol = solvers.lp(c=c, G=G, h=temph, solver='glpk')
     return (sol['status'] == 'optimal')
 
@@ -182,7 +182,7 @@ def get_sol_l1(target_x, tuple_x, faropp, kdtree, transformer, init_x=None):
 
     G, h = matrix(G, tc='d'), matrix(h, tc='d')
 
-    temph = h - 1e-4
+    temph = h - 5e-6
     if init_x is not None:
         sol = solvers.lp(c=c, G=G, h=temph, solver='glpk',
                          initvals=init_x)
@@ -204,9 +204,9 @@ def get_sol_l1(target_x, tuple_x, faropp, kdtree, transformer, init_x=None):
             #print(target_x.dot(transformer.T))
             #print(ret)
             #assert np.isclose(np.linalg.norm(target_x.dot(transformer.T) - (ret[:len(ret)//2]).dot(transformer.T), ord=1),
-            #                  sol['primal objective'], rtol=1e-4)
+            #                  sol['primal objective'], rtol=5e-6)
             assert np.isclose(np.linalg.norm(target_x - ret[:len(ret)//2], ord=1),
-                              sol['primal objective'], rtol=1e-4)
+                              sol['primal objective'], rtol=5e-6)
         return True, ret[:len(ret)//2]
     else:
         #logger.warning("solver error")
@@ -234,13 +234,16 @@ def get_sol_linf(target_x, tuple_x, faropp, kdtree, transformer, init_x=None):
     G = np.vstack((G, G2, G3))
     h = np.concatenate((h, target_x, -target_x)).reshape((-1, 1))
 
-    temph = h - 1e-4
+    temph = h - 5e-6
 
     status, sol = solve_lp(c=c, G=G, h=temph, n=len(c))
     if status == 'optimal':
         ret = np.array(sol).reshape(-1)
         return True, ret[:-1]
     else:
+        #print(status)
+        #status, sol = solve_lp(c=c, G=G, h=h, n=len(c))
+        #print(status)
         #logger.warning("solver error")
         return False, None
 
@@ -265,7 +268,7 @@ def get_sol_linf(target_x, tuple_x, faropp, kdtree, transformer, init_x=None):
     #        #print(target_x.dot(transformer.T))
     #        #print(ret)
     #        #assert np.isclose(np.linalg.norm(target_x.dot(transformer.T) - (ret[:-1]).dot(transformer.T), ord=np.inf),
-    #        #                  sol['primal objective'], rtol=1e-4)
+    #        #                  sol['primal objective'], rtol=5e-6)
     #    return True, ret[:-1]
     #else:
     #    #logger.warning("solver error")
@@ -398,8 +401,12 @@ def rev_get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
                 init_x=glob_trnX[i])
 
         if method == 'region':
-            assert ret
-            proc = np.array([sol]).dot(transformer.T)
+            #assert ret
+            if not ret:
+                proc = np.array([glob_trnX[i]]).dot(transformer.T)
+                sol = np.array([glob_trnX[i]])
+            else:
+                proc = np.array([sol]).dot(transformer.T)
             assert knn.predict(proc)[0] != target_y
             eps = np.linalg.norm(sol - target_x, ord=ord)
             if eps < temp[1]:

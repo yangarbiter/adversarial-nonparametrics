@@ -182,7 +182,7 @@ class RFAttack(AttackModel):
                 for i, (G, h) in enumerate(zip(Gs, hs)):
                     Gss[i].append(G)
                     hss[i].append(h)
-            import ipdb; ipdb.set_trace()
+            #import ipdb; ipdb.set_trace()
             self.regions = [union_constraints(np.vstack(Gs), np.concatenate(hs)) \
                             for Gs, hs in zip(Gss, hss)]
 
