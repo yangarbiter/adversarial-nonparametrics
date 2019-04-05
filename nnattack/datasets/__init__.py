@@ -39,6 +39,29 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         eps = [0.01 * i for i in range(0, 41, 5)]
         return X, y, eps
 
+    @register_var(argument=r"covtype_(?P<n_samples>\d+)")
+    @staticmethod
+    def covtype(auto_var, var_value, inter_var, n_samples):
+        n_samples = int(n_samples)
+
+        # https://archive.ics.uci.edu/ml/datasets/covertype
+        data = np.genfromtxt('./nnattack/datasets/files/covtype.data', delimiter=',')
+        ty = data[:, -1].astype(int) - 1
+        tX = data[:, :-1].astype(float)
+
+        idx = np.random.choice(np.arange(len(tX)), n_samples, replace=False)
+        X, y = tX[idx], ty[idx]
+        #X, y = np.zeros((n_samples, tX.shape[1])), np.zeros(n_samples)
+        #for i in range(7):
+        #    idx = np.random.choice(np.where(ty==i)[0], n_samples//7, replace=False)
+        #    X[(n_samples//7)*i:(n_samples//7)*(i+1)] = tX[idx]
+        #    y[(n_samples//7)*i:(n_samples//7)*(i+1)] = ty[idx]
+        #X, y = X[:(n_samples//7)*7], y[:(n_samples//7)*7]
+
+        eps = [0.01 * i for i in range(0, 41, 5)]
+
+        return X, y, eps
+
     @register_var()
     @staticmethod
     def abalone(auto_var, var_value, inter_var):

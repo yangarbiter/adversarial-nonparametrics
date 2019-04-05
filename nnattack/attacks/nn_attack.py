@@ -4,7 +4,6 @@ import os
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-import scipy.sparse as ss
 from cvxopt import matrix, solvers
 import cvxopt.glpk
 import cvxopt
@@ -37,6 +36,9 @@ solvers.options['feastol'] = 1e-7
 solvers.options['abstol'] = 1e-7
 solvers.options['reltol'] = 1e-7
 cvxopt.glpk.options["msg_lev"] = "GLP_MSG_OFF"
+
+
+CONSTRAINTTOL = 5e-6
 
 def get_half_space(a, b):
     w = (b - a)
@@ -98,7 +100,7 @@ def get_sol(target_x, tuple_x, faropp, kdtree, transformer, init_x=None):
     #q = matrix(-2*target_x.dot(transformer.T).dot(transformer), tc='d')
     q = matrix(-2*target_x, tc='d')
 
-    temph = h - 5e-6 # make sure all constraints are met
+    temph = h - CONSTRAINTTOL # make sure all constraints are met
 
     status, sol = solve_qp(np.array(Q), np.array(q), np.array(G),
                            np.array(temph), n_fets)
@@ -116,12 +118,10 @@ def get_sol(target_x, tuple_x, faropp, kdtree, transformer, init_x=None):
     #            init_x = lp_sol['x']
     #        else:
     #            init_x = None
-
     #    if init_x is not None:
     #        #sol2 = solve_qp(np.array(Q), np.array(q).flatten(), np.array(G).T,
     #        #        np.array(temph).flatten())
     #        sol = solvers.qp(P=Q, q=q, G=G, h=temph, initvals=init_x)
-
     #        if sol['status'] == 'optimal':
     #            ret = np.array(sol['x'], np.float64).reshape(-1)
     #            if DEBUG:
@@ -151,7 +151,7 @@ def sol_sat_constraints(G, h):
     fet_dim = G.shape[1]
     c = matrix(np.zeros(fet_dim), tc='d')
     G = matrix(G, tc='d')
-    temph = matrix(h - 5e-6, tc='d')
+    temph = matrix(h - CONSTRAINTTOL, tc='d')
     sol = solvers.lp(c=c, G=G, h=temph, solver='glpk')
     return (sol['status'] == 'optimal')
 
@@ -182,7 +182,7 @@ def get_sol_l1(target_x, tuple_x, faropp, kdtree, transformer, init_x=None):
 
     G, h = matrix(G, tc='d'), matrix(h, tc='d')
 
-    temph = h - 5e-6
+    temph = h - CONSTRAINTTOL
     if init_x is not None:
         sol = solvers.lp(c=c, G=G, h=temph, solver='glpk',
                          initvals=init_x)
@@ -204,9 +204,9 @@ def get_sol_l1(target_x, tuple_x, faropp, kdtree, transformer, init_x=None):
             #print(target_x.dot(transformer.T))
             #print(ret)
             #assert np.isclose(np.linalg.norm(target_x.dot(transformer.T) - (ret[:len(ret)//2]).dot(transformer.T), ord=1),
-            #                  sol['primal objective'], rtol=5e-6)
+            #                  sol['primal objective'], rtol=CONSTRAINTTOL)
             assert np.isclose(np.linalg.norm(target_x - ret[:len(ret)//2], ord=1),
-                              sol['primal objective'], rtol=5e-6)
+                              sol['primal objective'], rtol=CONSTRAINTTOL)
         return True, ret[:len(ret)//2]
     else:
         #logger.warning("solver error")
@@ -234,7 +234,7 @@ def get_sol_linf(target_x, tuple_x, faropp, kdtree, transformer, init_x=None):
     G = np.vstack((G, G2, G3))
     h = np.concatenate((h, target_x, -target_x)).reshape((-1, 1))
 
-    temph = h - 5e-6
+    temph = h - CONSTRAINTTOL
 
     status, sol = solve_lp(c=c, G=G, h=temph, n=len(c))
     if status == 'optimal':
@@ -268,7 +268,7 @@ def get_sol_linf(target_x, tuple_x, faropp, kdtree, transformer, init_x=None):
     #        #print(target_x.dot(transformer.T))
     #        #print(ret)
     #        #assert np.isclose(np.linalg.norm(target_x.dot(transformer.T) - (ret[:-1]).dot(transformer.T), ord=np.inf),
-    #        #                  sol['primal objective'], rtol=5e-6)
+    #        #                  sol['primal objective'], rtol=CONSTRAINTTOL)
     #    return True, ret[:-1]
     #else:
     #    #logger.warning("solver error")

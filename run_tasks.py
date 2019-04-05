@@ -15,8 +15,13 @@ from params import (
     robust_rf,
     rf_attack,
     rf500_attack,
+    opt_of_rf_attack,
+
     opt_of_nnopt,
-    opt_of_rf_attack
+    compare_nns,
+    nn_k1_robustness,
+    nn_k3_robustness,
+
 )
 
 logging.basicConfig(level=logging.DEBUG)
@@ -41,6 +46,13 @@ def main():
         rf_attack,
         opt_of_rf_attack,
         #rf500_attack,
+    ]
+
+    experiments = [
+        opt_of_nnopt,
+        compare_nns,
+        nn_k1_robustness,
+        nn_k3_robustness,
     ]
     grid_params = []
     for exp in experiments:
