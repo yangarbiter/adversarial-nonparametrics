@@ -123,19 +123,24 @@ def eps_accuracy(auto_var):
     random_state.shuffle(idxs)
     tstX, tsty = tstX[idxs[:100]], tsty[idxs[:100]]
 
+    augX = None
     if ('adv' in model_name) or ('robust' in model_name):
         assert hasattr(model, 'augX')
         auto_var.set_intermidiate_variable("trnX", model.augX)
         auto_var.set_intermidiate_variable("trny", model.augy)
         augX, augy = model.augX, model.augy
+
+
+    if len(np.unique(auto_var.get_intermidiate_variable('trny'))) == 1:
+        tst_perturbs = np.array([np.zeros_like(tstX) for _ in range(len(eps_list))])
+        ret['single_label'] = True
+        attack_model = None
     else:
-        augX = None
+        attack_model = auto_var.get_var("attack")
+        tst_perturbs = attack_model.perturb(tstX, y=tsty, eps=eps_list)
 
-    attack_model = auto_var.get_var("attack")
-
-    tst_perturbs = attack_model.perturb(tstX, y=tsty, eps=eps_list)
-
-    if hasattr(attack_model, 'perts'):
+    #########
+    if attack_model is not None and hasattr(attack_model, 'perts'):
         perts = attack_model.perts
     else:
         perts = np.copy(tst_perturbs[-1])
@@ -149,6 +154,7 @@ def eps_accuracy(auto_var):
         'avg': np.linalg.norm(perts, axis=1, ord=ord).mean(),
         'missed_count': int(missed_count),
     }
+    #########
 
     results = estimate_model_roubstness(
         model, tstX, tsty, tst_perturbs, eps_list, ord, with_baseline=False)

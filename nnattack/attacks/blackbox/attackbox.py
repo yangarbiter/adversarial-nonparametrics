@@ -127,7 +127,7 @@ class OPT_attack_lf(object):
 
             if g2 < g_theta:
                 best_theta, g_theta = theta, g2
-            
+
             #print(alpha)
             if alpha < 1e-4:
                 alpha = 1.0
@@ -145,7 +145,7 @@ class OPT_attack_lf(object):
     def fine_grained_binary_search_local(self, model, x0, y0, theta, initial_lbd = 1.0, tol=1e-5):
         nquery = 0
         lbd = initial_lbd
-         
+
         if model.predict([x0+lbd*theta]) == y0:
             lbd_lo = lbd
             lbd_hi = lbd*1.01

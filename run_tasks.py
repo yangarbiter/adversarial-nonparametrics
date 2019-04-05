@@ -26,14 +26,14 @@ DEBUG = True if os.environ.get('DEBUG', False) else False
 
 def main():
     experiments = [
-        #opt_of_nnopt,
-        #nn_k1, nn_k3, nn_k5,
-        #nn_k7
+        nn_k1, nn_k3, nn_k5,
+        nn_k7,
+        opt_of_nnopt,
     ]
-    #experiments += [
-    #    robust_nn_k1,
-    #    robust_nn_k3
-    #]
+    experiments += [
+        #robust_nn_k1,
+        robust_nn_k3
+    ]
     experiments += [
         robust_rf,
     ]
