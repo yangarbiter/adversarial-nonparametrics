@@ -35,7 +35,11 @@ class AdversarialKnn(KNeighborsClassifier):
                 raise ValueError("eps should not be None with train type %s", self.train_type)
             elif eps is None:
                 eps = self.eps
-                
+
+            if len(np.unique(y)) != 2:
+                raise ValueError("Can only deal with number of classes = 2"
+                                 "got %d", len(np.unique(y)))
+
             y = y.astype(int)*2-1
             self.augX, self.augy = find_eps_separated_set(X, eps/2, y, self.ord)
             self.augy = (self.augy+1)//2

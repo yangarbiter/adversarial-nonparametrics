@@ -74,7 +74,14 @@ def solve_qp(Q, q, G, h, n):
     obj = cp.Minimize(cp.sum(cp.square(x)) + q.T * x)
     constraints = [G*x <= h]
     prob = cp.Problem(obj, constraints)
-    prob.solve(solver=cp.GUROBI)
+    try:
+        prob.solve(solver=cp.GUROBI)
+    except cp.error.SolverError:
+        try:
+            prob.solve(solver=cp.CVXOPT)
+        except cp.error.SolverError:
+            logger.error("Rare")
+            return False, x.value
     return prob.status, x.value
 
 
@@ -404,7 +411,7 @@ def rev_get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
             #assert ret
             if not ret:
                 proc = np.array([glob_trnX[i]]).dot(transformer.T)
-                sol = np.array([glob_trnX[i]])
+                sol = np.array(glob_trnX[i])
             else:
                 proc = np.array([sol]).dot(transformer.T)
             assert knn.predict(proc)[0] != target_y

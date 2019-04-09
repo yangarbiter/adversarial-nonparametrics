@@ -122,6 +122,8 @@ def eps_accuracy(auto_var):
     idxs = np.where(pred == tsty)[0]
     random_state.shuffle(idxs)
     tstX, tsty = tstX[idxs[:100]], tsty[idxs[:100]]
+    if len(tsty) != 100:
+        raise ValueError("didn't got 100 testing examples")
 
     augX = None
     if ('adv' in model_name) or ('robust' in model_name):

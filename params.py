@@ -324,9 +324,16 @@ def nn_k1_robustness():
     exp_name = "1nn_robustness"
     grid_param = []
     grid_param.append({
-        'model': ['knn1', 'robustv1_nn_k1_10', 'robustv1_nn_k1_30'],
+        'model': ['knn1'],
         'ord': ['inf'],
         'dataset': datasets,
+        'attack': ['nnopt_k1_all', 'blackbox'],
+        'random_seed': random_seed,
+    })
+    grid_param.append({
+        'model': ['robustv1_nn_k1_10', 'robustv1_nn_k1_30'],
+        'ord': ['inf'],
+        'dataset': robust_datasets,
         'attack': ['nnopt_k1_all', 'blackbox'],
         'random_seed': random_seed,
     })
@@ -338,9 +345,16 @@ def nn_k3_robustness():
     exp_name = "3nn_robustness"
     grid_param = []
     grid_param.append({
-        'model': ['knn3', 'robustv1_nn_k3_10', 'robustv1_nn_k3_30'],
+        'model': ['knn3'],
         'ord': ['inf', '2'],
         'dataset': datasets,
+        'attack': ['rev_nnopt_k3_50_region', 'blackbox'],
+        'random_seed': random_seed,
+    })
+    grid_param.append({
+        'model': ['robustv1_nn_k3_10', 'robustv1_nn_k3_30'],
+        'ord': ['inf', '2'],
+        'dataset': robust_datasets,
         'attack': ['rev_nnopt_k3_50_region', 'blackbox'],
         'random_seed': random_seed,
     })
