@@ -69,6 +69,23 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         auto_var.set_intermidiate_variable("tree_clf", model)
         return model
 
+    @register_var(argument='robust_rf_(?P<n_trees>\d+)_(?P<eps>\d+)')
+    @staticmethod
+    def robustRF(auto_var, var_value, inter_var, n_trees, eps):
+        from sklearn.ensemble import RandomForestClassifier
+        n_trees = int(n_trees)
+        eps:float = int(eps) * 0.01
+
+        model = RandomForestClassifier(
+            n_estimators=n_trees,
+            criterion='entropy',
+            splitter='robust',
+            eps=eps,
+            random_state=auto_var.get_var("random_seed"),
+        )
+        auto_var.set_intermidiate_variable("tree_clf", model)
+        return model
+
     @register_var(argument=r"(?P<train>[a-zA-Z0-9]+_)?rf_(?P<n_trees>\d+)_(?P<eps>\d+)")
     @staticmethod
     def adv_robustrf(auto_var, var_value, inter_var, train, eps, n_trees):
