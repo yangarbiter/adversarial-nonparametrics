@@ -1,6 +1,37 @@
 from main import eps_accuracy
 
-random_seed = list(range(2)) 
+random_seed = list(range(2))
+
+datasets = [
+    #'iris', 'wine',
+    'digits_pca5',
+    'digits_pca25',
+    'abalone',
+    'covtype_3200',
+    #'mnist35_2200_pca5', 'fashion_mnist35_2200_pca5',
+    'mnist17_2200_pca25',
+    'fashion_mnist35_2200_pca25',
+    'fashion_mnist06_2200_pca25',
+    'mnist35_2200_pca25',
+    'halfmoon_2200',
+]
+
+robust_datasets = ['abalone',
+    'mnist17_2200_pca25',
+    'mnist35_2200_pca25',
+    'fashion_mnist06_2200_pca25',
+    'fashion_mnist35_2200_pca25',
+    'halfmoon_2200',
+]
+
+small_datasets = [
+    #'fashion_mnist35_300_pca5', 'mnist35_300_pca5',
+    'fashion_mnist35_300_pca25', 'mnist35_300_pca25',
+    'fashion_mnist06_300_pca25', 'mnist17_300_pca25',
+    'halfmoon_300'
+]
+
+
 def dt_attack():
     exp_fn = eps_accuracy
     grid_param = []
@@ -27,23 +58,6 @@ rf_datasets = [
     'halfmoon_2200'
 ]
 
-def robust_rf_attack():
-    exp_fn = eps_accuracy
-    exp_name = "robust_rf"
-    grid_param = []
-    grid_param.append({
-        'model': ['robust_rf_100_10'],
-        'ord': ['inf'],
-        'dataset': rf_datasets,
-        'attack': [
-            'rf_attack_rev_100',
-            'rf_attack_rev_20',
-            'blackbox'],
-        'random_seed': random_seed,
-    })
-
-    run_param = {'verbose': 1, 'n_jobs': 4,}
-    return exp_fn, exp_name, grid_param, run_param
 
 def rf_attack():
     exp_fn = eps_accuracy
@@ -75,27 +89,6 @@ def rf500_attack():
             'rf_attack_rev_100',
             'rf_attack_rev_20',
             'blackbox'],
-        'random_seed': random_seed,
-    })
-
-    run_param = {'verbose': 1, 'n_jobs': 4,}
-    return exp_fn, exp_name, grid_param, run_param
-
-def opt_of_rf_attack():
-    exp_fn = eps_accuracy
-    exp_name = "optimality_rf"
-    grid_param = []
-    grid_param.append({
-        'model': ['random_forest_3'],
-        'ord': ['inf'],
-        'dataset': [
-            'fashion_mnist35_300_pca5',
-            'mnist35_300_pca5',
-            'fashion_mnist06_300_pca5',
-            'halfmoon_300'
-        ],
-        'attack': ['rf_attack_all',
-            'rf_attack_rev', 'rf_attack_rev_50', 'rf_attack_rev_20', 'blackbox'],
         'random_seed': random_seed,
     })
 
@@ -139,18 +132,6 @@ def opt_of_rf_attack():
 #    run_param = {'verbose': 1, 'n_jobs': 4,}
 #    return exp_fn, exp_name, grid_param, run_param
 
-datasets = [
-    #'iris', 'wine',
-    'digits_pca5',
-    'digits_pca25',
-    'abalone',
-    'covtype_3200',
-    #'mnist35_2200_pca5', 'fashion_mnist35_2200_pca5',
-    'fashion_mnist35_2200_pca25',
-    'fashion_mnist06_2200_pca25',
-    'mnist35_2200_pca25',
-    'halfmoon_2200',
-]
 
 def nn_k1():
     exp_fn = eps_accuracy
@@ -229,14 +210,6 @@ def nn_k3():
     return exp_fn, exp_name, grid_param, run_param
 
 
-robust_datasets = ['abalone',
-    #'mnist35_2200_pca5', 'fashion_mnist06_2200_pca5'
-    'mnist35_2200_pca25',
-    'fashion_mnist06_2200_pca25',
-    'fashion_mnist35_2200_pca25',
-    'halfmoon_2200',
-]
-
 def robust_rf():
     exp_fn = eps_accuracy
     exp_name = "Robust-RF"
@@ -300,9 +273,6 @@ def robust_nn_k1():
 
     run_param = {'verbose': 1, 'n_jobs': 4,}
     return exp_fn, exp_name, grid_param, run_param
-
-small_datasets = ['fashion_mnist35_300_pca5', 'mnist35_300_pca5',
-        'fashion_mnist35_300_pca25', 'mnist35_300_pca25', 'halfmoon_300']
 
 
 def opt_of_nnopt():
@@ -371,7 +341,7 @@ def nn_k3_robustness():
     })
     grid_param.append({
         'model': ['robustv1_nn_k3_10', 'robustv1_nn_k3_30'],
-        'ord': ['inf', '2'],
+        'ord': ['inf'],
         'dataset': robust_datasets,
         'attack': ['rev_nnopt_k3_50_region', 'blackbox'],
         'random_seed': random_seed,
@@ -381,7 +351,7 @@ def nn_k3_robustness():
 
 def rf_robustness():
     exp_fn = eps_accuracy
-    exp_name = "Robust-RF"
+    exp_name = "rf-robustness"
 
     grid_param = []
     grid_param.append({
@@ -395,12 +365,30 @@ def rf_robustness():
         'random_seed': random_seed,
     })
     grid_param.append({
-        'model': ['robustv1_rf_100_10', 'robustv1_rf_100_30'],
+        'model': ['robust_rf_100_10', 'robustv1_rf_100_10', 'robustv1_rf_100_30'],
         'ord': ['inf'],
         'dataset': robust_datasets,
         'attack': [
             #'rf_attack_rev_20',
             'rf_attack_rev_100', 'blackbox',
+        ],
+        'random_seed': random_seed,
+    })
+
+    run_param = {'verbose': 1, 'n_jobs': 4,}
+    return exp_fn, exp_name, grid_param, run_param
+
+def opt_of_rf_attack():
+    exp_fn = eps_accuracy
+    exp_name = "optimality_rf"
+    grid_param = []
+    grid_param.append({
+        'model': ['random_forest_3'],
+        'ord': ['inf'],
+        'dataset': small_datasets,
+        'attack': ['rf_attack_all',
+            'rf_attack_rev', 'rf_attack_rev_50',
+            'rf_attack_rev_20', 'blackbox'
         ],
         'random_seed': random_seed,
     })

@@ -69,27 +69,11 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         auto_var.set_intermidiate_variable("tree_clf", model)
         return model
 
-    @register_var(argument='robust_rf_(?P<n_trees>\d+)_(?P<eps>\d+)')
-    @staticmethod
-    def robustRF(auto_var, var_value, inter_var, n_trees, eps):
-        from sklearn.ensemble import RandomForestClassifier
-        n_trees = int(n_trees)
-        eps:float = int(eps) * 0.01
-
-        model = RandomForestClassifier(
-            n_estimators=n_trees,
-            criterion='entropy',
-            splitter='robust',
-            eps=eps,
-            random_state=auto_var.get_var("random_seed"),
-        )
-        auto_var.set_intermidiate_variable("tree_clf", model)
-        return model
-
     @register_var(argument=r"(?P<train>[a-zA-Z0-9]+_)?rf_(?P<n_trees>\d+)_(?P<eps>\d+)")
     @staticmethod
     def adv_robustrf(auto_var, var_value, inter_var, train, eps, n_trees):
         from .adversarial_dt import AdversarialRf
+        from sklearn.ensemble import RandomForestClassifier
         eps = int(eps) * 0.01
         train = train[:-1] if train else None
         n_trees = int(n_trees)
@@ -97,16 +81,24 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         attack_model = None
         if train == 'adv':
             attack_model = auto_var.get_var("attack")
-
-        model = AdversarialRf(
-            n_estimators=n_trees,
-            criterion='entropy',
-            train_type=train,
-            attack_model=attack_model,
-            ord=auto_var.get_var("ord"),
-            eps=eps,
-            random_state=auto_var.get_var("random_seed"),
-        )
+        if train == 'robust':
+            model = RandomForestClassifier(
+                n_estimators=n_trees,
+                criterion='entropy',
+                splitter='robust',
+                eps=eps,
+                random_state=auto_var.get_var("random_seed"),
+            )
+        else:
+            model = AdversarialRf(
+                n_estimators=n_trees,
+                criterion='entropy',
+                train_type=train,
+                attack_model=attack_model,
+                ord=auto_var.get_var("ord"),
+                eps=eps,
+                random_state=auto_var.get_var("random_seed"),
+            )
         auto_var.set_intermidiate_variable("tree_clf", model)
         return model
 

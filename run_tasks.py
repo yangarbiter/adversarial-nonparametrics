@@ -21,7 +21,6 @@ from params import (
     nn_k3_robustness,
 
     rf_robustness,
-    robust_rf_attack,
 )
 
 logging.basicConfig(level=logging.DEBUG)
@@ -53,13 +52,13 @@ def main():
         nn_k1_robustness,
         nn_k3_robustness,
 
-        rf_robustness,
 
         opt_of_nnopt,
+        opt_of_rf_attack,
     ]
-    #experiments = [
-    #    robust_rf_attack,
-    #]
+    experiments = [
+        rf_robustness,
+    ]
     grid_params = []
     for exp in experiments:
         exp_fn, _, grid_param, run_param = exp()
