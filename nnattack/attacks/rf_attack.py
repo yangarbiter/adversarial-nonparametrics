@@ -72,6 +72,8 @@ def tree_instance_constraint(tree_clf, X):
         #hs.append(np.array(h))
         Gs.append(np.array(G) if len(G) > 0 else np.empty((0, n_dims)))
         hs.append(np.array(h) if len(h) > 0 else np.empty((0)))
+        #if len(G) > 0:
+        #    assert np.all(np.dot(G, X[sample_id]) <= h), sample_id
 
     return Gs, hs
 
@@ -106,8 +108,21 @@ def rev_get_sol_linf(target_x, target_y: int, pred_trn_y, regions, clf,
             #print(np.dot(ori_G, trnX[np.where(pred_trn_y != target_y)[0][i]]) <= ori_h)
             #print([est.predict([ret]) for est in clf.estimators_])
             #print([est.predict([trnX[np.where(pred_trn_y != target_y)[0][i]]]) for est in clf.estimators_])
-            assert clf.predict([ret])[0] != target_y
-            candidates.append(ret - target_x)
+
+            #if not np.all(np.dot(G, sol.ravel()) <= h):
+            #    import ipdb; ipdb.set_trace()
+            #assert np.all(np.dot(G, sol.ravel()) <= h), i
+            #if clf.predict([ret])[0] == target_y:
+            #    import ipdb; ipdb.set_trace()
+            #assert clf.predict([ret])[0] != target_y, i
+
+            if clf.predict([ret])[0] != target_y:
+                candidates.append(ret - target_x)
+            else:
+                # a dimension is too close to the boundary
+                if trnX is not None:
+                    candidates.append(trnX[i] - target_x)
+                print("Shouldn't happend often %d" % i)
         elif status == 'infeasible_inaccurate':
             #print(status)
             pass
@@ -189,10 +204,13 @@ class RFAttack(AttackModel):
             for i in range(len(trnX)):
                 G, h = self.regions[i]
                 assert np.all(np.dot(G, trnX[i]) <= (h+1e-8))
+                #assert np.all(np.dot(np.vstack(Gss[i]), trnX[i]) <= np.concatenate(hss[i])), i
+                #assert np.all(np.dot(G, trnX[i]) <= h), i
         else:
             raise ValueError("Not supported method: %s", self.method)
 
     def perturb(self, X, y, eps=0.1):
+        X = X.astype(np.float32)
         if self.ord == 2:
             get_sol_fn = rev_get_sol_l2
         elif self.ord == np.inf:

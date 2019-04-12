@@ -9,6 +9,59 @@ from scipy.spatial.distance import cdist
 
 from .eps_separation import find_eps_separated_set
 
+def find_confident_label(X, Y, k, Delta):
+    thres = 2*Delta
+    #print(thres, k)
+    neigh = NearestNeighbors(k)
+    neigh.fit(X)
+    nn = neigh.kneighbors(X, k, return_distance=False)
+    Y_hat = np.array([[Y[j] for j in i] for i in nn])
+    Y_hat = np.sum(Y_hat, axis=1)/k
+    Y_hat = [0 if (abs(Y_hat[i]) < thres) else np.sign(Y_hat[i])
+             for i in range(X.shape[0])]
+    Y_hat = np.array(Y_hat)
+    return Y_hat
+
+def find_red_points(X, Y, Y_hat, eps, ord):
+    n = X.shape[0]
+    d = cdist(X, X, 'minkowski', ord)
+
+    is_close = (d < eps)
+    is_red = np.ones((n, 1))
+    for i in range(n):
+        for j in range(n):
+            if (is_close[i, j]) and (Y_hat[i] != Y_hat[j]):
+                is_red[i] = 0
+
+            if Y_hat[i] != Y[i]:
+                is_red[i] = 0
+    red_pts = [np.array([X[i] for i in range(n) if is_red[i]]),
+               np.array([Y[i] for i in range(n) if is_red[i]])]
+    other_pts = [np.array([X[i] for i in range(n) if not is_red[i]]),
+                 np.array([Y[i] for i in range(n) if not is_red[i]])]
+
+    [X_red, Y_red] = [red_pts[0], red_pts[1]]
+    [X_other, Y_other] = [other_pts[0], other_pts[1]]
+    return X_red, Y_red, X_other, Y_other
+
+def get_aug_v2(X, Y, Delta, delta, eps, ord):
+    k = min(int(3*np.log(X.shape[0]/delta)/(np.log(2)*(Delta**2))), len(X))
+
+    Y_hat = find_confident_label(X, Y, k, Delta)
+    X_red, Y_red, X_other, Y_other = find_red_points(
+            X, Y, eps=eps, Y_hat=Y_hat, ord=ord)
+
+    [X, Y] = [X_other, Y_other]
+    X, Y = find_eps_separated_set(X, eps/2, Y, ord=ord)
+
+    if X_red.shape[0] > 0:
+        X_train = np.concatenate([X, X_red])
+        Y_train = np.concatenate([Y, Y_red])
+    else:
+        X_train = X
+        Y_train = Y
+    return X_train, Y_train
+
 class Robust_1NN():
     def __init__(self, Delta, delta, ord, train_type='robust_v2'):
         #self.X = X

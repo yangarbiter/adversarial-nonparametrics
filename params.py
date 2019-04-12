@@ -16,12 +16,17 @@ datasets = [
     'halfmoon_2200',
 ]
 
-robust_datasets = ['abalone',
+robust_datasets = [ # binary
+    'abalone',
     'mnist17_2200_pca25',
     'mnist35_2200_pca25',
     'fashion_mnist06_2200_pca25',
     'fashion_mnist35_2200_pca25',
     'halfmoon_2200',
+]
+
+large_datasets = [
+    'fashion_mnist35_12000', 'mnist35_12000',
 ]
 
 small_datasets = [
@@ -77,24 +82,23 @@ def rf_attack():
     run_param = {'verbose': 1, 'n_jobs': 4,}
     return exp_fn, exp_name, grid_param, run_param
 
-def rf500_attack():
-    exp_fn = eps_accuracy
-    exp_name = "rf500"
-    grid_param = []
-    grid_param.append({
-        'model': ['random_forest_500'],
-        'ord': ['inf'],
-        'dataset': rf_datasets,
-        'attack': [
-            'rf_attack_rev_100',
-            'rf_attack_rev_20',
-            'blackbox'],
-        'random_seed': random_seed,
-    })
-
-    run_param = {'verbose': 1, 'n_jobs': 4,}
-    return exp_fn, exp_name, grid_param, run_param
-
+#def rf500_attack():
+#    exp_fn = eps_accuracy
+#    exp_name = "rf500"
+#    grid_param = []
+#    grid_param.append({
+#        'model': ['random_forest_500'],
+#        'ord': ['inf'],
+#        'dataset': rf_datasets,
+#        'attack': [
+#            'rf_attack_rev_100',
+#            'rf_attack_rev_20',
+#            'blackbox'],
+#        'random_seed': random_seed,
+#    })
+#
+#    run_param = {'verbose': 1, 'n_jobs': 4,}
+#    return exp_fn, exp_name, grid_param, run_param
 #def nn_k1():
 #    exp_fn = eps_accuracy
 #    exp_name = "1nn"
@@ -131,148 +135,147 @@ def rf500_attack():
 #
 #    run_param = {'verbose': 1, 'n_jobs': 4,}
 #    return exp_fn, exp_name, grid_param, run_param
-
-
-def nn_k1():
-    exp_fn = eps_accuracy
-    exp_name = "1nn"
-    grid_param = []
-    grid_param.append({
-        'model': ['knn1'],
-        'ord': ['inf'],
-        'dataset': datasets,
-        'attack': [
-            'rev_nnopt_k1_50_region',
-            'direct_k1',
-            'blackbox',
-        ],
-        'random_seed': random_seed,
-    })
-
-    run_param = {'verbose': 1, 'n_jobs': 4,}
-    return exp_fn, exp_name, grid_param, run_param
-
-def nn_k7():
-    exp_fn = eps_accuracy
-    exp_name = "7nn"
-    grid_param = []
-    grid_param.append({
-        'model': ['knn7'],
-        'ord': ['inf'],
-        'dataset': datasets,
-        'attack': [
-            'rev_nnopt_k7_50_region',
-            'direct_k7',
-            'blackbox',
-        ],
-        'random_seed': random_seed,
-    })
-
-    run_param = {'verbose': 1, 'n_jobs': 4,}
-    return exp_fn, exp_name, grid_param, run_param
-
-def nn_k5():
-    exp_fn = eps_accuracy
-    exp_name = "5nn"
-    grid_param = []
-    grid_param.append({
-        'model': ['knn5'],
-        'ord': ['inf'],
-        'dataset': datasets,
-        'attack': [
-            #'rev_nnopt_k5_20', 'rev_nnopt_k5_50',
-            'rev_nnopt_k5_50_region',
-            'blackbox',
-        ],
-        'random_seed': random_seed,
-    })
-
-    run_param = {'verbose': 1, 'n_jobs': 4,}
-    return exp_fn, exp_name, grid_param, run_param
-
-
-def nn_k3():
-    exp_fn = eps_accuracy
-    exp_name = "3nn"
-    grid_param = []
-    grid_param.append({
-        'model': ['knn3'],
-        'ord': ['inf'],
-        'dataset': datasets,
-        'attack': [
-            'direct_k3', 'blackbox',
-            'rev_nnopt_k3_50_region',
-        ],
-        'random_seed': random_seed,
-    })
-
-    run_param = {'verbose': 1, 'n_jobs': 4,}
-    return exp_fn, exp_name, grid_param, run_param
-
-
-def robust_rf():
-    exp_fn = eps_accuracy
-    exp_name = "Robust-RF"
-
-    adv_models = ['adv_rf_100_%d' % i for i in range(0, 41, 5)]
-    adv_models += ['robustv1_rf_100_%d' % i for i in range(0, 41, 5)]
-    grid_param = []
-    grid_param.append({
-        'model': adv_models,
-        'ord': ['inf'],
-        'dataset': robust_datasets,
-        'attack': [
-            'rf_attack_rev_20',
-            'rf_attack_rev_100',
-            'blackbox',
-        ],
-        'random_seed': random_seed,
-    })
-
-    run_param = {'verbose': 1, 'n_jobs': 4,}
-    return exp_fn, exp_name, grid_param, run_param
-
-def robust_nn_k3():
-    exp_fn = eps_accuracy
-    exp_name = "Robust-3nn"
-    #adv_models = ['adv_nn_k3_%d' % i for i in range(0, 41, 5)]
-    #adv_models += ['robustv1_nn_k3_%d' % i for i in range(0, 41, 5)]
-    adv_models = ['adv_nn_k3_%d' % i for i in [10, 30]]
-    adv_models += ['robustv1_nn_k3_%d' % i for i in [10, 30]]
-    grid_param = []
-    grid_param.append({
-        'model': adv_models,
-        'ord': ['inf'],
-        'dataset': robust_datasets,
-        'attack': [
-            'direct_k3',
-            'blackbox',
-            'rev_nnopt_k3_50_region',
-        ],
-        'random_seed': random_seed,
-    })
-
-    run_param = {'verbose': 1, 'n_jobs': 4,}
-    return exp_fn, exp_name, grid_param, run_param
-
-def robust_nn_k1():
-    exp_fn = eps_accuracy
-    exp_name = "Robust-1nn"
-    #adv_models = ['adv_nn_k1_%d' % i for i in range(0, 41, 5)]
-    #adv_models += ['robustv1_nn_k1_%d' % i for i in range(0, 41, 5)]
-    adv_models = ['adv_nn_k1_%d' % i for i in [10, 30]]
-    adv_models += ['robustv1_nn_k1_%d' % i for i in [10, 30]]
-    grid_param = []
-    grid_param.append({
-        'model': adv_models,
-        'ord': ['inf'],
-        'dataset': robust_datasets,
-        'attack': ['rev_nnopt_k1_50_region', 'direct_k1', 'blackbox'],
-        'random_seed': random_seed,
-    })
-
-    run_param = {'verbose': 1, 'n_jobs': 4,}
-    return exp_fn, exp_name, grid_param, run_param
+#
+#def nn_k1():
+#    exp_fn = eps_accuracy
+#    exp_name = "1nn"
+#    grid_param = []
+#    grid_param.append({
+#        'model': ['knn1'],
+#        'ord': ['inf'],
+#        'dataset': datasets,
+#        'attack': [
+#            'rev_nnopt_k1_50_region',
+#            'direct_k1',
+#            'blackbox',
+#        ],
+#        'random_seed': random_seed,
+#    })
+#
+#    run_param = {'verbose': 1, 'n_jobs': 4,}
+#    return exp_fn, exp_name, grid_param, run_param
+#
+#def nn_k7():
+#    exp_fn = eps_accuracy
+#    exp_name = "7nn"
+#    grid_param = []
+#    grid_param.append({
+#        'model': ['knn7'],
+#        'ord': ['inf'],
+#        'dataset': datasets,
+#        'attack': [
+#            'rev_nnopt_k7_50_region',
+#            'direct_k7',
+#            'blackbox',
+#        ],
+#        'random_seed': random_seed,
+#    })
+#
+#    run_param = {'verbose': 1, 'n_jobs': 4,}
+#    return exp_fn, exp_name, grid_param, run_param
+#
+#def nn_k5():
+#    exp_fn = eps_accuracy
+#    exp_name = "5nn"
+#    grid_param = []
+#    grid_param.append({
+#        'model': ['knn5'],
+#        'ord': ['inf'],
+#        'dataset': datasets,
+#        'attack': [
+#            #'rev_nnopt_k5_20', 'rev_nnopt_k5_50',
+#            'rev_nnopt_k5_50_region',
+#            'blackbox',
+#        ],
+#        'random_seed': random_seed,
+#    })
+#
+#    run_param = {'verbose': 1, 'n_jobs': 4,}
+#    return exp_fn, exp_name, grid_param, run_param
+#
+#
+#def nn_k3():
+#    exp_fn = eps_accuracy
+#    exp_name = "3nn"
+#    grid_param = []
+#    grid_param.append({
+#        'model': ['knn3'],
+#        'ord': ['inf'],
+#        'dataset': datasets,
+#        'attack': [
+#            'direct_k3', 'blackbox',
+#            'rev_nnopt_k3_50_region',
+#        ],
+#        'random_seed': random_seed,
+#    })
+#
+#    run_param = {'verbose': 1, 'n_jobs': 4,}
+#    return exp_fn, exp_name, grid_param, run_param
+#
+#
+#def robust_rf():
+#    exp_fn = eps_accuracy
+#    exp_name = "Robust-RF"
+#
+#    adv_models = ['adv_rf_100_%d' % i for i in range(0, 41, 5)]
+#    adv_models += ['robustv1_rf_100_%d' % i for i in range(0, 41, 5)]
+#    grid_param = []
+#    grid_param.append({
+#        'model': adv_models,
+#        'ord': ['inf'],
+#        'dataset': robust_datasets,
+#        'attack': [
+#            'rf_attack_rev_20',
+#            'rf_attack_rev_100',
+#            'blackbox',
+#        ],
+#        'random_seed': random_seed,
+#    })
+#
+#    run_param = {'verbose': 1, 'n_jobs': 4,}
+#    return exp_fn, exp_name, grid_param, run_param
+#
+#def robust_nn_k3():
+#    exp_fn = eps_accuracy
+#    exp_name = "Robust-3nn"
+#    #adv_models = ['adv_nn_k3_%d' % i for i in range(0, 41, 5)]
+#    #adv_models += ['robustv1_nn_k3_%d' % i for i in range(0, 41, 5)]
+#    adv_models = ['adv_nn_k3_%d' % i for i in [10, 30]]
+#    adv_models += ['robustv1_nn_k3_%d' % i for i in [10, 30]]
+#    grid_param = []
+#    grid_param.append({
+#        'model': adv_models,
+#        'ord': ['inf'],
+#        'dataset': robust_datasets,
+#        'attack': [
+#            'direct_k3',
+#            'blackbox',
+#            'rev_nnopt_k3_50_region',
+#        ],
+#        'random_seed': random_seed,
+#    })
+#
+#    run_param = {'verbose': 1, 'n_jobs': 4,}
+#    return exp_fn, exp_name, grid_param, run_param
+#
+#def robust_nn_k1():
+#    exp_fn = eps_accuracy
+#    exp_name = "Robust-1nn"
+#    #adv_models = ['adv_nn_k1_%d' % i for i in range(0, 41, 5)]
+#    #adv_models += ['robustv1_nn_k1_%d' % i for i in range(0, 41, 5)]
+#    adv_models = ['adv_nn_k1_%d' % i for i in [10, 30]]
+#    adv_models += ['robustv1_nn_k1_%d' % i for i in [10, 30]]
+#    grid_param = []
+#    grid_param.append({
+#        'model': adv_models,
+#        'ord': ['inf'],
+#        'dataset': robust_datasets,
+#        'attack': ['rev_nnopt_k1_50_region', 'direct_k1', 'blackbox'],
+#        'random_seed': random_seed,
+#    })
+#
+#    run_param = {'verbose': 1, 'n_jobs': 4,}
+#    return exp_fn, exp_name, grid_param, run_param
 
 
 def opt_of_nnopt():
@@ -319,7 +322,10 @@ def nn_k1_robustness():
         'random_seed': random_seed,
     })
     grid_param.append({
-        'model': ['robustv1_nn_k1_10', 'robustv1_nn_k1_30'],
+        'model': [
+            'robustv1_nn_k1_10', 'robustv1_nn_k1_30',
+            'robustv2_nn_k1_10', 'robustv2_nn_k1_30',
+        ],
         'ord': ['inf'],
         'dataset': robust_datasets,
         'attack': ['nnopt_k1_all', 'blackbox'],
@@ -340,7 +346,10 @@ def nn_k3_robustness():
         'random_seed': random_seed,
     })
     grid_param.append({
-        'model': ['robustv1_nn_k3_10', 'robustv1_nn_k3_30'],
+        'model': [
+            'robustv1_nn_k3_10', 'robustv1_nn_k3_30',
+            'robustv2_nn_k3_10', 'robustv2_nn_k3_30',
+        ],
         'ord': ['inf'],
         'dataset': robust_datasets,
         'attack': ['rev_nnopt_k3_50_region', 'blackbox'],
@@ -354,6 +363,16 @@ def rf_robustness():
     exp_name = "rf-robustness"
 
     grid_param = []
+    #grid_param.append({
+    #    'model': ['random_forest_100'],
+    #    'ord': ['inf'],
+    #    'dataset': large_datasets,
+    #    'attack': [
+    #        #'rf_attack_rev_20',
+    #        'rf_attack_rev_100', 'blackbox',
+    #    ],
+    #    'random_seed': random_seed,
+    #})
     grid_param.append({
         'model': ['random_forest_100'],
         'ord': ['inf'],
@@ -365,7 +384,11 @@ def rf_robustness():
         'random_seed': random_seed,
     })
     grid_param.append({
-        'model': ['robust_rf_100_10', 'robustv1_rf_100_10', 'robustv1_rf_100_30'],
+        'model': [
+            'robust_rf_100_10',
+            'robustv1_rf_100_10', 'robustv1_rf_100_30',
+            'robustv2_rf_100_10', 'robustv2_rf_100_30',
+        ],
         'ord': ['inf'],
         'dataset': robust_datasets,
         'attack': [

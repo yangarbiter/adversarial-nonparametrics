@@ -70,7 +70,7 @@ def estimate_model_roubstness(model, X, y, perturbs, eps_list, ord,
 
         ret.append({
             'eps': eps_list[i],
-            'tst_acc': (pred == y).mean(),
+            'tst_acc': (pred == y).mean().astype(float),
         })
         print(ret[-1])
     return ret
@@ -122,18 +122,19 @@ def eps_accuracy(auto_var):
     idxs = np.where(pred == tsty)[0]
     random_state.shuffle(idxs)
     tstX, tsty = tstX[idxs[:100]], tsty[idxs[:100]]
-    if len(tsty) != 100:
-        raise ValueError("didn't got 100 testing examples")
+    #if len(tsty) != 100:
+    #    raise ValueError("didn't got 100 testing examples")
 
     augX = None
-    if ('adv' in model_name) or ('robustv1' in model_name):
+    if ('adv' in model_name) or ('robustv1' in model_name) or ('robustv2' in model_name):
         assert hasattr(model, 'augX')
         auto_var.set_intermidiate_variable("trnX", model.augX)
         auto_var.set_intermidiate_variable("trny", model.augy)
         augX, augy = model.augX, model.augy
 
 
-    if len(np.unique(auto_var.get_intermidiate_variable('trny'))) == 1:
+    if len(tsty) != 100 or \
+       len(np.unique(auto_var.get_intermidiate_variable('trny'))) == 1:
         tst_perturbs = np.array([np.zeros_like(tstX) for _ in range(len(eps_list))])
         ret['single_label'] = True
         attack_model = None
@@ -153,7 +154,7 @@ def eps_accuracy(auto_var):
         # ignore single label case
         ret['single_label'] = True
     ret['avg_pert'] = {
-        'avg': np.linalg.norm(perts, axis=1, ord=ord).mean(),
+        'avg': np.linalg.norm(perts, axis=1, ord=ord).mean().astype(float),
         'missed_count': int(missed_count),
     }
     #########

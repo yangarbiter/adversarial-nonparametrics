@@ -5,14 +5,14 @@ from nnattack.variables import auto_var, get_file_name
 
 from main import eps_accuracy
 from params import (
-    nn_k1,
-    nn_k3,
-    nn_k5,
-    nn_k7,
-    robust_nn_k1, robust_nn_k3, dt_attack,
-    robust_rf,
-    rf_attack,
-    rf500_attack,
+    #nn_k1,
+    #nn_k3,
+    #nn_k5,
+    #nn_k7,
+    #robust_nn_k1, robust_nn_k3, dt_attack,
+    #robust_rf,
+    #rf_attack,
+    #rf500_attack,
     opt_of_rf_attack,
 
     opt_of_nnopt,
@@ -30,24 +30,6 @@ DEBUG = True if os.environ.get('DEBUG', False) else False
 
 def main():
     experiments = [
-        nn_k1, nn_k3, nn_k5,
-        nn_k7,
-        opt_of_nnopt,
-    ]
-    experiments += [
-        #robust_nn_k1,
-        robust_nn_k3
-    ]
-    experiments += [
-        robust_rf,
-    ]
-    experiments += [
-        rf_attack,
-        opt_of_rf_attack,
-        #rf500_attack,
-    ]
-
-    experiments = [
         compare_nns,
         nn_k1_robustness,
         nn_k3_robustness,
@@ -55,8 +37,7 @@ def main():
 
         opt_of_nnopt,
         opt_of_rf_attack,
-    ]
-    experiments = [
+
         rf_robustness,
     ]
     grid_params = []
