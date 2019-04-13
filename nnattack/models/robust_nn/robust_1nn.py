@@ -52,6 +52,7 @@ def get_aug_v2(X, Y, Delta, delta, eps, ord):
             X, Y, eps=eps, Y_hat=Y_hat, ord=ord)
 
     [X, Y] = [X_other, Y_other]
+    print("X_other: ", X.shape)
     X, Y = find_eps_separated_set(X, eps/2, Y, ord=ord)
 
     if X_red.shape[0] > 0:

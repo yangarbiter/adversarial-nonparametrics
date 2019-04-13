@@ -3,7 +3,6 @@ import logging
 
 from nnattack.variables import auto_var, get_file_name
 
-from main import eps_accuracy
 from params import (
     #nn_k1,
     #nn_k3,
@@ -13,15 +12,19 @@ from params import (
     #robust_rf,
     #rf_attack,
     #rf500_attack,
-    opt_of_rf_attack,
 
-    opt_of_nnopt,
+    #opt_of_rf_attack,
+    #opt_of_nnopt,
+
+    optimality,
     compare_nns,
     nn_k1_robustness,
     nn_k3_robustness,
 
     rf_robustness,
 )
+from main import eps_accuracy
+from tasks import run_exp
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -30,13 +33,11 @@ DEBUG = True if os.environ.get('DEBUG', False) else False
 
 def main():
     experiments = [
-        compare_nns,
+        #compare_nns,
         nn_k1_robustness,
         nn_k3_robustness,
 
-
-        opt_of_nnopt,
-        opt_of_rf_attack,
+        optimality,
 
         rf_robustness,
     ]
@@ -54,10 +55,14 @@ def main():
     auto_var.run_grid_params(exp_fn, grid_params, **run_param)
     #auto_var.run_grid_params(delete_file, grid_params, n_jobs=1,
     #                          with_hook=False, allow_failure=False)
+    #auto_var.run_grid_params(celery_run, grid_params, n_jobs=1,
+    #                         allow_failure=False)
 
 def delete_file(auto_var):
     os.unlink(get_file_name(auto_var) + '.json')
 
+def celery_run(auto_var):
+    run_exp.delay(auto_var.var_value)
 
 
 if __name__ == "__main__":

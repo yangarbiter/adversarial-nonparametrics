@@ -1,6 +1,6 @@
 from main import eps_accuracy
 
-random_seed = list(range(2))
+random_seed = list(range(5))
 
 datasets = [
     #'iris', 'wine',
@@ -278,21 +278,6 @@ def rf_attack():
 #    return exp_fn, exp_name, grid_param, run_param
 
 
-def opt_of_nnopt():
-    exp_fn = eps_accuracy
-    exp_name = "Optimality3NNOPT"
-    grid_param = [{
-        'model': ['knn3'],
-        'ord': ['inf'],
-        'dataset': small_datasets,
-        'attack': ['nnopt_k3_all',
-            'rev_nnopt_k3_20_region', 'rev_nnopt_k3_50_region',],
-        'random_seed': random_seed,
-    }]
-
-    run_param = {'verbose': 1, 'n_jobs': 4,}
-    return exp_fn, exp_name, grid_param, run_param
-
 
 def compare_nns():
     exp_fn = eps_accuracy
@@ -401,6 +386,21 @@ def rf_robustness():
     run_param = {'verbose': 1, 'n_jobs': 4,}
     return exp_fn, exp_name, grid_param, run_param
 
+def opt_of_nnopt():
+    exp_fn = eps_accuracy
+    exp_name = "Optimality3NNOPT"
+    grid_param = [{
+        'model': ['knn3'],
+        'ord': ['inf'],
+        'dataset': small_datasets,
+        'attack': ['nnopt_k3_all',
+            'rev_nnopt_k3_20_region', 'rev_nnopt_k3_50_region',],
+        'random_seed': random_seed,
+    }]
+
+    run_param = {'verbose': 1, 'n_jobs': 4,}
+    return exp_fn, exp_name, grid_param, run_param
+
 def opt_of_rf_attack():
     exp_fn = eps_accuracy
     exp_name = "optimality_rf"
@@ -413,6 +413,32 @@ def opt_of_rf_attack():
             'rf_attack_rev', 'rf_attack_rev_50',
             'rf_attack_rev_20', 'blackbox'
         ],
+        'random_seed': random_seed,
+    })
+
+    run_param = {'verbose': 1, 'n_jobs': 4,}
+    return exp_fn, exp_name, grid_param, run_param
+
+
+def optimality():
+    exp_fn = eps_accuracy
+    exp_name = "optimality_reduction"
+    grid_param = []
+    grid_param.append({
+        'model': ['random_forest_3'],
+        'ord': ['inf'],
+        'dataset': small_datasets,
+        'attack': ['rf_attack_all',
+            'rf_attack_rev', 'rf_attack_rev_100', 'blackbox'
+        ],
+        'random_seed': random_seed,
+    })
+    grid_param.append({
+        'model': ['knn3'],
+        'ord': ['inf'],
+        'dataset': small_datasets,
+        'attack': ['nnopt_k3_all',
+            'rev_nnopt_k3_20_region', 'rev_nnopt_k3_50_region',],
         'random_seed': random_seed,
     })
 
