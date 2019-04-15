@@ -1,3 +1,4 @@
+import gc
 from itertools import product, permutations
 
 import numpy as np
@@ -10,6 +11,21 @@ from joblib import Parallel, delayed
 from .base import AttackModel
 from .dt_opt import get_tree_constraints
 from .nn_attack import solve_lp, solve_qp
+
+def constraint_list_to_matrix(r):
+    rG, rh = [], []
+    n_dim = len(r) // 2
+    for i in range(len(r)):
+        if r[i] < np.inf:
+            temp = np.zeros(n_dim)
+            if i < n_dim:
+                temp[i] = 1
+            else:
+                temp[i-n_dim] = -1
+            rG.append(temp)
+            rh.append(r[i])
+
+    return np.array(rG), np.array(rh)
 
 def union_constraints(G, h):
     assert np.all(np.abs(G).sum(1) == np.ones(len(G)))
@@ -28,19 +44,8 @@ def union_constraints(G, h):
             r[idx] = hi if r[idx] is None else min(r[idx], hi)
         else:
             raise ValueError()
+    return r
 
-    rG, rh = [], []
-    for i in range(len(r)):
-        if r[i] is not None:
-            temp = np.zeros(n_dim)
-            if i < n_dim:
-                temp[i] = 1
-            else:
-                temp[i-n_dim] = -1
-            rG.append(temp)
-            rh.append(r[i])
-
-    return np.array(rG), np.array(rh)
 
 def tree_instance_constraint(tree_clf, X):
     node_indicator = tree_clf.decision_path(X)
@@ -49,38 +54,49 @@ def tree_instance_constraint(tree_clf, X):
     threshold = tree_clf.tree_.threshold
     n_dims = X.shape[1]
 
-    Gs, hs = [], []
+    ret = []
+    #Gs, hs = [], []
     for sample_id in range(len(X)):
         node_index = node_indicator.indices[node_indicator.indptr[sample_id]:
                                             node_indicator.indptr[sample_id + 1]]
-        G, h = [], []
+        r = [np.inf for i in range(n_dims*2)]
+        #G, h = [], []
         for node_id in node_index:
             if leave_id[sample_id] == node_id:
                 break
 
-            G.append(np.zeros(n_dims))
+            #G.append(np.zeros(n_dims))
             if (X[sample_id, feature[node_id]] <= threshold[node_id]):
                 #threshold_sign = "<="
-                G[-1][feature[node_id]] = 1
-                h.append(threshold[node_id])
+                idx = feature[node_id]
+                hi = threshold[node_id]
+                #G[-1][idx] = 1
+                #h.append(hi)
+                r[idx] = hi if r[idx] is None else min(r[idx], hi)
             else:
                 #threshold_sign = ">"
-                G[-1][feature[node_id]] = -1
-                h.append(-threshold[node_id] - 1e-9) # excluding equality
+                idx = feature[node_id] + n_dims
+                hi = -threshold[node_id] - 1e-9
+                #G[-1][feature[node_id]] = -1
+                #h.append(-threshold[node_id] - 1e-9) # excluding equality
+                r[idx] = hi if r[idx] is None else min(r[idx], hi)
+        ret.append(r)
 
         #Gs.append(np.array(G))
         #hs.append(np.array(h))
-        Gs.append(np.array(G) if len(G) > 0 else np.empty((0, n_dims)))
-        hs.append(np.array(h) if len(h) > 0 else np.empty((0)))
+        #Gs.append(np.array(G) if len(G) > 0 else np.empty((0, n_dims)))
+        #hs.append(np.array(h) if len(h) > 0 else np.empty((0)))
         #if len(G) > 0:
         #    assert np.all(np.dot(G, X[sample_id]) <= h), sample_id
 
-    return Gs, hs
+    #return Gs, hs
+    return np.asarray(ret)
 
 def rev_get_sol_linf(target_x, target_y: int, pred_trn_y, regions, clf,
         trnX=None):
     fet_dim = np.shape(target_x)[0]
     candidates = []
+    regions = [constraint_list_to_matrix(r) for r in regions]
     for i, (G, h) in enumerate(regions):
         c = np.concatenate((np.zeros(fet_dim), np.ones(1))).reshape((-1, 1))
 
@@ -113,7 +129,6 @@ def rev_get_sol_linf(target_x, target_y: int, pred_trn_y, regions, clf,
             #    import ipdb; ipdb.set_trace()
             #assert np.all(np.dot(G, sol.ravel()) <= h), i
             #if clf.predict([ret])[0] == target_y:
-            #    import ipdb; ipdb.set_trace()
             #assert clf.predict([ret])[0] != target_y, i
 
             if clf.predict([ret])[0] != target_y:
@@ -126,7 +141,6 @@ def rev_get_sol_linf(target_x, target_y: int, pred_trn_y, regions, clf,
         elif status == 'infeasible_inaccurate':
             #print(status)
             pass
-            #import ipdb; ipdb.set_trace()
             #ret = np.array(sol).reshape(-1)[:-1]
             #if clf.predict([ret])[0] != target_y:
             #    candidates.append(ret)
@@ -165,6 +179,7 @@ class RFAttack(AttackModel):
             n_estimators = len(clf.estimators_)
             self.regions = []
             self.region_preds = []
+            vacuan_regions = 0
 
             for res in product(range(n_classes), repeat=n_estimators):
                 perm_consts = [list() for _ in range(n_estimators)]
@@ -179,31 +194,45 @@ class RFAttack(AttackModel):
                             perm_consts[i].append(constraint[p])
 
                 for pro in product(*perm_consts):
-                    self.region_preds.append(np.argmax(np.bincount(res)))
-                    self.regions.append(
-                        union_constraints(
+                    r = union_constraints(
                             np.vstack([j[0] for j in pro]),
                             np.concatenate([j[1] for j in pro]),
                         )
-                    )
+                    G, h = constraint_list_to_matrix(r)
+                    status, _ = solve_lp(np.zeros((len(G[0]))), G, h.reshape(-1, 1), len(G[0]))
+                    if status == 'optimal':
+                        self.region_preds.append(np.argmax(np.bincount(res)))
+                        #self.regions.append((G, h))
+                        self.regions.append(r)
+                    else:
+                        vacuan_regions += 1
 
             print(f"number of regions: {len(self.regions)}")
+            print(f"number of vacuan regions: {vacuan_regions}")
 
         elif self.method == 'rev':
-            Gss, hss = [list() for _ in trnX], [list() for _ in trnX]
-            for tree_clf in clf.estimators_:
-                Gs, hs = tree_instance_constraint(tree_clf, trnX)
-                #print(len(Gs[0]))
-                for i, (G, h) in enumerate(zip(Gs, hs)):
-                    Gss[i].append(G)
-                    hss[i].append(h)
-            #import ipdb; ipdb.set_trace()
-            self.regions = [union_constraints(np.vstack(Gs), np.concatenate(hs)) \
-                            for Gs, hs in zip(Gss, hss)]
+            #Gss, hss = [list() for _ in trnX], [list() for _ in trnX]
+            #for tree_clf in clf.estimators_:
+            #    Gs, hs = tree_instance_constraint(tree_clf, trnX)
+            #    #print(len(Gs[0]))
+            #    for i, (G, h) in enumerate(zip(Gs, hs)):
+            #        Gss[i].append(G)
+            #        hss[i].append(h)
+            #self.regions = []
+            #for i, (Gs, hs) in enumerate(zip(Gss, hss)):
+            #    t1, t2 = np.vstack(Gs), np.concatenate(hs)
+            #    self.regions.append(union_constraints(t1, t2))
+
+            r = tree_instance_constraint(clf.estimators_[0], trnX)
+            for tree_clf in clf.estimators_[1:]:
+                t = tree_instance_constraint(tree_clf, trnX)
+                r = np.min(np.concatenate(
+                    (r[np.newaxis, :], t[np.newaxis, :])), axis=0)
+            self.regions = r
 
             for i in range(len(trnX)):
-                G, h = self.regions[i]
-                assert np.all(np.dot(G, trnX[i]) <= (h+1e-8))
+                G, h = constraint_list_to_matrix(self.regions[i])
+                assert np.all(np.dot(G, trnX[i]) <= (h + 1e-8))
                 #assert np.all(np.dot(np.vstack(Gss[i]), trnX[i]) <= np.concatenate(hss[i])), i
                 #assert np.all(np.dot(G, trnX[i]) <= h), i
         else:

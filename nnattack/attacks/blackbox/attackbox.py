@@ -95,7 +95,7 @@ class OPT_attack_lf(object):
 
             min_theta = theta
             min_g2 = g2
-        
+
             for _ in range(15):
                 new_theta = theta - alpha * gradient
                 new_theta /= LA.norm(new_theta.flatten(),np.inf)

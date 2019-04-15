@@ -34,12 +34,13 @@ DEBUG = True if os.environ.get('DEBUG', False) else False
 def main():
     experiments = [
         #compare_nns,
+        rf_robustness,
+
         nn_k1_robustness,
         nn_k3_robustness,
 
-        optimality,
 
-        rf_robustness,
+        optimality,
     ]
     grid_params = []
     for exp in experiments:

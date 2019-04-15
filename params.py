@@ -1,10 +1,10 @@
 from main import eps_accuracy
 
-random_seed = list(range(5))
+random_seed = list(range(2))
 
 datasets = [
     #'iris', 'wine',
-    'digits_pca5',
+    #'digits_pca5',
     'digits_pca25',
     'abalone',
     'covtype_3200',
@@ -26,7 +26,10 @@ robust_datasets = [ # binary
 ]
 
 large_datasets = [
-    'fashion_mnist35_12000', 'mnist35_12000',
+    'fashion_mnist35_10200_pca25',
+    'fashion_mnist06_10200_pca25',
+    'mnist35_10200_pca25',
+    'mnist17_10200_pca25',
 ]
 
 small_datasets = [
@@ -348,16 +351,19 @@ def rf_robustness():
     exp_name = "rf-robustness"
 
     grid_param = []
-    #grid_param.append({
-    #    'model': ['random_forest_100'],
-    #    'ord': ['inf'],
-    #    'dataset': large_datasets,
-    #    'attack': [
-    #        #'rf_attack_rev_20',
-    #        'rf_attack_rev_100', 'blackbox',
-    #    ],
-    #    'random_seed': random_seed,
-    #})
+    grid_param.append({
+        'model': [
+            'random_forest_100'
+            'robustv1_rf_100_10', 'robustv1_rf_100_30',
+            'robustv2_rf_100_10', 'robustv2_rf_100_30',
+        ],
+        'ord': ['inf'],
+        'dataset': large_datasets,
+        'attack': [
+            'rf_attack_rev_100', 'blackbox',
+        ],
+        'random_seed': random_seed,
+    })
     grid_param.append({
         'model': ['random_forest_100'],
         'ord': ['inf'],
@@ -377,7 +383,6 @@ def rf_robustness():
         'ord': ['inf'],
         'dataset': robust_datasets,
         'attack': [
-            #'rf_attack_rev_20',
             'rf_attack_rev_100', 'blackbox',
         ],
         'random_seed': random_seed,
@@ -425,12 +430,21 @@ def optimality():
     exp_name = "optimality_reduction"
     grid_param = []
     grid_param.append({
-        'model': ['random_forest_3'],
+        'model': ['random_forest_3_d6'],
         'ord': ['inf'],
         'dataset': small_datasets,
-        'attack': ['rf_attack_all',
-            'rf_attack_rev', 'rf_attack_rev_100', 'blackbox'
+        'attack': [
+            'rf_attack_all',
+            'rf_attack_rev', 'rf_attack_rev_100',
+            'blackbox'
         ],
+        'random_seed': random_seed,
+    })
+    grid_param.append({
+        'model': ['robustv1_rf_100_10_d6'],
+        'ord': ['inf'],
+        'dataset': small_datasets,
+        'attack': ['rf_attack_all',],
         'random_seed': random_seed,
     })
     grid_param.append({
@@ -438,7 +452,14 @@ def optimality():
         'ord': ['inf'],
         'dataset': small_datasets,
         'attack': ['nnopt_k3_all',
-            'rev_nnopt_k3_20_region', 'rev_nnopt_k3_50_region',],
+            'rev_nnopt_k3_20_region', 'rev_nnopt_k3_50_region', 'blackbox'],
+        'random_seed': random_seed,
+    })
+    grid_param.append({
+        'model': ['robustv1_nn_k3_10'],
+        'ord': ['inf'],
+        'dataset': small_datasets,
+        'attack': ['nnopt_k3_all'],
         'random_seed': random_seed,
     })
 

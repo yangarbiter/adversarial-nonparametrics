@@ -55,27 +55,30 @@ def cross_validation(auto_var: AutoVar, grid, valid_eps:float):
 class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
     var_name = "model"
 
-    @register_var(argument='random_forest_(?P<n_trees>\d+)')
+    @register_var(argument='random_forest_(?P<n_trees>\d+)(?P<depth>_d\d+)?')
     @staticmethod
-    def random_forest(auto_var, var_value, inter_var, n_trees):
+    def random_forest(auto_var, var_value, inter_var, n_trees, depth):
         from sklearn.ensemble import RandomForestClassifier
+        depth = int(depth[2:]) if depth else None
         n_trees = int(n_trees)
 
         model = RandomForestClassifier(
             n_estimators=n_trees,
             criterion='entropy',
+            max_depth=depth,
             random_state=auto_var.get_var("random_seed"),
         )
         auto_var.set_intermidiate_variable("tree_clf", model)
         return model
 
-    @register_var(argument=r"(?P<train>[a-zA-Z0-9]+_)?rf_(?P<n_trees>\d+)_(?P<eps>\d+)")
+    @register_var(argument=r"(?P<train>[a-zA-Z0-9]+_)?rf_(?P<n_trees>\d+)_(?P<eps>\d+)(?P<depth>_d\d+)?")
     @staticmethod
-    def adv_robustrf(auto_var, var_value, inter_var, train, eps, n_trees):
+    def adv_robustrf(auto_var, var_value, inter_var, train, eps, n_trees, depth):
         from .adversarial_dt import AdversarialRf
         from sklearn.ensemble import RandomForestClassifier
         eps = int(eps) * 0.01
         train = train[:-1] if train else None
+        depth = int(depth[2:]) if depth else None
         n_trees = int(n_trees)
 
         attack_model = None
@@ -87,6 +90,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
                 criterion='entropy',
                 splitter='robust',
                 eps=eps,
+                max_depth=depth,
                 random_state=auto_var.get_var("random_seed"),
             )
         else:
@@ -97,6 +101,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
                 attack_model=attack_model,
                 ord=auto_var.get_var("ord"),
                 eps=eps,
+                max_depth=depth,
                 random_state=auto_var.get_var("random_seed"),
             )
         auto_var.set_intermidiate_variable("tree_clf", model)
