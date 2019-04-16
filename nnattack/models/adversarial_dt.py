@@ -41,6 +41,8 @@ def get_aug_data(model, X, y, eps):
 
     elif model.train_type is None:
         augX, augy = X, y
+    elif model.train_type == 'robust':
+        augX, augy = X, y
     else:
         raise ValueError("Not supported training type %s", model.train_type)
 
@@ -49,12 +51,22 @@ def get_aug_data(model, X, y, eps):
 
 class AdversarialDt(DecisionTreeClassifier):
     def __init__(self, **kwargs):
+        print(kwargs)
         self.ord = kwargs.pop("ord", np.inf)
         self.eps = kwargs.pop("eps", 0.1)
         self.attack_model = kwargs.pop("attack_model", None)
         self.train_type = kwargs.pop("train_type", 'adv')
         self.delta = kwargs.pop("delta", 0.1)
         self.Delta = kwargs.pop("Delta", 0.45)
+
+        if self.train_type == 'robust':
+            kwargs['splitter'] = 'robust'
+
+        if self.train_type[:7] == 'robust_':
+            # for hybrid
+            kwargs['splitter'] = 'robust'
+            self.train_type = self.train_type[7:]
+
         super().__init__(**kwargs)
 
     def fit(self, X, y, eps:float=None):
@@ -65,12 +77,22 @@ class AdversarialDt(DecisionTreeClassifier):
 
 class AdversarialRf(RandomForestClassifier):
     def __init__(self, **kwargs):
+        print(kwargs)
         self.ord = kwargs.pop("ord", np.inf)
         self.eps = kwargs.pop("eps", 0.1)
         self.attack_model = kwargs.pop("attack_model", None)
         self.train_type = kwargs.pop("train_type", None)
         self.delta = kwargs.pop("delta", 0.1)
         self.Delta = kwargs.pop("Delta", 0.45)
+
+        if self.train_type == 'robust':
+            kwargs['splitter'] = 'robust'
+
+        if self.train_type[:7] == 'robust_':
+            # for hybrid
+            kwargs['splitter'] = 'robust'
+            self.train_type = self.train_type[7:]
+
         super().__init__(**kwargs)
 
     def fit(self, X, y, eps:float=None):

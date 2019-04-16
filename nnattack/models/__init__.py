@@ -84,26 +84,25 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         attack_model = None
         if train == 'adv':
             attack_model = auto_var.get_var("attack")
-        if train == 'robust':
-            model = RandomForestClassifier(
-                n_estimators=n_trees,
-                criterion='entropy',
-                splitter='robust',
-                eps=eps,
-                max_depth=depth,
-                random_state=auto_var.get_var("random_seed"),
-            )
-        else:
-            model = AdversarialRf(
-                n_estimators=n_trees,
-                criterion='entropy',
-                train_type=train,
-                attack_model=attack_model,
-                ord=auto_var.get_var("ord"),
-                eps=eps,
-                max_depth=depth,
-                random_state=auto_var.get_var("random_seed"),
-            )
+        #if train == 'robust':
+        #    model = RandomForestClassifier(
+        #        n_estimators=n_trees,
+        #        criterion='entropy',
+        #        splitter='robust',
+        #        eps=eps,
+        #        max_depth=depth,
+        #        random_state=auto_var.get_var("random_seed"),
+        #    )
+        model = AdversarialRf(
+            n_estimators=n_trees,
+            criterion='entropy',
+            train_type=train,
+            attack_model=attack_model,
+            ord=auto_var.get_var("ord"),
+            eps=eps,
+            max_depth=depth,
+            random_state=auto_var.get_var("random_seed"),
+        )
         auto_var.set_intermidiate_variable("tree_clf", model)
         return model
 

@@ -72,7 +72,7 @@ def estimate_model_roubstness(model, X, y, perturbs, eps_list, ord,
             'eps': eps_list[i],
             'tst_acc': (pred == y).mean().astype(float),
         })
-        print(ret[-1])
+        #print(ret[-1])
     return ret
 
 #@profile

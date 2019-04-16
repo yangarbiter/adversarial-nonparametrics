@@ -56,35 +56,6 @@ def dt_attack():
     run_param = {'verbose': 1, 'n_jobs': 4,}
     return exp_fn, grid_param, run_param
 
-rf_datasets = [
-    'fashion_mnist35_2200_pca5',
-    'mnist35_2200_pca5',
-    'fashion_mnist06_2200_pca5',
-    'fashion_mnist35_2200_pca25',
-    'mnist35_2200_pca25',
-    'fashion_mnist06_2200_pca25',
-    'halfmoon_2200'
-]
-
-
-def rf_attack():
-    exp_fn = eps_accuracy
-    exp_name = "random_forest"
-    grid_param = []
-    grid_param.append({
-        'model': ['random_forest_100'],
-        'ord': ['inf'],
-        'dataset': rf_datasets,
-        'attack': [
-            'rf_attack_rev_100',
-            'rf_attack_rev_20',
-            'blackbox'],
-        'random_seed': random_seed,
-    })
-
-    run_param = {'verbose': 1, 'n_jobs': 4,}
-    return exp_fn, exp_name, grid_param, run_param
-
 #def rf500_attack():
 #    exp_fn = eps_accuracy
 #    exp_name = "rf500"
@@ -311,8 +282,8 @@ def nn_k1_robustness():
     })
     grid_param.append({
         'model': [
-            'robustv1_nn_k1_10', 'robustv1_nn_k1_30',
-            'robustv2_nn_k1_10', 'robustv2_nn_k1_30',
+            'robustv1_nn_k1_10', 'robustv1_nn_k1_30', 'robustv1_nn_k1_50',
+            'robustv2_nn_k1_10', 'robustv2_nn_k1_30', 'robustv2_nn_k1_50',
         ],
         'ord': ['inf'],
         'dataset': robust_datasets,
@@ -353,9 +324,22 @@ def rf_robustness():
     grid_param = []
     grid_param.append({
         'model': [
-            'random_forest_100'
+            'random_forest_100',
             'robustv1_rf_100_10', 'robustv1_rf_100_30',
             'robustv2_rf_100_10', 'robustv2_rf_100_30',
+        ],
+        'ord': ['inf'],
+        'dataset': large_datasets,
+        'attack': [
+            'rf_attack_rev_100', 'blackbox',
+        ],
+        'random_seed': random_seed,
+    })
+    grid_param.append({
+        'model': [
+            'robust_rf_100_10', 'robust_rf_100_30', 'robust_rf_100_50',
+            'robustv1_rf_100_10', 'robustv1_rf_100_30', 'robustv1_rf_100_50',
+            'robustv2_rf_100_10', 'robustv2_rf_100_30', 'robustv2_rf_100_50',
         ],
         'ord': ['inf'],
         'dataset': large_datasets,

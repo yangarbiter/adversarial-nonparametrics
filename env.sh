@@ -1,0 +1,1 @@
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/gurobi810/linux64/lib/
