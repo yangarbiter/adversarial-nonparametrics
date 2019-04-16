@@ -1,14 +1,10 @@
-amqp==2.4.2
+tensorflow
+keras
 autovar==0.0.1a0
-backcall==0.1.0
-billiard==3.6.0.0
 bistiming==0.1.1
 bleach==3.1.0
 celery==4.3.0
-certifi==2018.11.29
-chardet==3.0.4
 cleverhans==3.0.1
-Click==7.0
 coverage==4.5.2
 cvxopt==1.2.3
 cvxpy==1.0.21
