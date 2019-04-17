@@ -33,9 +33,8 @@ large_datasets = [
 ]
 
 small_datasets = [
-    #'fashion_mnist35_300_pca5', 'mnist35_300_pca5',
-    'fashion_mnist35_300_pca25', 'mnist35_300_pca25',
-    'fashion_mnist06_300_pca25', 'mnist17_300_pca25',
+    'fashion_mnist35_300_pca5', 'mnist35_300_pca5',
+    'fashion_mnist06_300_pca5', 'mnist17_300_pca5',
     'halfmoon_300'
 ]
 
@@ -378,54 +377,29 @@ def dt_robustness():
 def rf_robustness():
     exp_fn = eps_accuracy
     exp_name = "rf-robustness"
+    models = [
+        'decision_tree',
+        'robust_decision_tree_10', 'robust_decision_tree_30', 'robust_decision_tree_50',
+        'robustv1_decision_tree_10', 'robustv1_decision_tree_30', 'robustv1_decision_tree_50',
+        'robustv2_decision_tree_10', 'robustv2_decision_tree_30', 'robustv1_decision_tree_50',
+    ]
 
     grid_param = []
     grid_param.append({
-        'model': [
-            'random_forest_100',
-            'robustv1_rf_100_10', 'robustv1_rf_100_30',
-            'robustv2_rf_100_10', 'robustv2_rf_100_30',
-        ],
-        'ord': ['inf'],
-        'dataset': large_datasets,
-        'attack': [
-            'rf_attack_rev_100', 'blackbox',
-        ],
-        'random_seed': random_seed,
-    })
-    grid_param.append({
-        'model': [
-            'robust_rf_100_10', 'robust_rf_100_30', 'robust_rf_100_50',
-            'robustv1_rf_100_10', 'robustv1_rf_100_30', 'robustv1_rf_100_50',
-            'robustv2_rf_100_10', 'robustv2_rf_100_30', 'robustv2_rf_100_50',
-        ],
-        'ord': ['inf'],
-        'dataset': large_datasets,
-        'attack': [
-            'rf_attack_rev_100', 'blackbox',
-        ],
-        'random_seed': random_seed,
-    })
-    grid_param.append({
-        'model': ['random_forest_100'],
-        'ord': ['inf'],
-        'dataset': datasets,
-        'attack': [
-            #'rf_attack_rev_20',
-            'rf_attack_rev_100', 'blackbox',
-        ],
-        'random_seed': random_seed,
-    })
-    grid_param.append({
-        'model': [
-            'robust_rf_100_10',
-            'robustv1_rf_100_10', 'robustv1_rf_100_30',
-            'robustv2_rf_100_10', 'robustv2_rf_100_30',
-        ],
+        'model': models,
         'ord': ['inf'],
         'dataset': robust_datasets,
         'attack': [
-            'rf_attack_rev_100', 'blackbox',
+            'rf_attack_all', 'blackbox',
+        ],
+        'random_seed': random_seed,
+    })
+    grid_param.append({
+        'model': models,
+        'ord': ['inf'],
+        'dataset': robust_datasets,
+        'attack': [
+            'rf_attack_all', 'blackbox',
         ],
         'random_seed': random_seed,
     })
@@ -477,7 +451,8 @@ def optimality():
         'dataset': small_datasets,
         'attack': [
             'rf_attack_all',
-            'rf_attack_rev', 'rf_attack_rev_100',
+            'rf_attack_rev',
+            'rf_attack_rev_100',
             'blackbox'
         ],
         'random_seed': random_seed,

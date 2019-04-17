@@ -21,6 +21,7 @@ from params import (
     nn_k1_robustness,
     nn_k3_robustness,
 
+    dt_robustness,
     rf_robustness,
 )
 from main import eps_accuracy
@@ -38,6 +39,7 @@ def main():
         #nn_k3_robustness,
 
         #rf_robustness,
+        dt_robustness,
 
         optimality,
     ]

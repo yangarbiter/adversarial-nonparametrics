@@ -115,11 +115,12 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         auto_var.set_intermidiate_variable("tree_clf", model)
         return model
 
-    @register_var(argument='(?P<train>[a-zA-Z0-9]+)_decision_tree_(?P<eps>\d+)')
+    @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?decision_tree_(?P<eps>\d+)')
     @staticmethod
     def adv_decision_tree(auto_var, var_value, inter_var, train, eps):
         from .adversarial_dt import AdversarialDt
         eps = int(eps) * 0.01
+        train = train[:-1] if train else None
 
         trnX, trny = inter_var['trnX'], inter_var['trny']
         model = auto_var.get_var_with_argument("model", "decision_tree")
