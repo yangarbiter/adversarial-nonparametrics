@@ -126,7 +126,9 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         model = auto_var.get_var_with_argument("model", "decision_tree")
         model.fit(trnX, trny)
         auto_var.set_intermidiate_variable("tree_clf", model)
-        attack_model = auto_var.get_var("attack")
+        attack_model = None
+        if train == 'adv':
+            attack_model = auto_var.get_var("attack")
         model = AdversarialDt(
             criterion='entropy',
             train_type=train,

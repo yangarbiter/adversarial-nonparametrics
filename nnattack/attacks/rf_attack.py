@@ -2,6 +2,7 @@ import gc
 from itertools import product, permutations
 
 import numpy as np
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KDTree
 from bistiming import IterTimer
@@ -318,3 +319,177 @@ class RFAttack(AttackModel):
             return pert_X
         else:
             return pert_X
+
+#class DTAttack(AttackModel):
+#    def __init__(self, trnX, trny, clf: DecisionTreeClassifier, ord,
+#            random_state=None):
+#        super().__init__(ord=ord)
+#        paths, constraints = [], []
+#        self.clf = clf
+#        self.trnX = trnX
+#        self.trny = trny
+#        self.random_state = random_state
+#
+#
+#        path, constraint = get_tree_constraints(clf)
+#        for p in range(len(path)):
+#            if np.argmax(value[path[p][-1]]) == res[i]:
+#                perm_consts[i].append(constraint[p])
+#
+#        self.region_preds.append(np.argmax(np.bincount(res)))
+#        self.regions.append(r)
+#
+#        paths.append(path)
+#        constraints.append(constraint)
+#
+#
+#        if self.method == 'all':
+#            for tree_clf in clf.estimators_:
+#                path, constraint = get_tree_constraints(tree_clf)
+#                paths.append(path)
+#                constraints.append(constraint)
+#
+#            n_classes = clf.n_classes_
+#            n_estimators = len(clf.estimators_)
+#            self.regions = []
+#            self.region_preds = []
+#            vacuan_regions = 0
+#
+#            for res in product(range(n_classes), repeat=n_estimators):
+#                perm_consts = [list() for _ in range(n_estimators)]
+#
+#                for i in range(n_estimators):
+#                    value = clf.estimators_[i].tree_.value
+#                    path = paths[i]
+#                    constraint = constraints[i]
+#
+#                    for p in range(len(path)):
+#                        if np.argmax(value[path[p][-1]]) == res[i]:
+#                            perm_consts[i].append(constraint[p])
+#
+#                for pro in product(*perm_consts):
+#                    r = union_constraints(
+#                            np.vstack([j[0] for j in pro]),
+#                            np.concatenate([j[1] for j in pro]),
+#                        )
+#                    G, h = constraint_list_to_matrix(r)
+#                    status, _ = solve_lp(np.zeros((len(G[0]))), G, h.reshape(-1, 1), len(G[0]))
+#                    if status == 'optimal':
+#                        self.region_preds.append(np.argmax(np.bincount(res)))
+#                        #self.regions.append((G, h))
+#                        self.regions.append(r)
+#                    else:
+#                        vacuan_regions += 1
+#
+#            print(f"number of regions: {len(self.regions)}")
+#            print(f"number of vacuan regions: {vacuan_regions}")
+#
+#        elif self.method == 'rev':
+#            #Gss, hss = [list() for _ in trnX], [list() for _ in trnX]
+#            #for tree_clf in clf.estimators_:
+#            #    Gs, hs = tree_instance_constraint(tree_clf, trnX)
+#            #    #print(len(Gs[0]))
+#            #    for i, (G, h) in enumerate(zip(Gs, hs)):
+#            #        Gss[i].append(G)
+#            #        hss[i].append(h)
+#            #self.regions = []
+#            #for i, (Gs, hs) in enumerate(zip(Gss, hss)):
+#            #    t1, t2 = np.vstack(Gs), np.concatenate(hs)
+#            #    self.regions.append(union_constraints(t1, t2))
+#
+#            r = tree_instance_constraint(clf.estimators_[0], trnX)
+#            for tree_clf in clf.estimators_[1:]:
+#                t = tree_instance_constraint(tree_clf, trnX)
+#                r = np.min(np.concatenate(
+#                    (r[np.newaxis, :], t[np.newaxis, :])), axis=0)
+#            self.regions = r
+#
+#            for i in range(len(trnX)):
+#                G, h = constraint_list_to_matrix(self.regions[i])
+#                assert np.all(np.dot(G, trnX[i]) <= (h + 1e-8))
+#                #assert np.all(np.dot(np.vstack(Gss[i]), trnX[i]) <= np.concatenate(hss[i])), i
+#                #assert np.all(np.dot(G, trnX[i]) <= h), i
+#        else:
+#            raise ValueError("Not supported method: %s", self.method)
+#
+#    def perturb(self, X, y, eps=0.1):
+#        X = X.astype(np.float32)
+#        if self.ord == 2:
+#            get_sol_fn = rev_get_sol_l2
+#        elif self.ord == np.inf:
+#            get_sol_fn = rev_get_sol_linf
+#        else:
+#            raise ValueError("ord %s not supported", self.ord)
+#
+#        pred_y = self.clf.predict(X)
+#        pred_trn_y = self.clf.predict(self.trnX)
+#
+#        if self.method == 'all':
+#            def _helper(target_x, target_y, pred_yi):
+#                if pred_yi != target_y:
+#                    return np.zeros_like(target_x)
+#                temp_regions = [self.regions[i] for i in range(len(self.regions)) \
+#                            if self.region_preds[i] != target_y]
+#                return get_sol_fn(target_x, target_y,
+#                                  pred_trn_y, temp_regions, self.clf)
+#
+#            pert_xs = Parallel(n_jobs=4, verbose=5)(
+#                delayed(_helper)(X[i], y[i], pred_y[i]) for i in range(len(X)))
+#            pert_X = np.array(pert_xs)
+#
+#            assert np.all(self.clf.predict(X + pert_X) != y)
+#
+#        elif self.method == 'rev':
+#            pert_X = np.zeros_like(X)
+#            pert_X2 = np.zeros_like(X)
+#            with IterTimer("Perturbing", len(X)) as timer:
+#                for sample_id in range(len(X)):
+#                    timer.update(sample_id)
+#                    if pred_y[sample_id] != y[sample_id]:
+#                        continue
+#                    target_x, target_y = X[sample_id], y[sample_id]
+#
+#                    if self.n_searches != -1:
+#                        ind = self.kd_tree.query(
+#                                target_x.reshape((1, -1)),
+#                                k=len(self.trnX),
+#                                return_distance=False)[0]
+#                        ind = list(filter(lambda x: pred_trn_y[x] != target_y, ind))[:self.n_searches]
+#                    else:
+#                        ind = list(filter(lambda x: pred_trn_y[x] != target_y, np.arange(len(self.trnX))))
+#                    temp_regions = [self.regions[i] for i in ind]
+#                    pert_x = get_sol_fn(target_x, y[sample_id],
+#                                        pred_trn_y, temp_regions,
+#                                        self.clf, self.trnX[ind])
+#
+#                    #temp_regions = [self.regions[i] for i in ind[:20]]
+#                    #pert_x2 = get_sol_fn(target_x, y[sample_id],
+#                    #                    pred_trn_y, temp_regions,
+#                    #                    self.clf, self.trnX[ind])
+#                    #pert_X2[sample_id, :] = pert_x2
+#                    #print(np.linalg.norm(pert_x, np.inf), np.linalg.norm(pert_x2, np.inf))
+#                    #print(np.linalg.norm(pert_x, np.inf) <= np.linalg.norm(pert_x2, np.inf))
+#
+#                    if np.linalg.norm(pert_x) != 0:
+#                        assert self.clf.predict([X[sample_id] + pert_x])[0] != y[sample_id]
+#                        pert_X[sample_id, :] = pert_x
+#                    else:
+#                        raise ValueError("shouldn't happen")
+#        else:
+#            raise ValueError("Not supported method %s", self.method)
+#
+#        self.perts = pert_X
+#
+#        if isinstance(eps, list):
+#            rret = []
+#            norms = np.linalg.norm(pert_X, axis=1, ord=self.ord)
+#            for ep in eps:
+#                t = np.copy(pert_X)
+#                t[norms > ep, :] = 0
+#                rret.append(t)
+#            return rret
+#        elif eps is not None:
+#            pert_X[np.linalg.norm(pert_X, axis=1, ord=self.ord) > eps, :] = 0
+#            return pert_X
+#        else:
+#            return pert_X

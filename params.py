@@ -316,24 +316,11 @@ def nn_k3_robustness():
     run_param = {'verbose': 1, 'n_jobs': 4,}
     return exp_fn, exp_name, grid_param, run_param
 
-def dt_robustness():
+def rf_robustness():
     exp_fn = eps_accuracy
     exp_name = "dt-robustness"
 
     grid_param = []
-    grid_param.append({
-        'model': [
-            'random_forest_100',
-            'robustv1_rf_100_10', 'robustv1_rf_100_30',
-            'robustv2_rf_100_10', 'robustv2_rf_100_30',
-        ],
-        'ord': ['inf'],
-        'dataset': large_datasets,
-        'attack': [
-            'rf_attack_rev_100', 'blackbox',
-        ],
-        'random_seed': random_seed,
-    })
     grid_param.append({
         'model': [
             'robust_rf_100_10', 'robust_rf_100_30', 'robust_rf_100_50',
@@ -352,14 +339,13 @@ def dt_robustness():
         'ord': ['inf'],
         'dataset': datasets,
         'attack': [
-            #'rf_attack_rev_20',
             'rf_attack_rev_100', 'blackbox',
         ],
         'random_seed': random_seed,
     })
     grid_param.append({
         'model': [
-            'robust_rf_100_10',
+            'robust_rf_100_10', 'robust_rf_100_30',
             'robustv1_rf_100_10', 'robustv1_rf_100_30',
             'robustv2_rf_100_10', 'robustv2_rf_100_30',
         ],
@@ -374,7 +360,7 @@ def dt_robustness():
     run_param = {'verbose': 1, 'n_jobs': 4,}
     return exp_fn, exp_name, grid_param, run_param
 
-def rf_robustness():
+def dt_robustness():
     exp_fn = eps_accuracy
     exp_name = "rf-robustness"
     models = [
@@ -390,7 +376,7 @@ def rf_robustness():
         'ord': ['inf'],
         'dataset': robust_datasets,
         'attack': [
-            'rf_attack_all', 'blackbox',
+            'dt_attack_opt', 'blackbox',
         ],
         'random_seed': random_seed,
     })
@@ -399,7 +385,7 @@ def rf_robustness():
         'ord': ['inf'],
         'dataset': robust_datasets,
         'attack': [
-            'rf_attack_all', 'blackbox',
+            'dt_attack_opt', 'blackbox',
         ],
         'random_seed': random_seed,
     })
