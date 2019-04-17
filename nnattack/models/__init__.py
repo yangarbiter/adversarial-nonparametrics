@@ -119,7 +119,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @staticmethod
     def adv_decision_tree(auto_var, var_value, inter_var, train, eps):
         from .adversarial_dt import AdversarialDt
-        eps = int(eps) * 0.1
+        eps = int(eps) * 0.01
 
         trnX, trny = inter_var['trnX'], inter_var['trny']
         model = auto_var.get_var_with_argument("model", "decision_tree")
@@ -127,6 +127,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         auto_var.set_intermidiate_variable("tree_clf", model)
         attack_model = auto_var.get_var("attack")
         model = AdversarialDt(
+            criterion='entropy',
             train_type=train,
             attack_model=attack_model,
             ord=auto_var.get_var("ord"),

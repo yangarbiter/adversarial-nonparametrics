@@ -306,14 +306,72 @@ def nn_k3_robustness():
     })
     grid_param.append({
         'model': [
-            'robustv1_nn_k3_10', 'robustv1_nn_k3_30',
-            'robustv2_nn_k3_10', 'robustv2_nn_k3_30',
+            'robustv1_nn_k3_10', 'robustv1_nn_k3_30', 'robustv1_nn_k3_50',
+            'robustv2_nn_k3_10', 'robustv2_nn_k3_30', 'robustv1_nn_k3_50',
         ],
         'ord': ['inf'],
         'dataset': robust_datasets,
         'attack': ['rev_nnopt_k3_50_region', 'blackbox'],
         'random_seed': random_seed,
     })
+    run_param = {'verbose': 1, 'n_jobs': 4,}
+    return exp_fn, exp_name, grid_param, run_param
+
+def dt_robustness():
+    exp_fn = eps_accuracy
+    exp_name = "dt-robustness"
+
+    grid_param = []
+    grid_param.append({
+        'model': [
+            'random_forest_100',
+            'robustv1_rf_100_10', 'robustv1_rf_100_30',
+            'robustv2_rf_100_10', 'robustv2_rf_100_30',
+        ],
+        'ord': ['inf'],
+        'dataset': large_datasets,
+        'attack': [
+            'rf_attack_rev_100', 'blackbox',
+        ],
+        'random_seed': random_seed,
+    })
+    grid_param.append({
+        'model': [
+            'robust_rf_100_10', 'robust_rf_100_30', 'robust_rf_100_50',
+            'robustv1_rf_100_10', 'robustv1_rf_100_30', 'robustv1_rf_100_50',
+            'robustv2_rf_100_10', 'robustv2_rf_100_30', 'robustv2_rf_100_50',
+        ],
+        'ord': ['inf'],
+        'dataset': large_datasets,
+        'attack': [
+            'rf_attack_rev_100', 'blackbox',
+        ],
+        'random_seed': random_seed,
+    })
+    grid_param.append({
+        'model': ['random_forest_100'],
+        'ord': ['inf'],
+        'dataset': datasets,
+        'attack': [
+            #'rf_attack_rev_20',
+            'rf_attack_rev_100', 'blackbox',
+        ],
+        'random_seed': random_seed,
+    })
+    grid_param.append({
+        'model': [
+            'robust_rf_100_10',
+            'robustv1_rf_100_10', 'robustv1_rf_100_30',
+            'robustv2_rf_100_10', 'robustv2_rf_100_30',
+        ],
+        'ord': ['inf'],
+        'dataset': robust_datasets,
+        'attack': [
+            'rf_attack_rev_100', 'blackbox',
+        ],
+        'random_seed': random_seed,
+    })
+
     run_param = {'verbose': 1, 'n_jobs': 4,}
     return exp_fn, exp_name, grid_param, run_param
 
@@ -425,7 +483,7 @@ def optimality():
         'random_seed': random_seed,
     })
     grid_param.append({
-        'model': ['robustv1_rf_100_10_d6'],
+        'model': ['robustv1_rf_3_30_d6'],
         'ord': ['inf'],
         'dataset': small_datasets,
         'attack': ['rf_attack_all',],
@@ -435,12 +493,13 @@ def optimality():
         'model': ['knn3'],
         'ord': ['inf'],
         'dataset': small_datasets,
-        'attack': ['nnopt_k3_all',
+        'attack': [
+            'nnopt_k3_all',
             'rev_nnopt_k3_20_region', 'rev_nnopt_k3_50_region', 'blackbox'],
         'random_seed': random_seed,
     })
     grid_param.append({
-        'model': ['robustv1_nn_k3_10'],
+        'model': ['robustv1_nn_k3_30'],
         'ord': ['inf'],
         'dataset': small_datasets,
         'attack': ['nnopt_k3_all'],

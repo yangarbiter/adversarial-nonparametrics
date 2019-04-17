@@ -24,7 +24,6 @@ from params import (
     rf_robustness,
 )
 from main import eps_accuracy
-from tasks import run_exp
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -34,11 +33,11 @@ DEBUG = True if os.environ.get('DEBUG', False) else False
 def main():
     experiments = [
         #compare_nns,
-        rf_robustness,
 
-        nn_k1_robustness,
-        nn_k3_robustness,
+        #nn_k1_robustness,
+        #nn_k3_robustness,
 
+        #rf_robustness,
 
         optimality,
     ]

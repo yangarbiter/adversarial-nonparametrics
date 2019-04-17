@@ -15,6 +15,7 @@ from .nn_attack import solve_lp, solve_qp
 def constraint_list_to_matrix(r):
     rG, rh = [], []
     n_dim = len(r) // 2
+    #print(r)
     for i in range(len(r)):
         if r[i] < np.inf:
             temp = np.zeros(n_dim)
@@ -29,12 +30,11 @@ def constraint_list_to_matrix(r):
 
 def union_constraints(G, h):
     assert np.all(np.abs(G).sum(1) == np.ones(len(G)))
-    #import ipdb; ipdb.set_trace()
     if len(np.shape(G)) <= 1:
         return np.array([]), np.array([])
     n_dim = np.shape(G)[1]
 
-    r = [None for i in range(n_dim*2)]
+    r = [np.inf for i in range(n_dim*2)]
     for Gi, hi in zip(G, h):
         if Gi.sum() == 1:
             idx = np.where(Gi == 1)[0][0]
@@ -45,7 +45,6 @@ def union_constraints(G, h):
         else:
             raise ValueError()
     return r
-
 
 def tree_instance_constraint(tree_clf, X):
     node_indicator = tree_clf.decision_path(X)
