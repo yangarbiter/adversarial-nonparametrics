@@ -86,7 +86,8 @@ def solve_qp(Q, q, G, h, n):
 
 
 #@profile
-def get_sol(target_x, tuple_x, faropp, kdtree, transformer, init_x=None):
+def get_sol(target_x, tuple_x, faropp, kdtree, transformer,
+        glob_trnX, glob_trny, init_x=None):
     tuple_x = np.asarray(tuple_x)
     trnX = glob_trnX.dot(transformer.T)
     emb_tar = target_x.dot(transformer.T)
@@ -163,7 +164,8 @@ def sol_sat_constraints(G, h):
     return (sol['status'] == 'optimal')
 
 
-def get_sol_l1(target_x, tuple_x, faropp, kdtree, transformer, init_x=None):
+def get_sol_l1(target_x, tuple_x, faropp, kdtree, transformer, glob_trnX,
+        glob_trny, init_x=None):
     tuple_x = np.asarray(tuple_x)
     fet_dim = target_x.shape[0]
     #n_emb = transformer.shape[0]
@@ -220,7 +222,8 @@ def get_sol_l1(target_x, tuple_x, faropp, kdtree, transformer, init_x=None):
         return False, None
 
 #@profile
-def get_sol_linf(target_x, tuple_x, faropp, kdtree, transformer, init_x=None):
+def get_sol_linf(target_x, tuple_x, faropp, kdtree, transformer,
+        glob_trnX, glob_trny, init_x=None):
     tuple_x = np.asarray(tuple_x)
     fet_dim = target_x.shape[0]
     #n_emb = transformer.shape[0]
@@ -307,8 +310,8 @@ def get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
         if target_y != np.argmax(np.bincount(glob_trny[ind[comb]])):
             combs.append(comb)
 
-    knn = KNeighborsClassifier(n_neighbors=n_neighbors)
-    knn.fit(glob_trnX.dot(transformer.T), glob_trny)
+    #knn = KNeighborsClassifier(n_neighbors=n_neighbors)
+    #knn.fit(glob_trnX.dot(transformer.T), glob_trny)
 
     if ord == 1:
         get_sol_fn = get_sol_l1
@@ -319,36 +322,53 @@ def get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
     else:
         raise ValueError("Unsupported ord %d" % ord)
 
-    for comb in combs:
+    def _helper(comb, transformer, trnX, trny):
         comb_tup = tuple(ind[comb])
+        ret, sol = get_sol_fn(target_x, ind[comb], faropp, kdtree,
+                              transformer, trnX, trny)
+        return ret, sol
+    not_vacum = lambda x: tuple(ind[x]) not in lp_sols or lp_sols[tuple(ind[comb])]
+    combs = list(filter(not_vacum, combs))
+    sols = Parallel(n_jobs=4, verbose=1)(
+            delayed(_helper)(comb, transformer, glob_trnX, glob_trny) for comb in combs)
+    status, sols = zip(*sols)
+    for i, s in enumerate(status):
+        if not s:
+            lp_sols[tuple(ind[combs[i]])] = None
+    sols = np.array(list(filter(lambda x: np.linalg.norm(x) != 0, sols)))
+    eps = np.linalg.norm(sols - target_x, axis=1, ord=ord)
+    temp = (sols[eps.argmin()], eps.min())
 
-        if comb_tup not in lp_sols:
-            ret, sol = get_sol_fn(target_x, ind[comb], faropp, kdtree,
-                                    transformer)
-            lp_sols[comb_tup] = sol
-        elif lp_sols[comb_tup] is None:
-            ret = False
-        else:
-            ret, sol = get_sol_fn(target_x, ind[comb], faropp, kdtree,
-                                transformer, lp_sols[comb_tup])
+    #for comb in combs:
+    #    comb_tup = tuple(ind[comb])
 
-        if ret:
-            if knn.predict(sol.reshape(1, -1).dot(transformer.T))[0] == target_y:
-                print("shouldn't happend")
-                assert False
-            else:
-                eps = np.linalg.norm(sol - target_x, ord=ord)
-                if eps < temp[1]:
-                    temp = (sol, eps)
+    #    if comb_tup not in lp_sols:
+    #        ret, sol = get_sol_fn(target_x, ind[comb], faropp, kdtree,
+    #                              transformer, glob_trnX, glob_trny, )
+    #        lp_sols[comb_tup] = sol
+    #    elif lp_sols[comb_tup] is None:
+    #        ret = False
+    #    else:
+    #        ret, sol = get_sol_fn(target_x, ind[comb], faropp, kdtree,
+    #                              transformer,glob_trnX, glob_trny,  lp_sols[comb_tup])
 
-            if DEBUG:
-                a = knn.predict(np.dot(target_x.reshape(1, -1), transformer.T))[0]
-                b = knn.predict(np.dot(sol.reshape(1, -1), transformer.T))[0]
-                print(a, b, target_y)
-                if a == b and a == target_y:
-                    print("shouldn't happend")
-                    assert False
-                #get_sol(target_x, ind[comb], faropp, kdtree, transformer)
+    #    if ret:
+    #        if knn.predict(sol.reshape(1, -1).dot(transformer.T))[0] == target_y:
+    #            print("shouldn't happend")
+    #            assert False
+    #        else:
+    #            eps = np.linalg.norm(sol - target_x, ord=ord)
+    #            if eps < temp[1]:
+    #                temp = (sol, eps)
+
+    #        if DEBUG:
+    #            a = knn.predict(np.dot(target_x.reshape(1, -1), transformer.T))[0]
+    #            b = knn.predict(np.dot(sol.reshape(1, -1), transformer.T))[0]
+    #            print(a, b, target_y)
+    #            if a == b and a == target_y:
+    #                print("shouldn't happend")
+    #                assert False
+    #            #get_sol(target_x, ind[comb], faropp, kdtree, transformer)
 
     return temp[0] - target_x
 
@@ -405,7 +425,7 @@ def rev_get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
         inds = tuple([_ for _ in inds])
 
         ret, sol = get_sol_fn(target_x, inds, faropp, kdtree, transformer,
-                init_x=glob_trnX[i])
+                glob_trnX, glob_trny, init_x=glob_trnX[i])
 
         if method == 'region':
             #assert ret
