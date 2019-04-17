@@ -327,7 +327,7 @@ def get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
         ret, sol = get_sol_fn(target_x, ind[comb], faropp, kdtree,
                               transformer, trnX, trny)
         return ret, sol
-    not_vacum = lambda x: tuple(ind[x]) not in lp_sols or lp_sols[tuple(ind[comb])]
+    not_vacum = lambda x: tuple(ind[x]) not in lp_sols or lp_sols[tuple(ind[x])]
     combs = list(filter(not_vacum, combs))
     sols = Parallel(n_jobs=4, verbose=1)(
             delayed(_helper)(comb, transformer, glob_trnX, glob_trny) for comb in combs)
@@ -335,6 +335,8 @@ def get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
     for i, s in enumerate(status):
         if not s:
             lp_sols[tuple(ind[combs[i]])] = None
+
+    _, sols = list(zip(*list(filter(lambda s: True if s[0] else False, zip(status, sols)))))
     sols = np.array(list(filter(lambda x: np.linalg.norm(x) != 0, sols)))
     eps = np.linalg.norm(sols - target_x, axis=1, ord=ord)
     temp = (sols[eps.argmin()], eps.min())
