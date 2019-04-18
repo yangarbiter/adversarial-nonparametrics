@@ -4,10 +4,8 @@ import inspect
 from functools import partial
 
 import numpy as np
-import pandas as pd
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder, StandardScaler, LabelBinarizer, MinMaxScaler
+from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
 from sklearn.metrics import pairwise_distances
 import tensorflow as tf
 import keras.backend
@@ -119,6 +117,7 @@ def eps_accuracy(auto_var):
     model.fit(trnX, trny)
 
     pred = model.predict(tstX)
+    ori_tstX, ori_tsty = tstX, tsty # len = 200
     idxs = np.where(pred == tsty)[0]
     random_state.shuffle(idxs)
     tstX, tsty = tstX[idxs[:100]], tsty[idxs[:100]]
@@ -132,7 +131,6 @@ def eps_accuracy(auto_var):
         auto_var.set_intermidiate_variable("trny", model.augy)
         augX, augy = model.augX, model.augy
 
-
     if len(tsty) != 100 or \
        len(np.unique(auto_var.get_intermidiate_variable('trny'))) == 1:
         tst_perturbs = np.array([np.zeros_like(tstX) for _ in range(len(eps_list))])
@@ -141,6 +139,8 @@ def eps_accuracy(auto_var):
     else:
         attack_model = auto_var.get_var("attack")
         tst_perturbs = attack_model.perturb(tstX, y=tsty, eps=eps_list)
+
+    ret['tst_score'] = (model.predict(ori_tstX) == ori_tsty).mean()
 
     #########
     if attack_model is not None and hasattr(attack_model, 'perts'):
