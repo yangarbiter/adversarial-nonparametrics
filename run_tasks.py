@@ -140,14 +140,6 @@ def temp_fix(auto_var):
         auto_var.set_intermidiate_variable("trny", model.augy)
         augX, augy = model.augX, model.augy
 
-    if len(tsty) != 100 or \
-       len(np.unique(auto_var.get_intermidiate_variable('trny'))) == 1:
-        tst_perturbs = np.array([np.zeros_like(tstX) for _ in range(len(eps_list))])
-        attack_model = None
-    else:
-        attack_model = auto_var.get_var("attack")
-        tst_perturbs = attack_model.perturb(tstX, y=tsty, eps=eps_list)
-
     ret['tst_score'] = (model.predict(ori_tstX) == ori_tsty).mean()
     with open("%s.json" % file_name, "w") as f:
         json.dump(ret, f)
