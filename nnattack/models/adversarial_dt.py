@@ -93,7 +93,7 @@ class AdversarialRf(RandomForestClassifier):
         if self.train_type == 'robust':
             kwargs['splitter'] = 'robust'
             #kwargs['eps'] = self.eps
-            kwargs['n_jobs'] = 4
+            #kwargs['n_jobs'] = 4
 
         if self.train_type[:7] == 'robust_':
             # for hybrid
