@@ -1,6 +1,6 @@
 from main import eps_accuracy
 
-random_seed = list(range(2))
+random_seed = list(range(1))
 
 datasets = [
     #'iris', 'wine',
@@ -318,7 +318,7 @@ def nn_k3_robustness():
 
 def rf_robustness():
     exp_fn = eps_accuracy
-    exp_name = "dt-robustness"
+    exp_name = "rf-robustness"
 
     grid_param = []
     grid_param.append({
@@ -363,7 +363,7 @@ def rf_robustness():
 
 def dt_robustness():
     exp_fn = eps_accuracy
-    exp_name = "rf-robustness"
+    exp_name = "dt-robustness"
     models = [
         'decision_tree',
         'robust_decision_tree_10', 'robust_decision_tree_30', 'robust_decision_tree_50',
@@ -446,6 +446,9 @@ def rf_optimality():
             'rf_attack_all',
             'rf_attack_rev',
             'rf_attack_rev_100',
+            'rf_attack_rev_15',
+            'rf_attack_rev_10',
+            'rf_attack_rev_5',
             'blackbox'
         ],
         'random_seed': random_seed,
@@ -454,7 +457,7 @@ def rf_optimality():
         'model': [
             'robust_rf_3_20_d6', 'robust_rf_3_30_d6',
             'robustv1_rf_3_20_d6', 'robustv2_rf_3_30_d6',
-            'robustv2_rf_3_20_d6', 'robustv2_rf_3_30_d6',
+            'robustv1_rf_3_20_d6', 'robustv2_rf_3_30_d6',
         ],
         'ord': ['inf'],
         'dataset': small_datasets,
