@@ -1,4 +1,5 @@
 import os
+import logging
 from functools import partial
 
 import numpy as np
@@ -53,6 +54,7 @@ class OrdVarClass(VariableClass, metaclass=RegisteringChoiceType):
         return 1
 
 auto_var = AutoVar(
+    logging_level=logging.INFO,
     before_experiment_hooks=[
         partial(check_result_file_exist, get_name_fn=get_file_name),
         #partial(save_parameter_to_file, get_name_fn=partial(get_file_name, name_only=False))

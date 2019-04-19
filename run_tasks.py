@@ -41,9 +41,9 @@ def main():
         #nn_k3_robustness,
 
         rf_robustness,
-        dt_robustness,
+        #dt_robustness,
 
-        rf_optimality,
+        #rf_optimality,
         #nn_optimality,
     ]
     grid_params = []
