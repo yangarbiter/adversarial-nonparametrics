@@ -446,7 +446,7 @@ def rf_optimality():
     })
     grid_param.append({
         'model': [
-            'robust_rf_3_20_d6', 'robust_rf_3_30_d6'
+            'robust_rf_3_20_d6', 'robust_rf_3_30_d6',
             'robustv1_rf_3_20_d6', 'robustv2_rf_3_30_d6',
             'robustv2_rf_3_20_d6', 'robustv2_rf_3_30_d6',
         ],
@@ -474,8 +474,8 @@ def nn_optimality():
     })
     grid_param.append({
         'model': [
-            'robustv1_nn_k3_30', 'robustv2_nn_k3_30'
-            'robustv1_nn_k3_20', 'robustv2_nn_k3_20'
+            'robustv1_nn_k3_30', 'robustv2_nn_k3_30',
+            'robustv1_nn_k3_20', 'robustv2_nn_k3_20',
         ],
         'ord': ['inf'],
         'dataset': small_datasets,
