@@ -370,6 +370,12 @@ def dt_robustness():
         'robustv1_decision_tree_10', 'robustv1_decision_tree_30', 'robustv1_decision_tree_50',
         'robustv2_decision_tree_10', 'robustv2_decision_tree_30', 'robustv1_decision_tree_50',
     ]
+    models = [
+        'decision_tree_d5',
+        'robust_decision_tree_d5_10', 'robust_decision_tree_d5_30', 'robust_decision_tree_d5_50',
+        'robustv1_decision_tree_d5_10', 'robustv1_decision_tree_d5_30', 'robustv1_decision_tree_d5_50',
+        'robustv2_decision_tree_d5_10', 'robustv2_decision_tree_d5_30', 'robustv1_decision_tree_d5_50',
+    ]
 
     grid_param = []
     grid_param.append({

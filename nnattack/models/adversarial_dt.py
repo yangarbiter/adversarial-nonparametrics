@@ -12,6 +12,8 @@ def get_aug_data(model, X, y, eps):
         elif eps is None:
             eps = model.eps
 
+    print("XXXXXXXXX %f", eps)
+
     if model.train_type == 'adv':
         advX = model.attack_model.perturb(X, y=y, eps=eps)
 
@@ -53,20 +55,23 @@ class AdversarialDt(DecisionTreeClassifier):
     def __init__(self, **kwargs):
         print(kwargs)
         self.ord = kwargs.pop("ord", np.inf)
-        self.eps = kwargs.pop("eps", 0.1)
         self.attack_model = kwargs.pop("attack_model", None)
         self.train_type = kwargs.pop("train_type", 'adv')
         self.delta = kwargs.pop("delta", 0.1)
         self.Delta = kwargs.pop("Delta", 0.45)
+        #self.eps = kwargs.pop("eps", 0.1)
 
         if self.train_type == 'robust':
             kwargs['splitter'] = 'robust'
+            #kwargs['eps'] = self.eps
 
         if self.train_type[:7] == 'robust_':
             # for hybrid
             kwargs['splitter'] = 'robust'
+            #kwargs['eps'] = self.eps
             self.train_type = self.train_type[7:]
 
+        # The modified DecisionTreeClassifier eats the esp argument
         super().__init__(**kwargs)
 
     def fit(self, X, y, eps:float=None):
@@ -79,7 +84,7 @@ class AdversarialRf(RandomForestClassifier):
     def __init__(self, **kwargs):
         print(kwargs)
         self.ord = kwargs.pop("ord", np.inf)
-        self.eps = kwargs.pop("eps", 0.1)
+        #self.eps = kwargs.pop("eps", 0.1)
         self.attack_model = kwargs.pop("attack_model", None)
         self.train_type = kwargs.pop("train_type", None)
         self.delta = kwargs.pop("delta", 0.1)
@@ -87,12 +92,16 @@ class AdversarialRf(RandomForestClassifier):
 
         if self.train_type == 'robust':
             kwargs['splitter'] = 'robust'
+            #kwargs['eps'] = self.eps
+            kwargs['n_jobs'] = 4
 
         if self.train_type[:7] == 'robust_':
             # for hybrid
             kwargs['splitter'] = 'robust'
+            #kwargs['eps'] = self.eps
             self.train_type = self.train_type[7:]
 
+        # The modified RandomForestClassifier eats the esp argument
         super().__init__(**kwargs)
 
     def fit(self, X, y, eps:float=None):

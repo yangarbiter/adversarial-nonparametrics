@@ -37,14 +37,14 @@ def main():
     experiments = [
         #compare_nns,
 
-        nn_k1_robustness,
-        nn_k3_robustness,
+        #nn_k1_robustness,
+        #nn_k3_robustness,
 
         rf_robustness,
         dt_robustness,
 
         rf_optimality,
-        nn_optimality,
+        #nn_optimality,
     ]
     grid_params = []
     for exp in experiments:
@@ -85,7 +85,6 @@ def temp_fix(auto_var):
             return
     else:
         return
-
 
     random_state = set_random_seed(auto_var)
     ord = auto_var.get_var("ord")

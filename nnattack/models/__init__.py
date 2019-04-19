@@ -106,21 +106,26 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         auto_var.set_intermidiate_variable("tree_clf", model)
         return model
 
-    @register_var()
+    @register_var(argument='decision_tree(?P<depth>_d\d+)?')
     @staticmethod
-    def decision_tree(auto_var, var_value, inter_var):
+    def decision_tree(auto_var, var_value, inter_var, depth):
         from sklearn.tree import DecisionTreeClassifier
-        model = DecisionTreeClassifier(criterion='entropy',
-                random_state=auto_var.get_var("random_seed"))
+        depth = int(depth[2:]) if depth else None
+        model = DecisionTreeClassifier(
+                max_depth=depth,
+                criterion='entropy',
+                random_state=auto_var.get_var("random_seed")
+            )
         auto_var.set_intermidiate_variable("tree_clf", model)
         return model
 
-    @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?decision_tree_(?P<eps>\d+)')
+    @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?decision_tree(?P<depth>_d\d+)?_(?P<eps>\d+)')
     @staticmethod
-    def adv_decision_tree(auto_var, var_value, inter_var, train, eps):
+    def adv_decision_tree(auto_var, var_value, inter_var, train, eps, depth):
         from .adversarial_dt import AdversarialDt
         eps = int(eps) * 0.01
         train = train[:-1] if train else None
+        depth = int(depth[2:]) if depth else None
 
         trnX, trny = inter_var['trnX'], inter_var['trny']
         model = auto_var.get_var_with_argument("model", "decision_tree")
@@ -130,8 +135,10 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         if train == 'adv':
             attack_model = auto_var.get_var("attack")
         model = AdversarialDt(
+            eps=eps,
             criterion='entropy',
             train_type=train,
+            max_depth=depth,
             attack_model=attack_model,
             ord=auto_var.get_var("ord"),
             random_state=auto_var.get_var("random_seed"))

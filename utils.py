@@ -1,11 +1,13 @@
 import os
 import json
+import logging
 
 import numpy as np
 import pandas as pd
 
 from nnattack.variables import auto_var, get_file_name
 
+logging.basicConfig(level=0)
 tex_base = "./tex_files"
 
 def get_result(auto_var):
