@@ -323,6 +323,7 @@ def rf_robustness():
     grid_param = []
     grid_param.append({
         'model': [
+            'random_forest_100',
             'robust_rf_100_10', 'robust_rf_100_30', 'robust_rf_100_50',
             'robustv1_rf_100_10', 'robustv1_rf_100_30', 'robustv1_rf_100_50',
             'robustv2_rf_100_10', 'robustv2_rf_100_30', 'robustv2_rf_100_50',
@@ -427,7 +428,7 @@ def opt_of_rf_attack():
     return exp_fn, exp_name, grid_param, run_param
 
 
-def optimality():
+def rf_optimality():
     exp_fn = eps_accuracy
     exp_name = "optimality_reduction"
     grid_param = []
@@ -444,12 +445,24 @@ def optimality():
         'random_seed': random_seed,
     })
     grid_param.append({
-        'model': ['robustv1_rf_3_30_d6'],
+        'model': [
+            'robust_rf_3_20_d6', 'robust_rf_3_30_d6'
+            'robustv1_rf_3_20_d6', 'robustv2_rf_3_30_d6',
+            'robustv2_rf_3_20_d6', 'robustv2_rf_3_30_d6',
+        ],
         'ord': ['inf'],
         'dataset': small_datasets,
-        'attack': ['rf_attack_all',],
+        'attack': ['rf_attack_all', 'blackbox'],
         'random_seed': random_seed,
     })
+
+    run_param = {'verbose': 1, 'n_jobs': 4,}
+    return exp_fn, exp_name, grid_param, run_param
+
+def nn_optimality():
+    exp_fn = eps_accuracy
+    exp_name = "nn_optimality_reduction"
+    grid_param = []
     grid_param.append({
         'model': ['knn3'],
         'ord': ['inf'],
@@ -460,12 +473,14 @@ def optimality():
         'random_seed': random_seed,
     })
     grid_param.append({
-        'model': ['robustv1_nn_k3_30'],
+        'model': [
+            'robustv1_nn_k3_30', 'robustv2_nn_k3_30'
+            'robustv1_nn_k3_20', 'robustv2_nn_k3_20'
+        ],
         'ord': ['inf'],
         'dataset': small_datasets,
-        'attack': ['nnopt_k3_all'],
+        'attack': ['nnopt_k3_all', 'blackbox'],
         'random_seed': random_seed,
     })
-
     run_param = {'verbose': 1, 'n_jobs': 4,}
     return exp_fn, exp_name, grid_param, run_param

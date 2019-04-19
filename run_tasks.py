@@ -17,7 +17,8 @@ from params import (
     #opt_of_rf_attack,
     #opt_of_nnopt,
 
-    optimality,
+    rf_optimality,
+    nn_optimality,
     compare_nns,
     nn_k1_robustness,
     nn_k3_robustness,
@@ -34,7 +35,7 @@ DEBUG = True if os.environ.get('DEBUG', False) else False
 
 def main():
     experiments = [
-        compare_nns,
+        #compare_nns,
 
         nn_k1_robustness,
         nn_k3_robustness,
@@ -42,7 +43,8 @@ def main():
         rf_robustness,
         dt_robustness,
 
-        optimality,
+        rf_optimality,
+        nn_optimality,
     ]
     grid_params = []
     for exp in experiments:
@@ -60,7 +62,7 @@ def main():
     #                          with_hook=False, allow_failure=False)
     #auto_var.run_grid_params(celery_run, grid_params, n_jobs=1,
     #                         allow_failure=False)
-    #auto_var.run_grid_params(temp_fix, grid_params, n_jobs=1,
+    #auto_var.run_grid_params(temp_fix, grid_params, n_jobs=6,
     #                         allow_failure=False, with_hook=False)
 
 def delete_file(auto_var):
@@ -91,7 +93,6 @@ def temp_fix(auto_var):
     X, y, eps_list = auto_var.get_var("dataset")
     idxs = np.arange(len(X))
     random_state.shuffle(idxs)
-    #trnX, tstX, trny, tsty = X[idxs[:-100]], X[idxs[-100:]], y[idxs[:-100]], y[idxs[-100:]]
     trnX, tstX, trny, tsty = X[idxs[:-200]], X[idxs[-200:]], y[idxs[:-200]], y[idxs[-200:]]
 
     scaler = MinMaxScaler()
@@ -129,9 +130,6 @@ def temp_fix(auto_var):
     ori_tstX, ori_tsty = tstX, tsty # len = 200
     idxs = np.where(pred == tsty)[0]
     random_state.shuffle(idxs)
-    tstX, tsty = tstX[idxs[:100]], tsty[idxs[:100]]
-    #if len(tsty) != 100:
-    #    raise ValueError("didn't got 100 testing examples")
 
     augX = None
     if ('adv' in model_name) or ('robustv1' in model_name) or ('robustv2' in model_name):
