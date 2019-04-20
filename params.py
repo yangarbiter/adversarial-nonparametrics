@@ -278,6 +278,38 @@ def nn_optimality():
     run_param = {'verbose': 1, 'n_jobs': 4,}
     return exp_fn, exp_name, grid_param, run_param
 
+def nn_k3_optimality_figs():
+    exp_fn = eps_accuracy
+    exp_name = "nn_k3_optimality_figs"
+    grid_param = []
+    grid_param.append({
+        'model': ['knn3'],
+        'ord': ['inf'],
+        'dataset': small_datasets,
+        'attack': [ 'nnopt_k1_all', 'rev_nnopt_k3_5_region',
+            'rev_nnopt_k3_10_region', 'rev_nnopt_k3_15_region',
+            'rev_nnopt_k3_20_region', 'rev_nnopt_k3_50_region',],
+        'random_seed': random_seed,
+    })
+    run_param = {'verbose': 1, 'n_jobs': 4,}
+    return exp_fn, exp_name, grid_param, run_param
+
+def rf_optimality_figs():
+    exp_fn = eps_accuracy
+    exp_name = "rf_optimality_figs"
+    grid_param = []
+    grid_param.append({
+        'model': ['random_forest_3_d6'],
+        'ord': ['inf'],
+        'dataset': small_datasets,
+        'attack': [ 'rf_attack_all', 'rf_attack_rev', 'rf_attack_rev_100',
+            'rf_attack_rev_15', 'rf_attack_rev_10', 'rf_attack_rev_5',
+            'blackbox' ],
+        'random_seed': random_seed,
+    })
+    run_param = {'verbose': 1, 'n_jobs': 4,}
+    return exp_fn, exp_name, grid_param, run_param
+
 def dt_robustness_figs():
     dt_models = [
         'decision_tree_d5',

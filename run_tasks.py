@@ -25,6 +25,8 @@ from params import (
 
     dt_robustness,
     rf_robustness,
+
+    nn_k3_optimality_figs,
 )
 from main import eps_accuracy
 
@@ -45,6 +47,8 @@ def main():
 
         #rf_optimality,
         #nn_optimality,
+
+        #nn_k3_optimality_figs,
     ]
     grid_params = []
     for exp in experiments:
