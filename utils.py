@@ -60,7 +60,7 @@ def set_plot(fig, ax, ord=np.inf):
     fig.autofmt_xdate()
     ax.legend()
     ax.set_ylim(0, 1)
-        #ax.legend(bbox_to_anchor=(1.5, 0., 0.5, 0.5))
+    #ax.legend(bbox_to_anchor=(1.5, 0., 0.5, 0.5))
     ax.legend()
     ax.xaxis.set_tick_params(labelsize=15)
     ax.yaxis.set_tick_params(labelsize=15)

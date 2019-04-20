@@ -5,18 +5,6 @@ import json
 from nnattack.variables import auto_var, get_file_name
 
 from params import (
-    #nn_k1,
-    #nn_k3,
-    #nn_k5,
-    #nn_k7,
-    #robust_nn_k1, robust_nn_k3, dt_attack,
-    #robust_rf,
-    #rf_attack,
-    #rf500_attack,
-
-    #opt_of_rf_attack,
-    #opt_of_nnopt,
-
     rf_optimality,
     nn_optimality,
     compare_nns,
@@ -26,6 +14,7 @@ from params import (
     dt_robustness,
     rf_robustness,
 
+    nn_k1_optimality_figs,
     nn_k3_optimality_figs,
 )
 from main import eps_accuracy
@@ -39,8 +28,8 @@ def main():
     experiments = [
         #compare_nns,
 
-        #nn_k1_robustness,
-        #nn_k3_robustness,
+        nn_k1_robustness,
+        nn_k3_robustness,
 
         rf_robustness,
         #dt_robustness,
@@ -48,7 +37,8 @@ def main():
         #rf_optimality,
         #nn_optimality,
 
-        #nn_k3_optimality_figs,
+        nn_k1_optimality_figs,
+        nn_k3_optimality_figs,
     ]
     grid_params = []
     for exp in experiments:

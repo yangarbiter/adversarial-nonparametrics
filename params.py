@@ -223,7 +223,7 @@ def rf_optimality():
     exp_name = "optimality_reduction"
     grid_param = []
     grid_param.append({
-        'model': ['random_forest_3_d6'],
+        'model': ['random_forest_3_d5'],
         'ord': ['inf'],
         'dataset': small_datasets,
         'attack': [
@@ -239,9 +239,9 @@ def rf_optimality():
     })
     grid_param.append({
         'model': [
-            'robust_rf_3_20_d6', 'robust_rf_3_30_d6',
-            'robustv1_rf_3_20_d6', 'robustv2_rf_3_30_d6',
-            'robustv1_rf_3_20_d6', 'robustv2_rf_3_30_d6',
+            'robust_rf_3_20_d5', 'robust_rf_3_30_d5',
+            'robustv1_rf_3_20_d5', 'robustv2_rf_3_30_d5',
+            'robustv1_rf_3_20_d5', 'robustv2_rf_3_30_d5',
         ],
         'ord': ['inf'],
         'dataset': small_datasets,
@@ -278,6 +278,23 @@ def nn_optimality():
     run_param = {'verbose': 1, 'n_jobs': 4,}
     return exp_fn, exp_name, grid_param, run_param
 
+def nn_k1_optimality_figs():
+    exp_fn = eps_accuracy
+    exp_name = "nn_k1_optimality_figs"
+    grid_param = []
+    grid_param.append({
+        'model': ['knn1'],
+        'ord': ['inf'],
+        'dataset': robust_datasets,
+        'attack': ['blackbox', 'nnopt_k1_all', 'rev_nnopt_k1_3_region',
+            'rev_nnopt_k1_5_region', 'rev_nnopt_k1_10_region',
+            'rev_nnopt_k1_15_region', 'rev_nnopt_k1_20_region',
+            'rev_nnopt_k1_50_region',],
+        'random_seed': random_seed,
+    })
+    run_param = {'verbose': 1, 'n_jobs': 4,}
+    return exp_fn, exp_name, grid_param, run_param
+
 def nn_k3_optimality_figs():
     exp_fn = eps_accuracy
     exp_name = "nn_k3_optimality_figs"
@@ -286,9 +303,10 @@ def nn_k3_optimality_figs():
         'model': ['knn3'],
         'ord': ['inf'],
         'dataset': small_datasets,
-        'attack': [ 'nnopt_k1_all', 'rev_nnopt_k3_5_region',
-            'rev_nnopt_k3_10_region', 'rev_nnopt_k3_15_region',
-            'rev_nnopt_k3_20_region', 'rev_nnopt_k3_50_region',],
+        'attack': ['blackbox', 'nnopt_k3_all', 'rev_nnopt_k3_3_region',
+            'rev_nnopt_k3_5_region', 'rev_nnopt_k3_10_region',
+            'rev_nnopt_k3_15_region', 'rev_nnopt_k3_20_region',
+            'rev_nnopt_k3_50_region',],
         'random_seed': random_seed,
     })
     run_param = {'verbose': 1, 'n_jobs': 4,}
@@ -299,12 +317,12 @@ def rf_optimality_figs():
     exp_name = "rf_optimality_figs"
     grid_param = []
     grid_param.append({
-        'model': ['random_forest_3_d6'],
+        'model': ['random_forest_3_d5'],
         'ord': ['inf'],
         'dataset': small_datasets,
-        'attack': [ 'rf_attack_all', 'rf_attack_rev', 'rf_attack_rev_100',
+        'attack': ['rf_attack_all', 'rf_attack_rev', 'rf_attack_rev_100',
             'rf_attack_rev_15', 'rf_attack_rev_10', 'rf_attack_rev_5',
-            'blackbox' ],
+            'blackbox'],
         'random_seed': random_seed,
     })
     run_param = {'verbose': 1, 'n_jobs': 4,}
