@@ -46,6 +46,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         X, y = load_svmlight_file("./nnattack/datasets/files/diabetes")
         X = X.todense()
         y[y==-1] = 0
+        y = y.astype(int)
         eps = [0.01 * i for i in range(0, 41, 1)]
         return X, y, eps
 
@@ -56,6 +57,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         X, y = load_svmlight_file("./nnattack/datasets/files/ijcnn1.tr")
         X = X.todense()
         y[y==-1] = 0
+        y = y.astype(int)
 
         idx = np.random.choice(np.arange(len(X)), n_samples, replace=False)
         X, y = X[idx], y[idx]

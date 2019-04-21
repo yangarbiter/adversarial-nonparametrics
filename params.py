@@ -10,6 +10,7 @@ datasets = [
     #'abalone',
     'covtype_3200',
     #'mnist35_2200_pca5', 'fashion_mnist35_2200_pca5',
+    'ijcnn1_2200',
     'mnist17_2200_pca25',
     'fashion_mnist35_2200_pca25',
     'fashion_mnist06_2200_pca25',
@@ -20,6 +21,7 @@ datasets = [
 robust_datasets = [ # binary
     #'abalone',
     'diabetes',
+    'ijcnn1_2200',
     'mnist17_2200_pca25',
     'mnist35_2200_pca25',
     'fashion_mnist06_2200_pca25',
