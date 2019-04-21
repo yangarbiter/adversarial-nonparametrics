@@ -14,6 +14,8 @@ from params import (
     dt_robustness,
     rf_robustness,
 
+
+    rf_optimality_figs,
     nn_k1_optimality_figs,
     nn_k3_optimality_figs,
 )
@@ -32,11 +34,12 @@ def main():
         nn_k3_robustness,
 
         rf_robustness,
-        #dt_robustness,
+        dt_robustness,
 
-        #rf_optimality,
-        #nn_optimality,
+        rf_optimality,
+        nn_optimality,
 
+        rf_optimality_figs,
         nn_k1_optimality_figs,
         nn_k3_optimality_figs,
     ]

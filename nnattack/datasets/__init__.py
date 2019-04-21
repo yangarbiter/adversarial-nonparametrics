@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.model_selection import train_test_split
+from sklearn.datasets import load_svmlight_file
 
 from autovar.base import RegisteringChoiceType, register_var, VariableClass
 
@@ -36,6 +37,29 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
     def wine(auto_var, var_value, inter_var):
         from sklearn.datasets import load_wine
         X, y = load_wine(return_X_y=True)
+        eps = [0.01 * i for i in range(0, 41, 1)]
+        return X, y, eps
+
+    @register_var()
+    @staticmethod
+    def diabetes(auto_var, var_value, inter_var):
+        X, y = load_svmlight_file("./nnattack/datasets/files/diabetes")
+        X = X.todense()
+        y[y==-1] = 0
+        eps = [0.01 * i for i in range(0, 41, 1)]
+        return X, y, eps
+
+    @register_var(argument=r"ijcnn1_(?P<n_samples>\d+)")
+    @staticmethod
+    def ijcnn1(auto_var, var_value, inter_var, n_samples):
+        n_samples = int(n_samples)
+        X, y = load_svmlight_file("./nnattack/datasets/files/ijcnn1.tr")
+        X = X.todense()
+        y[y==-1] = 0
+
+        idx = np.random.choice(np.arange(len(X)), n_samples, replace=False)
+        X, y = X[idx], y[idx]
+
         eps = [0.01 * i for i in range(0, 41, 1)]
         return X, y, eps
 

@@ -5,6 +5,7 @@ random_seed = list(range(2))
 datasets = [
     #'iris', 'wine',
     #'digits_pca5',
+    'diabetes',
     'digits_pca25',
     #'abalone',
     'covtype_3200',
@@ -18,6 +19,7 @@ datasets = [
 
 robust_datasets = [ # binary
     #'abalone',
+    'diabetes',
     'mnist17_2200_pca25',
     'mnist35_2200_pca25',
     'fashion_mnist06_2200_pca25',
