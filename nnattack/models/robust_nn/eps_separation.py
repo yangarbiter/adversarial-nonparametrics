@@ -125,7 +125,7 @@ def find_eps_separated_set(pts, eps, y_pts, ord):
             1) find the set of points that have conflict with other points
             2) build the conflict adjacency graph, conflict points are adjacent
             3) find the min-cover of the adjacency graph
-            4) remove the min-cover from the original set pts.             
+            4) remove the min-cover from the original set pts.
     '''
     y_pts = [1 if i>0 else -1 for i in y_pts]
     #hasCollision, numCollision = find_num_collision(eps, pts, y_pts,)

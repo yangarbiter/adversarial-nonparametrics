@@ -147,9 +147,10 @@ def eps_accuracy(auto_var):
         perts = attack_model.perts
     else:
         perts = np.copy(tst_perturbs[-1])
+    perts = perts.astype(float)
     perts, missed_count = baseline_pert(model, trnX, tstX, tsty, perts, ord)
     if len(np.unique(model.predict(trnX))) > 1:
-        assert (model.predict(tstX + perts) == tsty).sum() == 0
+        assert (model.predict(tstX + perts) == tsty).sum() == 0, model.predict(tstX + perts) == tsty
     else:
         # ignore single label case
         ret['single_label'] = True

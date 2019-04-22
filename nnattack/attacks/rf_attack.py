@@ -135,12 +135,14 @@ def rev_get_sol_linf(target_x, target_y: int, pred_trn_y, regions, clf,
                 candidates.append(ret - target_x)
             else:
                 # a dimension is too close to the boundary
+                # region too small
+                # just use the traning data as 
                 if trnX is not None:
                     candidates.append(trnX[i] - target_x)
-                print("Shouldn't happend often %d" % i)
+                print("region too small %d" % i)
         elif status == 'infeasible_inaccurate':
             #print(status)
-            pass
+            candidates.append(trnX[i] - target_x)
             #ret = np.array(sol).reshape(-1)[:-1]
             #if clf.predict([ret])[0] != target_y:
             #    candidates.append(ret)
@@ -148,6 +150,7 @@ def rev_get_sol_linf(target_x, target_y: int, pred_trn_y, regions, clf,
             print(status)
             #raise ValueError()
 
+    import ipdb; ipdb.set_trace()
     norms = np.linalg.norm(candidates, ord=np.inf, axis=1)
     return candidates[norms.argmin()]
 
