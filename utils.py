@@ -65,7 +65,7 @@ def set_plot(fig, ax, ord=np.inf):
     ax.xaxis.set_tick_params(labelsize=18)
     ax.yaxis.set_tick_params(labelsize=18)
     ax.set_ylabel('Accuracy', fontsize=18)
-    xlabel = 'Adversarial Perturbation'
+    xlabel = 'Perturbation distance'
     if ord == np.inf:
         ax.set_xlabel(xlabel + ' (Linf)', fontsize=18)
     else:

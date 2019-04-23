@@ -150,7 +150,6 @@ def rev_get_sol_linf(target_x, target_y: int, pred_trn_y, regions, clf,
             print(status)
             #raise ValueError()
 
-    import ipdb; ipdb.set_trace()
     norms = np.linalg.norm(candidates, ord=np.inf, axis=1)
     return candidates[norms.argmin()]
 
