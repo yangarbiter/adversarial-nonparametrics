@@ -67,11 +67,13 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         n_samples = int(n_samples)
         X, y = load_svmlight_file("./nnattack/datasets/files/ijcnn1.tr")
         X = X.todense()
-        y[y==-1] = 0
-        y = y.astype(int)
 
-        idx = np.random.choice(np.arange(len(X)), n_samples, replace=False)
-        X, y = X[idx], y[idx]
+        idx1 = np.random.choice(np.where(y==1)[0], n_samples//2, replace=False)
+        idx2 = np.random.choice(np.where(y==-1)[0], n_samples//2, replace=False)
+        y[idx1] = 0
+        y[idx2] = 1
+        X = np.vstack((X[idx1], X[idx2])).astype(np.float)
+        y = np.concatenate((y[idx1], y[idx2]))
 
         eps = [0.01 * i for i in range(0, 41, 1)]
         return X, y, eps

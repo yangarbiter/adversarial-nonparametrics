@@ -62,14 +62,14 @@ def set_plot(fig, ax, ord=np.inf):
     ax.set_ylim(0, 1)
     #ax.legend(bbox_to_anchor=(1.5, 0., 0.5, 0.5))
     ax.legend()
-    ax.xaxis.set_tick_params(labelsize=15)
-    ax.yaxis.set_tick_params(labelsize=15)
-    ax.set_ylabel('Accuracy', fontsize=15)
+    ax.xaxis.set_tick_params(labelsize=18)
+    ax.yaxis.set_tick_params(labelsize=18)
+    ax.set_ylabel('Accuracy', fontsize=18)
     xlabel = 'Adversarial Perturbation'
     if ord == np.inf:
-        ax.set_xlabel(xlabel + ' (Linf)', fontsize=15)
+        ax.set_xlabel(xlabel + ' (Linf)', fontsize=18)
     else:
-        ax.set_xlabel(xlabel, fontsize=15)
+        ax.set_xlabel(xlabel, fontsize=18)
 
 def write_to_tex(s, file_name):
     with open(os.path.join(tex_base, file_name), 'w') as f:
