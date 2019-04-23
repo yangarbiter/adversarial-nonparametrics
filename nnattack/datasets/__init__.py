@@ -74,6 +74,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         y[idx2] = 1
         X = np.vstack((X[idx1], X[idx2])).astype(np.float)
         y = np.concatenate((y[idx1], y[idx2]))
+        y = y.astype(int)
 
         eps = [0.01 * i for i in range(0, 41, 1)]
         return X, y, eps
