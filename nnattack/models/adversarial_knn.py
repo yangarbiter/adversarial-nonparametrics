@@ -9,6 +9,7 @@ class AdversarialKnn(KNeighborsClassifier):
                 leaf_size=30, p=2, metric='minkowski', metric_params=None,
                 n_jobs=1, eps:float = None, **kwargs):
         print(kwargs)
+        self.sep_measure = kwargs.pop("sep_measure", None)
         self.ord = kwargs.pop("ord", np.inf)
         self.attack_model = kwargs.pop("attack_model", None)
         self.eps = eps

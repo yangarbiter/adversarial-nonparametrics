@@ -126,6 +126,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         eps = int(eps) * 0.01
         train = train[:-1] if train else None
         depth = int(depth[2:]) if depth else None
+        print(eps)
 
         trnX, trny = inter_var['trnX'], inter_var['trny']
         model = auto_var.get_var_with_argument("model", "decision_tree")

@@ -58,6 +58,17 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
     @register_var()
     @staticmethod
+    def gradient_based(auto_var, var_value, inter_var):
+        from .gradient_based import GradientBased
+        return GradientBased(
+                   sess=auto_var.inter_var['sess'],
+                   trnX=auto_var.inter_var['trnX'],
+                   trny=auto_var.inter_var['trny'],
+                   ord=auto_var.get_var('ord'),
+               )
+
+    @register_var()
+    @staticmethod
     def nnopt_k3_all(auto_var, var_value, inter_var):
         from .nn_attack import NNAttack
         n_neighbors = 3
@@ -72,7 +83,7 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
         n_neighbors = 1
         return NNAttack(inter_var['trnX'], inter_var['trny'],
             n_neighbors=n_neighbors, farthest=-1,
-            ord=auto_var.get_var('ord'))
+            ord=auto_var.get_var('ord'), n_jobs=8)
     
     @register_var(argument=r"kernelsub_c(?P<c>\d+)_(?P<attack>[a-zA-Z0-9]+)")
     @staticmethod

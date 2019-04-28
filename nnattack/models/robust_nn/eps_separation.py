@@ -19,7 +19,13 @@ def build_collision_graph(eps, pts, y, ord):
                 p1 = pts[i]
                 p2 = pts[j]
                 d = p1 - p2
-                dist = np.linalg.norm(d, ord=ord)
+                if ord in [1, 2, np.inf]:
+                    dist = np.linalg.norm(d, ord=ord)
+                elif ord == 'min_measure':
+                    dist = min(d)
+                else:
+                    raise ValueError("Not supported measure %s for collision",
+                                     str(ord))
                 if (dist <= 2*eps):
                     adj_lst[i].add(j)
                     adj_lst[j].add(i)
@@ -57,7 +63,13 @@ def find_num_collision(eps, pts, y, ord):
                 p1 = pts[i]
                 p2 = pts[j]
                 d = p1 - p2
-                dist = np.linalg.norm(d, ord=ord) 
+                if ord in [1, 2, np.inf]:
+                    dist = np.linalg.norm(d, ord=ord)
+                elif ord == 'min_measure':
+                    dist = min(d)
+                else:
+                    raise ValueError("Not supported measure %s for collision",
+                                     str(ord))
                 if (dist <= (2*eps)):
                     numCollision[i] += 1
                     numCollision[j] += 1

@@ -6,7 +6,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 from cvxopt import matrix, solvers
 import cvxopt.glpk
-import cvxopt
+#import cvxopt
 import numpy as np
 from sklearn.neighbors import KDTree
 import scipy
@@ -28,15 +28,13 @@ logger = logging.getLogger(__name__)
 #import mosek
 #msk.options = {mosek.iparam.log: 0}
 #solvers.options['solver'] = 'glpk'
-#solvers.options['solver'] = 'mosek'
-solvers.options['maxiters'] = 30
+#solvers.options['maxiters'] = 30
 solvers.options['show_progress'] = False
-solvers.options['refinement'] = 0
-solvers.options['feastol'] = 1e-7
-solvers.options['abstol'] = 1e-7
-solvers.options['reltol'] = 1e-7
+#solvers.options['refinement'] = 0
+#solvers.options['feastol'] = 1e-7
+#solvers.options['abstol'] = 1e-7
+#solvers.options['reltol'] = 1e-7
 cvxopt.glpk.options["msg_lev"] = "GLP_MSG_OFF"
-
 
 CONSTRAINTTOL = 5e-6
 
@@ -55,9 +53,10 @@ DEBUG = False
 
 import cvxpy as cp
 
-def solve_lp(c, G, h, n, init_x=None):
+def solve_lp(c, G, h, n, init_x=None, n_jobs=1):
     #c = np.array(c)
     #G, h = np.array(G), np.array(h)
+    options = {'threads': n_jobs}
     x = cp.Variable(shape=(n, 1))
     obj = cp.Minimize(c.T * x)
     constraints = [G*x <= h]
@@ -223,7 +222,7 @@ def get_sol_l1(target_x, tuple_x, faropp, kdtree, transformer, glob_trnX,
 
 #@profile
 def get_sol_linf(target_x, tuple_x, faropp, kdtree, transformer,
-        glob_trnX, glob_trny, init_x=None):
+        glob_trnX, glob_trny, init_x=None, n_jobs=1):
     tuple_x = np.asarray(tuple_x)
     fet_dim = target_x.shape[0]
     #n_emb = transformer.shape[0]
@@ -246,7 +245,7 @@ def get_sol_linf(target_x, tuple_x, faropp, kdtree, transformer,
 
     temph = h - CONSTRAINTTOL
 
-    status, sol = solve_lp(c=c, G=G, h=temph, n=len(c))
+    status, sol = solve_lp(c=c, G=G, h=temph, n=len(c), n_jobs=n_jobs)
     if status == 'optimal':
         ret = np.array(sol).reshape(-1)
         return True, ret[:-1]
@@ -287,7 +286,7 @@ def get_sol_linf(target_x, tuple_x, faropp, kdtree, transformer,
 
 #@profile
 def get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
-        transformer, lp_sols, ord=2):
+        transformer, lp_sols, ord=2, n_jobs=1):
     ind = kdtree.query(target_x.dot(transformer.T).reshape((1, -1)),
                        k=n_neighbors, return_distance=False)[0]
     if target_y != np.argmax(np.bincount(glob_trny[ind])):
@@ -325,7 +324,7 @@ def get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
     def _helper(comb, transformer, trnX, trny):
         comb_tup = tuple(ind[comb])
         ret, sol = get_sol_fn(target_x, ind[comb], faropp, kdtree,
-                              transformer, trnX, trny)
+                              transformer, trnX, trny, n_jobs=n_jobs)
         return ret, sol
     not_vacum = lambda x: tuple(ind[x]) not in lp_sols or lp_sols[tuple(ind[x])]
     combs = list(filter(not_vacum, combs))
@@ -393,7 +392,7 @@ def attack_with_eps_constraint(perts, ord, eps):
 
 #@profile
 def rev_get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
-        transformer, lp_sols, ord=2, method='self', knn=None):
+        transformer, lp_sols, ord=2, method='self', knn=None, n_jobs=1):
     if farthest == -1:
         farthest = glob_trnX.shape[0]
     temp = (target_x, np.inf)
@@ -428,7 +427,7 @@ def rev_get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
         inds = tuple([_ for _ in inds])
 
         ret, sol = get_sol_fn(target_x, inds, faropp, kdtree, transformer,
-                glob_trnX, glob_trny, init_x=glob_trnX[i])
+                glob_trnX, glob_trny, init_x=glob_trnX[i], n_jobs=n_jobs)
 
         if method == 'region':
             #assert ret
@@ -463,8 +462,9 @@ def rev_get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
 
 class NNOptAttack():
     def __init__(self, trnX, trny, n_neighbors=3, farthest=-1, faropp=-1,
-            transformer=None, ord=2):
+            transformer=None, ord=2, n_jobs=1):
         #furthest >= K
+        self.n_jobs = n_jobs
         self.K = n_neighbors
         self.trnX = trnX
         self.trny = trny
@@ -485,10 +485,10 @@ class NNOptAttack():
 
 class NNAttack(NNOptAttack):
     def __init__(self, trnX, trny, n_neighbors=3, farthest=-1, faropp=-1,
-            transformer=None, ord=2):
+            transformer=None, ord=2, n_jobs=1):
         super().__init__(trnX=trnX, trny=trny, n_neighbors=n_neighbors,
                 farthest=farthest, faropp=faropp, transformer=transformer,
-                ord=ord)
+                ord=ord, n_jobs=n_jobs)
 
     #@profile
     def perturb(self, X, y, eps=None, n_jobs=1):
@@ -526,7 +526,7 @@ class NNAttack(NNOptAttack):
 
 class RevNNAttack(NNOptAttack):
     def __init__(self, trnX, trny, n_neighbors=3, farthest=-1, faropp=-1,
-            transformer=None, ord=2, method='self'):
+            transformer=None, ord=2, method='self', n_jobs=1):
         super().__init__(trnX=trnX, trny=trny, n_neighbors=n_neighbors,
                 farthest=farthest, faropp=faropp, transformer=transformer,
                 ord=ord)
@@ -552,16 +552,20 @@ class RevNNAttack(NNOptAttack):
         with IterTimer("Perturbing", len(X)) as timer:
             for i, (target_x, target_y) in enumerate(zip(X, y)):
                 timer.update(i)
-                ret.append(rev_get_adv(target_x.astype(np.float64), target_y,
-                        self.tree, self.farthest, self.K, self.faropp, transformer,
-                        self.lp_sols, ord=self.ord, method=self.method, knn=knn))
+                ret.append(
+                    rev_get_adv(target_x.astype(np.float64), target_y,
+                        self.tree, self.farthest, self.K, self.faropp,
+                        transformer, self.lp_sols, ord=self.ord,
+                        method=self.method, knn=knn, n_jobs=self.n_jobs
+                    )
+                )
 
         self.perts = np.asarray(ret)
         return attack_with_eps_constraint(self.perts, self.ord, eps)
 
 class HybridNNAttack(NNOptAttack):
     def __init__(self, trnX, trny, n_neighbors=3, farthest=-1, faropp=-1,
-            rev_farthest=-1, transformer=None, ord=2, method='self'):
+            rev_farthest=-1, transformer=None, ord=2, method='self', n_jobs=1):
         super().__init__(trnX=trnX, trny=trny, n_neighbors=n_neighbors,
                 farthest=farthest, faropp=faropp, transformer=transformer,
                 ord=ord)
@@ -591,7 +595,7 @@ class HybridNNAttack(NNOptAttack):
                 timer.update(i)
                 pert = get_adv(target_x.astype(np.float64), target_y, self.tree,
                         self.farthest, self.K, self.faropp, transformer,
-                        self.lp_sols, ord=self.ord)
+                        self.lp_sols, ord=self.ord, n_jobs=self.n_jobs)
                 rev_pert = rev_get_adv(target_x.astype(np.float64), target_y,
                         self.tree, self.rev_farthest, self.K, self.faropp, transformer,
                         self.lp_sols, ord=self.ord, method=self.method, knn=knn)

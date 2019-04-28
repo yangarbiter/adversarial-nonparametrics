@@ -6,11 +6,13 @@ from .robust_nn.eps_separation import find_eps_separated_set
 from .robust_nn.robust_1nn import get_aug_v2
 
 def get_aug_data(model, X, y, eps):
-    if model.train_type in ['adv', 'robustv1', 'robustv2']:
+    if model.train_type in ['adv', 'robustv1', 'robustv1min', 'robustv2']:
         if eps is None and model.eps is None:
             raise ValueError("eps should not be None with train type %s", model.train_type)
         elif eps is None:
             eps = model.eps
+
+    sep_measure = model.sep_measure if model.sep_measure else model.ord
 
     print("XXXXXXXXX %f", eps)
 
@@ -22,12 +24,20 @@ def get_aug_data(model, X, y, eps):
         augX = np.vstack((X, X[ind]+advX[ind]))
         augy = np.concatenate((y, y[ind]))
 
+    elif model.train_type == 'robustv1min':
+        if len(np.unique(y)) != 2:
+            raise ValueError("Can only deal with number of classes = 2"
+                             "got %d", len(np.unique(y)))
+        y = y.astype(int)*2-1
+        augX, augy = find_eps_separated_set(X, eps/2, y, 'min_measure')
+        augy = (augy+1)//2
+
     elif model.train_type == 'robustv1':
         if len(np.unique(y)) != 2:
             raise ValueError("Can only deal with number of classes = 2"
                              "got %d", len(np.unique(y)))
         y = y.astype(int)*2-1
-        augX, augy = find_eps_separated_set(X, eps/2, y, model.ord)
+        augX, augy = find_eps_separated_set(X, eps/2, y, sep_measure)
         augy = (augy+1)//2
 
     elif model.train_type == 'robustv2':
@@ -38,7 +48,7 @@ def get_aug_data(model, X, y, eps):
 
         Delta = model.Delta
         delta = model.delta
-        augX, augy = get_aug_v2(X, y, Delta, delta, eps, model.ord)
+        augX, augy = get_aug_v2(X, y, Delta, delta, eps, sep_measure)
         augy = (augy+1)//2
 
     elif model.train_type is None:
@@ -55,6 +65,7 @@ class AdversarialDt(DecisionTreeClassifier):
     def __init__(self, **kwargs):
         print(kwargs)
         self.ord = kwargs.pop("ord", np.inf)
+        self.sep_measure = kwargs.pop("sep_measure", None)
         self.attack_model = kwargs.pop("attack_model", None)
         self.train_type = kwargs.pop("train_type", 'adv')
         self.delta = kwargs.pop("delta", 0.1)
@@ -85,6 +96,7 @@ class AdversarialRf(RandomForestClassifier):
         print(kwargs)
         self.ord = kwargs.pop("ord", np.inf)
         #self.eps = kwargs.pop("eps", 0.1)
+        self.sep_measure = kwargs.pop("sep_measure", None)
         self.attack_model = kwargs.pop("attack_model", None)
         self.train_type = kwargs.pop("train_type", None)
         self.delta = kwargs.pop("delta", 0.1)

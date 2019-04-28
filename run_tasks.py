@@ -5,6 +5,8 @@ import json
 from nnattack.variables import auto_var, get_file_name
 
 from params import (
+    compare_attacks,
+
     rf_optimality,
     nn_optimality,
     compare_nns,
@@ -14,6 +16,7 @@ from params import (
     dt_robustness,
     rf_robustness,
 
+    compare_defense,
 
     rf_optimality_figs,
     nn_k1_optimality_figs,
@@ -28,20 +31,21 @@ DEBUG = True if os.environ.get('DEBUG', False) else False
 
 def main():
     experiments = [
-        #compare_nns,
+        #compare_nns(),
+        compare_attacks(),
+        compare_defense(),
 
-        nn_k1_robustness,
-        nn_k3_robustness,
+        #nn_k1_robustness(),
+        #nn_k3_robustness(),
+        #rf_robustness(),
+        #dt_robustness(),
 
-        rf_robustness,
-        dt_robustness,
+        rf_optimality(),
+        nn_optimality(),
 
-        rf_optimality,
-        nn_optimality,
-
-        rf_optimality_figs,
-        nn_k1_optimality_figs,
-        nn_k3_optimality_figs,
+        #rf_optimality_figs(),
+        #nn_k1_optimality_figs(),
+        #nn_k3_optimality_figs(),
     ]
     grid_params = []
     for exp in experiments:
