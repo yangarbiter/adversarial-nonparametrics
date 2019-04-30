@@ -8,12 +8,14 @@ datasets = [
     #'digits_pca5',
     #'digits_pca25',
     #'covtype_3200',
+    'australian',
     'fourclass',
     'diabetes',
     'cancer',
     #'abalone',
     #'mnist35_2200_pca5', 'fashion_mnist35_2200_pca5',
     #'ijcnn1_2200',
+    #'covtypebin_1200',
     'halfmoon_2200',
     'fashion_mnist35_2200_pca25',
     'fashion_mnist06_2200_pca25',
@@ -22,10 +24,12 @@ datasets = [
 ]
 
 tree_datasets = [
+    'australian',
     'fourclass',
     'diabetes',
     'cancer',
     'halfmoon_2200',
+    #'covtypebin_10200',
     'fashion_mnist35_10200_pca25',
     'fashion_mnist06_10200_pca25',
     'mnist17_10200_pca25',
@@ -38,7 +42,7 @@ robust_datasets = [ # binary
     'cancer',
     #'ijcnn1_2200',
     'mnist17_2200_pca25',
-    'mnist35_2200_pca25',
+    #'mnist35_2200_pca25',
     'fashion_mnist06_2200_pca25',
     'fashion_mnist35_2200_pca25',
     'halfmoon_2200',
@@ -426,7 +430,7 @@ class dt_robustness_figs(RobustExperiments):
         cls.name = "dt_robustness_figs"
         grid_params = {
             'model': dt_models, 'attack': ['dt_attack_opt'],
-            'dataset': robust_datasets, 'ord': ['inf'], 'random_seed': random_seed,
+            'dataset': tree_datasets, 'ord': ['inf'], 'random_seed': random_seed,
         }
         cls.grid_params = grid_params
         return RobustExperiments.__new__(cls, *args, **kwargs)
@@ -437,7 +441,7 @@ class nn_k1_robustness_figs(RobustExperiments):
         nn_k1_models = ['knn1', 'robustv1_nn_k1_30',]
         grid_params = {
             'model': nn_k1_models, 'attack': ['nnopt_k1_all'],
-            'dataset': robust_datasets, 'ord': ['inf'], 'random_seed': random_seed,
+            'dataset': datasets, 'ord': ['inf'], 'random_seed': random_seed,
         }
         cls.grid_params = grid_params
         return RobustExperiments.__new__(cls, *args, **kwargs)
@@ -448,7 +452,7 @@ class nn_k3_robustness_figs(RobustExperiments):
         nn_k3_models = ['knn3', 'robustv1_nn_k3_30',]
         grid_params = {
             'model': nn_k3_models, 'attack': ['rev_nnopt_k3_50_region'],
-            'dataset': robust_datasets, 'ord': ['inf'], 'random_seed': random_seed,
+            'dataset': datasets, 'ord': ['inf'], 'random_seed': random_seed,
         }
         cls.grid_params = grid_params
         return RobustExperiments.__new__(cls, *args, **kwargs)
@@ -460,7 +464,7 @@ class rf_robustness_figs(RobustExperiments):
                 'robustv1_rf_100_30_d5',]
         grid_params = {
             'model': rf_models, 'attack': ['rf_attack_rev_100'],
-            'dataset': robust_datasets, 'ord': ['inf'], 'random_seed': random_seed,
+            'dataset': tree_datasets, 'ord': ['inf'], 'random_seed': random_seed,
         }
         cls.grid_params = grid_params
         return RobustExperiments.__new__(cls, *args, **kwargs)

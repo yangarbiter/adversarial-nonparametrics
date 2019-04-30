@@ -4,6 +4,8 @@ from sklearn.datasets import load_svmlight_file
 
 from autovar.base import RegisteringChoiceType, register_var, VariableClass
 
+LINF_EPS = [0.01 * i for i in range(0, 81, 1)]
+
 class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
     var_name = 'dataset'
 
@@ -20,7 +22,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         elif auto_var.get_var("ord") == 1:
             eps = [0.01 * i for i in range(0, 41, 1)]
         elif auto_var.get_var("ord") == np.inf:
-            eps = [0.01 * i for i in range(0, 41, 1)]
+            eps = LINF_EPS
 
         return X, y, eps
 
@@ -29,16 +31,14 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
     def iris(auto_var, var_value, inter_var):
         from sklearn.datasets import load_iris
         X, y = load_iris(return_X_y=True)
-        eps = [0.01 * i for i in range(0, 41, 1)]
-        return X, y, eps
+        return X, y, LINF_EPS
 
     @register_var()
     @staticmethod
     def wine(auto_var, var_value, inter_var):
         from sklearn.datasets import load_wine
         X, y = load_wine(return_X_y=True)
-        eps = [0.01 * i for i in range(0, 41, 1)]
-        return X, y, eps
+        return X, y, LINF_EPS
 
     @register_var()
     @staticmethod
@@ -47,8 +47,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         X = X.todense()
         y[y==-1] = 0
         y = y.astype(int)
-        eps = [0.01 * i for i in range(0, 41, 1)]
-        return X, y, eps
+        return X, y, LINF_EPS
 
     @register_var()
     @staticmethod
@@ -58,8 +57,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         X = X.todense()
         y[y==-1] = 0
         y = y.astype(int)
-        eps = [0.01 * i for i in range(0, 41, 1)]
-        return X, y, eps
+        return X, y, LINF_EPS
 
     @register_var()
     @staticmethod
@@ -70,8 +68,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         y[y==-1] = 0
         y[y==1] = 1
         y = y.astype(int)
-        eps = [0.01 * i for i in range(0, 41, 1)]
-        return X, y, eps
+        return X, y, LINF_EPS
 
     @register_var()
     @staticmethod
@@ -82,8 +79,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         y[y==2] = 0
         y[y==4] = 1
         y = y.astype(int)
-        eps = [0.01 * i for i in range(0, 41, 1)]
-        return X, y, eps
+        return X, y, LINF_EPS
 
     @register_var(argument=r"ijcnn1_(?P<n_samples>\d+)")
     @staticmethod
@@ -100,8 +96,25 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         y = np.concatenate((y[idx1], y[idx2]))
         y = y.astype(int)
 
-        eps = [0.01 * i for i in range(0, 41, 1)]
-        return X, y, eps
+        return X, y, LINF_EPS
+
+    @register_var(argument=r"covtypebin_(?P<n_samples>\d+)")
+    @staticmethod
+    def covtypebin(auto_var, var_value, inter_var, n_samples):
+        # https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary/covtype.libsvm.binary.bz2
+        n_samples = int(n_samples)
+        X, y = load_svmlight_file("./nnattack/datasets/files/covtype.libsvm.binary")
+        X = X.todense()
+
+        idx1 = np.random.choice(np.where(y==1)[0], n_samples//2, replace=False)
+        idx2 = np.random.choice(np.where(y==2)[0], n_samples//2, replace=False)
+        y[idx1] = 0
+        y[idx2] = 1
+        X = np.vstack((X[idx1], X[idx2])).astype(np.float)
+        y = np.concatenate((y[idx1], y[idx2]))
+        y = y.astype(int)
+
+        return X, y, LINF_EPS
 
     @register_var(argument=r"covtype_(?P<n_samples>\d+)")
     @staticmethod
@@ -122,9 +135,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         #    y[(n_samples//7)*i:(n_samples//7)*(i+1)] = ty[idx]
         #X, y = X[:(n_samples//7)*7], y[:(n_samples//7)*7]
 
-        eps = [0.01 * i for i in range(0, 41, 1)]
-
-        return X, y, eps
+        return X, y, LINF_EPS
 
     @register_var()
     @staticmethod
@@ -138,9 +149,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         # half of the abalones are 11 years old and above, so the classification task is whether age >= 11
         y = np.array([1 if int(data[i][8]) >= 11 else 0 for i in range(len(data))])
 
-        eps = [0.01 * i for i in range(0, 41, 1)]
-
-        return X, y, eps
+        return X, y, LINF_EPS
 
     @register_var(argument=r"digits(?P<n_dims>_pca\d+)?")
     @staticmethod
@@ -148,7 +157,6 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         from sklearn.datasets import load_digits
         from sklearn.decomposition import PCA
         X, y = load_digits(return_X_y=True)
-        eps = [0.01 * i for i in range(0, 41, 1)]
 
         n_dims = int(n_dims[4:]) if n_dims else None
         if n_dims:
@@ -156,7 +164,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
                     random_state=auto_var.get_var("random_seed"))
             X = pca.fit_transform(X)
 
-        return X, y, eps
+        return X, y, LINF_EPS
 
     @register_var(argument=r"mnist17_(?P<n_samples>\d+)(?P<n_dims>_pca\d+)?")
     @staticmethod
@@ -183,7 +191,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         if auto_var.get_var("ord") == 2:
             eps = [0.1 * i for i in range(0, 41, 1)]
         else:
-            eps = [0.01 * i for i in range(0, 41, 1)]
+            eps = LINF_EPS
 
         return X, y, eps
 
@@ -212,7 +220,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         if auto_var.get_var("ord") == 2:
             eps = [0.1 * i for i in range(0, 41, 1)]
         else:
-            eps = [0.01 * i for i in range(0, 41, 1)]
+            eps = LINF_EPS
 
         return X, y, eps
 
@@ -243,7 +251,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         if auto_var.get_var("ord") == 2:
             eps = [0.1 * i for i in range(0, 41, 1)]
         else:
-            eps = [0.01 * i for i in range(0, 41, 1)]
+            eps = LINF_EPS
 
         return X, y, eps
 
@@ -274,6 +282,6 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         if auto_var.get_var("ord") == 2:
             eps = [0.1 * i for i in range(0, 41, 1)]
         else:
-            eps = [0.01 * i for i in range(0, 41, 1)]
+            eps = LINF_EPS
 
         return X, y, eps

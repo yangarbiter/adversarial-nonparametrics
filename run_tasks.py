@@ -13,6 +13,11 @@ from params import (
     nn_k1_robustness,
     nn_k3_robustness,
 
+    dt_robustness_figs,
+    rf_robustness_figs,
+    nn_k1_robustness_figs,
+    nn_k3_robustness_figs,
+
     dt_robustness,
     rf_robustness,
 
@@ -32,13 +37,13 @@ DEBUG = True if os.environ.get('DEBUG', False) else False
 def main():
     experiments = [
         #compare_nns(),
-        compare_attacks(),
-        compare_defense(),
+        #compare_attacks(),
+        #compare_defense(),
 
-        #nn_k1_robustness(),
-        #nn_k3_robustness(),
-        #rf_robustness(),
-        #dt_robustness(),
+        nn_k1_robustness_figs(),
+        nn_k3_robustness_figs(),
+        rf_robustness_figs(),
+        dt_robustness_figs(),
 
         #rf_optimality(),
         #nn_optimality(),
@@ -50,7 +55,12 @@ def main():
     grid_params = []
     for exp in experiments:
         exp_fn, _, grid_param, run_param = exp()
-        grid_params += grid_param
+        if isinstance(grid_param, list):
+            grid_params.extend(grid_param)
+        else:
+            grid_params.append(grid_param)
+
+    print(grid_params)
 
     if DEBUG:
         run_param['n_jobs'] = 1

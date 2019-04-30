@@ -186,6 +186,3 @@ class DTOpt(AttackModel):
             return pert_X
         else:
             return pert_X
-
-
-        
