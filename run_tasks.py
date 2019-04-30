@@ -40,8 +40,8 @@ def main():
         #rf_robustness(),
         #dt_robustness(),
 
-        rf_optimality(),
-        nn_optimality(),
+        #rf_optimality(),
+        #nn_optimality(),
 
         #rf_optimality_figs(),
         #nn_k1_optimality_figs(),

@@ -8,18 +8,27 @@ datasets = [
     #'digits_pca5',
     #'digits_pca25',
     #'covtype_3200',
-
     'fourclass',
     'diabetes',
     'cancer',
     #'abalone',
     #'mnist35_2200_pca5', 'fashion_mnist35_2200_pca5',
     #'ijcnn1_2200',
-    'mnist17_2200_pca25',
+    'halfmoon_2200',
     'fashion_mnist35_2200_pca25',
     'fashion_mnist06_2200_pca25',
-    'mnist35_2200_pca25',
+    'mnist17_2200_pca25',
+    #'mnist35_2200_pca25',
+]
+
+tree_datasets = [
+    'fourclass',
+    'diabetes',
+    'cancer',
     'halfmoon_2200',
+    'fashion_mnist35_10200_pca25',
+    'fashion_mnist06_10200_pca25',
+    'mnist17_10200_pca25',
 ]
 
 robust_datasets = [ # binary
@@ -36,7 +45,7 @@ robust_datasets = [ # binary
 ]
 
 large_datasets = [
-    'fashion_mnist35_10200_pca25',
+    #'fashion_mnist35_10200_pca25',
     'fashion_mnist06_10200_pca25',
     'mnist35_10200_pca25',
     'mnist17_10200_pca25',
@@ -84,14 +93,14 @@ class compare_attacks(RobustExperiments):
         grid_params.append({
             'model': ['decision_tree_d5'],
             'ord': ['inf'],
-            'dataset': datasets,
+            'dataset': tree_datasets,
             'attack': ['dt_attack_opt', 'blackbox'],
             'random_seed': random_seed,
         })
         grid_params.append({
             'model': ['random_forest_100_d5'],
             'ord': ['inf'],
-            'dataset': datasets,
+            'dataset': tree_datasets,
             'attack': ['rf_attack_rev_100', 'blackbox'],
             'random_seed': random_seed,
         })
@@ -102,11 +111,18 @@ class compare_defense(RobustExperiments):
     def __new__(cls, *args, **kwargs):
         cls.name = "compare_defense"
         grid_params = []
+        #grid_params.append({
+        #    'model': ['knn1', 'adv_nn_k1_30', 'robustv1_nn_k1_30'],
+        #    'ord': ['inf'],
+        #    'dataset': datasets,
+        #    'attack': ['nnopt_k1_all'],
+        #    'random_seed': random_seed,
+        #})
         grid_params.append({
-            'model': ['knn1', 'adv_nn_k1_30', 'robustv1_nn_k1_30'],
+            'model': ['knn3', 'adv_nn_k3_30', 'robustv1_nn_k3_30'],
             'ord': ['inf'],
             'dataset': datasets,
-            'attack': ['nnopt_k1_all'],
+            'attack': ['rev_nnopt_k3_50_region'],
             'random_seed': random_seed,
         })
         grid_params.append({
@@ -117,8 +133,20 @@ class compare_defense(RobustExperiments):
                 'robustv1_decision_tree_d5_30',
             ],
             'ord': ['inf'],
-            'dataset': datasets,
+            'dataset': tree_datasets,
             'attack': ['dt_attack_opt'],
+            'random_seed': random_seed,
+        })
+        grid_params.append({
+            'model': [
+                'random_forest_100_d5',
+                'adv_rf_100_30_d5',
+                'robust_rf_100_30_d5',
+                'robustv1_rf_100_30_d5',
+            ],
+            'ord': ['inf'],
+            'dataset': tree_datasets,
+            'attack': ['rf_attack_rev_100'],
             'random_seed': random_seed,
         })
         cls.grid_params = grid_params
@@ -190,18 +218,14 @@ class rf_robustness(RobustExperiments):
             'model': models,
             'ord': ['inf'],
             'dataset': large_datasets,
-            'attack': [
-                'rf_attack_rev_100', 'blackbox',
-            ],
+            'attack': ['rf_attack_rev_100', 'blackbox',],
             'random_seed': random_seed,
         })
         grid_params.append({
             'model': ['random_forest_100_d5'],
             'ord': ['inf'],
             'dataset': datasets,
-            'attack': [
-                'rf_attack_rev_100', 'blackbox',
-            ],
+            'attack': ['rf_attack_rev_100', 'blackbox',],
             'random_seed': random_seed,
         })
         grid_params.append({
@@ -420,10 +444,22 @@ class nn_k1_robustness_figs(RobustExperiments):
 
 class nn_k3_robustness_figs(RobustExperiments):
     def __new__(cls, *args, **kwargs):
-        name = "nn_k3_robustness_figs"
+        cls.name = "nn_k3_robustness_figs"
         nn_k3_models = ['knn3', 'robustv1_nn_k3_30',]
         grid_params = {
             'model': nn_k3_models, 'attack': ['rev_nnopt_k3_50_region'],
+            'dataset': robust_datasets, 'ord': ['inf'], 'random_seed': random_seed,
+        }
+        cls.grid_params = grid_params
+        return RobustExperiments.__new__(cls, *args, **kwargs)
+
+class rf_robustness_figs(RobustExperiments):
+    def __new__(cls, *args, **kwargs):
+        cls.name = "rf_robustness_figs"
+        rf_models = ['random_forest_100_d5', 'robust_rf_100_30_d5',
+                'robustv1_rf_100_30_d5',]
+        grid_params = {
+            'model': rf_models, 'attack': ['rf_attack_rev_100'],
             'dataset': robust_datasets, 'ord': ['inf'], 'random_seed': random_seed,
         }
         cls.grid_params = grid_params

@@ -72,11 +72,12 @@ class AdversarialDt(DecisionTreeClassifier):
         self.Delta = kwargs.pop("Delta", 0.45)
         #self.eps = kwargs.pop("eps", 0.1)
 
-        if self.train_type == 'robust':
+        if self.train_type is None:
+            pass
+        elif self.train_type == 'robust':
             kwargs['splitter'] = 'robust'
             #kwargs['eps'] = self.eps
-
-        if self.train_type[:7] == 'robust_':
+        elif self.train_type[:7] == 'robust_':
             # for hybrid
             kwargs['splitter'] = 'robust'
             #kwargs['eps'] = self.eps
@@ -102,12 +103,13 @@ class AdversarialRf(RandomForestClassifier):
         self.delta = kwargs.pop("delta", 0.1)
         self.Delta = kwargs.pop("Delta", 0.45)
 
-        if self.train_type == 'robust':
+        if self.train_type is None:
+            pass
+        elif self.train_type == 'robust':
             kwargs['splitter'] = 'robust'
             #kwargs['eps'] = self.eps
             #kwargs['n_jobs'] = 4
-
-        if self.train_type[:7] == 'robust_':
+        elif self.train_type[:7] == 'robust_':
             # for hybrid
             kwargs['splitter'] = 'robust'
             #kwargs['eps'] = self.eps

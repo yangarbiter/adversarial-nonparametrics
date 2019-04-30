@@ -64,7 +64,19 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var()
     @staticmethod
     def cancer(auto_var, var_value, inter_var):
-        #https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary/breast-cancer
+        # https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary/australian
+        X, y = load_svmlight_file("./nnattack/datasets/files/australian")
+        X = X.todense()
+        y[y==-1] = 0
+        y[y==1] = 1
+        y = y.astype(int)
+        eps = [0.01 * i for i in range(0, 41, 1)]
+        return X, y, eps
+
+    @register_var()
+    @staticmethod
+    def cancer(auto_var, var_value, inter_var):
+        # https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary/breast-cancer
         X, y = load_svmlight_file("./nnattack/datasets/files/breast-cancer")
         X = X.todense()
         y[y==2] = 0

@@ -115,15 +115,15 @@ def set_plot(fig, ax, ord=np.inf):
     ax.legend()
     ax.set_ylim(0, 1)
     #ax.legend(bbox_to_anchor=(1.5, 0., 0.5, 0.5))
-    ax.legend()
-    ax.xaxis.set_tick_params(labelsize=18)
-    ax.yaxis.set_tick_params(labelsize=18)
-    ax.set_ylabel('Accuracy', fontsize=18)
+    ax.legend(prop={'size': 16}, loc='upper right', frameon=True)
+    ax.xaxis.set_tick_params(labelsize=16)
+    ax.yaxis.set_tick_params(labelsize=16)
+    ax.set_ylabel('Accuracy', fontsize=20)
     xlabel = 'Perturbation distance'
     if ord == np.inf:
-        ax.set_xlabel(xlabel + ' (Linf)', fontsize=18)
+        ax.set_xlabel(xlabel + ' (Linf)', fontsize=20)
     else:
-        ax.set_xlabel(xlabel, fontsize=18)
+        ax.set_xlabel(xlabel, fontsize=20)
 
 def write_to_tex(s, file_name):
     with open(os.path.join(tex_base, file_name), 'w') as f:
@@ -132,6 +132,12 @@ def write_to_tex(s, file_name):
 
 def union_param_key(grid_param, key):
     if isinstance(grid_param, list):
-        return set.union(*[set(g[key]) for g in grid_param])
+        ret = []
+        for g in grid_param:
+            for v in g[key]:
+                if v not in ret:
+                    ret.append(v)
+        return ret
+        #return set.union(*[set(g[key]) for g in grid_param])
     else:
         return grid_param[key]
