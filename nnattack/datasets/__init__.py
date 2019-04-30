@@ -63,7 +63,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
     @register_var()
     @staticmethod
-    def cancer(auto_var, var_value, inter_var):
+    def australian(auto_var, var_value, inter_var):
         # https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary/australian
         X, y = load_svmlight_file("./nnattack/datasets/files/australian")
         X = X.todense()
