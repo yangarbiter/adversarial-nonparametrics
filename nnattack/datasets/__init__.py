@@ -42,6 +42,15 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
     @register_var()
     @staticmethod
+    def splice(auto_var, var_value, inter_var):
+        X, y = load_svmlight_file("./nnattack/datasets/files/splice")
+        X = X.todense()
+        y[y==-1] = 0
+        y = y.astype(int)
+        return X, y, LINF_EPS
+
+    @register_var()
+    @staticmethod
     def diabetes(auto_var, var_value, inter_var):
         X, y = load_svmlight_file("./nnattack/datasets/files/diabetes")
         X = X.todense()

@@ -15,7 +15,7 @@ datasets = [
     #'abalone',
     #'mnist35_2200_pca5', 'fashion_mnist35_2200_pca5',
     #'ijcnn1_2200',
-    #'covtypebin_1200',
+    'covtypebin_1200',
     'halfmoon_2200',
     'fashion_mnist35_2200_pca25',
     'fashion_mnist06_2200_pca25',
@@ -29,7 +29,7 @@ tree_datasets = [
     'diabetes',
     'cancer',
     'halfmoon_2200',
-    #'covtypebin_10200',
+    'covtypebin_10200',
     'fashion_mnist35_10200_pca25',
     'fashion_mnist06_10200_pca25',
     'mnist17_10200_pca25',
@@ -115,13 +115,13 @@ class compare_defense(RobustExperiments):
     def __new__(cls, *args, **kwargs):
         cls.name = "compare_defense"
         grid_params = []
-        #grid_params.append({
-        #    'model': ['knn1', 'adv_nn_k1_30', 'robustv1_nn_k1_30'],
-        #    'ord': ['inf'],
-        #    'dataset': datasets,
-        #    'attack': ['nnopt_k1_all'],
-        #    'random_seed': random_seed,
-        #})
+        grid_params.append({
+            'model': ['knn1', 'adv_nn_k1_30', 'robustv1_nn_k1_30'],
+            'ord': ['inf'],
+            'dataset': datasets,
+            'attack': ['nnopt_k1_all'],
+            'random_seed': random_seed,
+        })
         grid_params.append({
             'model': ['knn3', 'adv_nn_k3_30', 'robustv1_nn_k3_30'],
             'ord': ['inf'],
