@@ -8,6 +8,7 @@ datasets = [
     #'digits_pca5',
     #'digits_pca25',
     #'covtype_3200',
+    #'splice',
     'australian',
     'fourclass',
     'diabetes',
@@ -15,8 +16,8 @@ datasets = [
     #'abalone',
     #'mnist35_2200_pca5', 'fashion_mnist35_2200_pca5',
     #'ijcnn1_2200',
-    'covtypebin_1200',
     'halfmoon_2200',
+    'covtypebin_1200',
     'fashion_mnist35_2200_pca25',
     'fashion_mnist06_2200_pca25',
     'mnist17_2200_pca25',
@@ -24,6 +25,7 @@ datasets = [
 ]
 
 tree_datasets = [
+    #'splice',
     'australian',
     'fourclass',
     'diabetes',
@@ -153,6 +155,17 @@ class compare_defense(RobustExperiments):
             'attack': ['rf_attack_rev_100'],
             'random_seed': random_seed,
         })
+        grid_params.append({
+            'model': [
+                'mlp',
+                'adv_mlp_30',
+                'robustv1_mlp_30',
+            ],
+            'ord': ['inf'],
+            'dataset': tree_datasets,
+            'attack': ['pgd'],
+            'random_seed': random_seed,
+        })
         cls.grid_params = grid_params
         return RobustExperiments.__new__(cls, *args, **kwargs)
 
@@ -174,7 +187,7 @@ class nn_k1_robustness(RobustExperiments):
                 #'robustv2_nn_k1_10', 'robustv2_nn_k1_30', 'robustv2_nn_k1_50',
             ],
             'ord': ['inf'],
-            'dataset': robust_datasets,
+            'dataset': datasets,
             'attack': ['nnopt_k1_all', 'blackbox'],
             'random_seed': random_seed,
         })

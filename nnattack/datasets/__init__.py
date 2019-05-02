@@ -42,8 +42,33 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
     @register_var()
     @staticmethod
-    def splice(auto_var, var_value, inter_var):
+    def german(auto_var, var_value, inter_var):
+        # https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary.html#german.numer
+        X, y = load_svmlight_file("./nnattack/datasets/files/german.numer")
+        X = X.todense()
+        y[y==-1] = 0
+        y = y.astype(int)
+        return X, y, LINF_EPS
+
+    @register_var(argument=r"splice(?P<n_dims>_pca\d+)?")
+    @staticmethod
+    def splice(auto_var, var_value, inter_var, n_dims):
         X, y = load_svmlight_file("./nnattack/datasets/files/splice")
+        X = X.todense()
+        y[y==-1] = 0
+        y = y.astype(int)
+
+        n_dims = int(n_dims[4:]) if n_dims else None
+        if n_dims:
+            pca = PCA(n_components=n_dims,
+                    random_state=auto_var.get_var("random_seed"))
+            X = pca.fit_transform(X)
+        return X, y, LINF_EPS
+
+    @register_var()
+    @staticmethod
+    def svmguide3(auto_var, var_value, inter_var):
+        X, y = load_svmlight_file("./nnattack/datasets/files/svmguide3")
         X = X.todense()
         y[y==-1] = 0
         y = y.astype(int)

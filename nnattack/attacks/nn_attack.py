@@ -86,7 +86,7 @@ def solve_qp(Q, q, G, h, n):
 
 #@profile
 def get_sol(target_x, tuple_x, faropp, kdtree, transformer,
-        glob_trnX, glob_trny, init_x=None):
+        glob_trnX, glob_trny, init_x=None, n_jobs=1):
     tuple_x = np.asarray(tuple_x)
     trnX = glob_trnX.dot(transformer.T)
     emb_tar = target_x.dot(transformer.T)

@@ -27,6 +27,13 @@ def logistic_regression(input_x, input_shape, n_classes, l2_weight=0.0, **kwargs
 
     return Model(inputs=[inputs], outputs=[x]), None
 
+def mlp(input_x, input_shape, n_classes, l2_weight=0.0, **kwargs):
+    inputs = Input(shape=input_shape, tensor=input_x)
+    x = Dense(128, activation='relu', kernel_regularizer=l2(l2_weight))(inputs)
+    x = Dense(n_classes, activation='softmax', kernel_regularizer=l2(l2_weight))(x)
+
+    return Model(inputs=[inputs], outputs=[x]), None
+
 class KerasModel(BaseEstimator):
     def __init__(self, lbl_enc, n_features, n_classes, sess,
             learning_rate=1e-3, batch_size=128, epochs=20, optimizer='adam',
@@ -151,10 +158,12 @@ class KerasModel(BaseEstimator):
             #print('XD', (self.predict(X + self._get_pert(X, Y, eps=self.eps, model=self.model))==y).mean())
             #import ipdb; ipdb.set_trace()
         elif self.train_type == 'robustv1':
-            self.model.compile(loss=self.loss, optimizer=self.optimizer, metrics=[])
             y = y.astype(int)*2-1
-            self.augX, self.augy = find_eps_separated_set(X, self.eps/2, y)
+            self.augX, self.augy = find_eps_separated_set(
+                    X, self.eps/2, y, ord=self.ord)
             self.augy = (self.augy+1)//2
+
+            self.model.compile(loss=self.loss, optimizer=self.optimizer, metrics=[])
             Y = self.lbl_enc.transform(self.augy.reshape(-1, 1))
             self.model.fit(self.augX, Y, batch_size=self.batch_size, verbose=0,
                         epochs=self.epochs, sample_weight=sample_weight)

@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
 from sklearn.metrics import pairwise_distances
 import tensorflow as tf
+tf.logging.set_verbosity(tf.logging.ERROR)
 import keras.backend
 import tensorflow.keras.backend
 from bistiming import SimpleTimer
@@ -88,6 +89,9 @@ def eps_accuracy(auto_var):
     trnX = scaler.fit_transform(trnX)
     tstX = scaler.transform(tstX)
 
+    import ipdb; ipdb.set_trace()
+
+
     lbl_enc = OneHotEncoder(categories=[np.sort(np.unique(y))], sparse=False)
     #lbl_enc = OneHotEncoder(sparse=False)
     lbl_enc.fit(trny.reshape(-1, 1))
@@ -111,6 +115,8 @@ def eps_accuracy(auto_var):
         pre_model = auto_var.get_var_with_argument('model', model_name[4:])
         pre_model.fit(trnX, trny)
         auto_var.set_intermidiate_variable("model", pre_model)
+    elif 'mlp' in model_name or 'logistic' in model_name:
+        auto_var.set_intermidiate_variable("eps_list", eps_list)
 
     model = auto_var.get_var("model")
     auto_var.set_intermidiate_variable("model", model)
@@ -131,6 +137,7 @@ def eps_accuracy(auto_var):
         auto_var.set_intermidiate_variable("trny", model.augy)
         augX, augy = model.augX, model.augy
 
+
     if len(tsty) != 100 or \
        len(np.unique(auto_var.get_intermidiate_variable('trny'))) == 1:
         tst_perturbs = np.array([np.zeros_like(tstX) for _ in range(len(eps_list))])
@@ -146,7 +153,13 @@ def eps_accuracy(auto_var):
     if attack_model is not None and hasattr(attack_model, 'perts'):
         perts = attack_model.perts
     else:
-        perts = np.copy(tst_perturbs[-1])
+        perts = np.zeros_like(tstX)
+        for pert in tst_perturbs:
+            pred = model.predict(tstX + perts)
+            for i in range(len(pred)):
+                if pred[i] == tsty[i]:
+                    perts[i] = pert[i]
+
     perts = perts.astype(float)
     perts, missed_count = baseline_pert(model, trnX, tstX, tsty, perts, ord)
     if len(np.unique(model.predict(trnX))) > 1:

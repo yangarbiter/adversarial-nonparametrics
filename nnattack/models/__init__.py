@@ -281,6 +281,31 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         )
         return clf
 
+    @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?mlp(?P<eps>_\d+)?')
+    @staticmethod
+    def adv_mlp(auto_var, var_value, inter_var, train, eps):
+        from .keras_model import KerasModel
+        eps = float(eps[1:])*0.01 if eps else 0.
+        train = train[:-1] if train else None
+
+        n_features = inter_var['trnX'].shape[1:]
+        n_classes = len(set(inter_var['trny']))
+
+        model = KerasModel(
+            lbl_enc=inter_var['lbl_enc'],
+            n_features=n_features,
+            n_classes=n_classes,
+            sess=inter_var['sess'],
+            architecture='mlp',
+            train_type=train,
+            ord=auto_var.get_var("ord"),
+            eps=eps,
+            attacker=None,
+            eps_list=inter_var['eps_list'],
+            epochs=200,
+        )
+        return model
+
     @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?logistic_regression(?P<eps>_\d+)?')
     @staticmethod
     def adv_logistic_regression(auto_var, var_value, inter_var, train, eps):
@@ -304,7 +329,6 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
             eps_list=inter_var['eps_list'],
             epochs=200,
         )
-
         return model
 
     @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?decision_tree_xvalid_(?P<eps>\d+)')
