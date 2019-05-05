@@ -16,17 +16,12 @@ from sklearn.neighbors import KNeighborsClassifier
 from bistiming import IterTimer
 
 from .cutils import c_get_half_space, get_all_half_spaces, get_constraints, check_feasibility
+from .utils import solve_lp, solve_qp
 
 import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-#import cvxopt.msk
-#from mosek import iparam
-#solvers.options['MOSEK'] = {iparam.log: 0}
-
-#import mosek
-#msk.options = {mosek.iparam.log: 0}
 #solvers.options['solver'] = 'glpk'
 #solvers.options['maxiters'] = 30
 solvers.options['show_progress'] = False
@@ -50,39 +45,6 @@ glob_trnX = None
 glob_trny = None
 
 DEBUG = False
-
-import cvxpy as cp
-
-def solve_lp(c, G, h, n, init_x=None, n_jobs=1):
-    #c = np.array(c)
-    #G, h = np.array(G), np.array(h)
-    options = {'threads': n_jobs}
-    x = cp.Variable(shape=(n, 1))
-    obj = cp.Minimize(c.T * x)
-    constraints = [G*x <= h]
-    prob = cp.Problem(obj, constraints)
-    if init_x is not None:
-        x.value = init_x
-        prob.solve(solver=cp.GUROBI, warm_start=True)
-    else:
-        prob.solve(solver=cp.GUROBI)
-    return prob.status, x.value
-
-def solve_qp(Q, q, G, h, n):
-    x = cp.Variable(shape=(n, 1))
-    obj = cp.Minimize(cp.sum(cp.square(x)) + q.T * x)
-    constraints = [G*x <= h]
-    prob = cp.Problem(obj, constraints)
-    try:
-        prob.solve(solver=cp.GUROBI)
-    except cp.error.SolverError:
-        try:
-            prob.solve(solver=cp.CVXOPT)
-        except cp.error.SolverError:
-            logger.error("Rare")
-            return False, x.value
-    return prob.status, x.value
-
 
 #@profile
 def get_sol(target_x, tuple_x, faropp, kdtree, transformer,

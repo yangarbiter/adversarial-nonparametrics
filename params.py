@@ -86,28 +86,28 @@ class compare_attacks(RobustExperiments):
             'model': ['knn1'],
             'ord': ['inf'],
             'dataset': datasets,
-            'attack': ['nnopt_k1_all', 'blackbox', 'direct_k1'],
+            'attack': ['direct_k1', 'blackbox', 'nnopt_k1_all', ],
             'random_seed': random_seed,
         })
         grid_params.append({
             'model': ['knn3'],
             'ord': ['inf'],
             'dataset': datasets,
-            'attack': ['rev_nnopt_k3_50_region', 'blackbox', 'direct_k3'],
+            'attack': ['direct_k3', 'blackbox', 'rev_nnopt_k3_50_region'],
             'random_seed': random_seed,
         })
         grid_params.append({
             'model': ['decision_tree_d5'],
             'ord': ['inf'],
             'dataset': tree_datasets,
-            'attack': ['dt_attack_opt', 'blackbox'],
+            'attack': ['dt_papernots', 'blackbox', 'dt_attack_opt'],
             'random_seed': random_seed,
         })
         grid_params.append({
             'model': ['random_forest_100_d5'],
             'ord': ['inf'],
             'dataset': tree_datasets,
-            'attack': ['rf_attack_rev_100', 'blackbox'],
+            'attack': ['blackbox', 'rf_attack_rev_100'],
             'random_seed': random_seed,
         })
         cls.grid_params = grid_params
@@ -118,7 +118,7 @@ class compare_defense(RobustExperiments):
         cls.name = "compare_defense"
         grid_params = []
         grid_params.append({
-            'model': ['knn1', 'adv_nn_k1_30', 'robustv1_nn_k1_30'],
+            'model': ['knn1', 'adv_nn_k1_30', 'robustv2_nn_k1_30', 'robustv1_nn_k1_30'],
             'ord': ['inf'],
             'dataset': datasets,
             'attack': ['nnopt_k1_all'],
@@ -182,13 +182,13 @@ class nn_k1_robustness(RobustExperiments):
         })
         grid_params.append({
             'model': [
-                'adv_nn_k1_10', 'adv_nn_k1_30', 'adv_nn_k1_50',
+                #'adv_nn_k1_10', 'adv_nn_k1_30', 'adv_nn_k1_50',
                 'robustv1_nn_k1_10', 'robustv1_nn_k1_30', 'robustv1_nn_k1_50',
                 #'robustv2_nn_k1_10', 'robustv2_nn_k1_30', 'robustv2_nn_k1_50',
             ],
             'ord': ['inf'],
             'dataset': datasets,
-            'attack': ['nnopt_k1_all', 'blackbox'],
+            'attack': ['nnopt_k1_all'], #, 'blackbox'],
             'random_seed': random_seed,
         })
         cls.grid_params = grid_params
@@ -207,7 +207,7 @@ class nn_k3_robustness(RobustExperiments):
         })
         grid_params.append({
             'model': [
-                'adv_nn_k3_10', 'adv_nn_k3_30', 'adv_nn_k3_50',
+                #'adv_nn_k3_10', 'adv_nn_k3_30', 'adv_nn_k3_50',
                 'robustv1_nn_k3_10', 'robustv1_nn_k3_30', 'robustv1_nn_k3_50',
                 #'robustv2_nn_k3_10', 'robustv2_nn_k3_30', 'robustv1_nn_k3_50',
             ],

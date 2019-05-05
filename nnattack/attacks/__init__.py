@@ -134,6 +134,17 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
     @register_var()
     @staticmethod
+    def dt_papernot(auto_var, var_value, inter_var):
+        from .trees.papernots import Papernots
+        attack_model = Papernots(
+            clf=inter_var['tree_clf'],
+            ord=auto_var.get_var('ord'),
+            random_state=inter_var['random_state'],
+        )
+        return attack_model
+
+    @register_var()
+    @staticmethod
     def dt_attack_opt(auto_var, var_value, inter_var):
         from .dt_opt import DTOpt
         attack_model = DTOpt(

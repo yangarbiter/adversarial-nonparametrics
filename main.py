@@ -89,9 +89,6 @@ def eps_accuracy(auto_var):
     trnX = scaler.fit_transform(trnX)
     tstX = scaler.transform(tstX)
 
-    import ipdb; ipdb.set_trace()
-
-
     lbl_enc = OneHotEncoder(categories=[np.sort(np.unique(y))], sparse=False)
     #lbl_enc = OneHotEncoder(sparse=False)
     lbl_enc.fit(trny.reshape(-1, 1))
@@ -136,7 +133,6 @@ def eps_accuracy(auto_var):
         auto_var.set_intermidiate_variable("trnX", model.augX)
         auto_var.set_intermidiate_variable("trny", model.augy)
         augX, augy = model.augX, model.augy
-
 
     if len(tsty) != 100 or \
        len(np.unique(auto_var.get_intermidiate_variable('trny'))) == 1:
