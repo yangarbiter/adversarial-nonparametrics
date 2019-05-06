@@ -20,3 +20,10 @@ Install GLPK: https://www.cvxpy.org/install/index.html#install-with-cvxopt-and-g
 ```
 pip install --upgrade ./scikit-learn
 ```
+
+## Example
+
+```
+python ./main.py --dataset halfmoon_300 --model knn3 \
+                 --attack rev_nnopt_k3_50_region --random_seed 0 --ord inf
+```

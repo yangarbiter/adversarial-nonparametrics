@@ -269,7 +269,7 @@ class RFAttack(AttackModel):
         elif self.method == 'rev':
             pert_X = np.zeros_like(X)
             pert_X2 = np.zeros_like(X)
-            for sample_id in tqdm(range(len(X))):
+            for sample_id in tqdm(range(len(X)), ascii=True, desc="Perturb"):
                 if pred_y[sample_id] != y[sample_id]:
                     continue
                 target_x, target_y = X[sample_id], y[sample_id]

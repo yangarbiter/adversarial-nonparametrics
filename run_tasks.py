@@ -62,8 +62,6 @@ def main():
         else:
             grid_params.append(grid_param)
 
-    print(grid_params)
-
     if DEBUG:
         run_param['n_jobs'] = 1
         run_param['allow_failure'] = False

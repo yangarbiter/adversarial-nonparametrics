@@ -287,7 +287,6 @@ def get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
         return ret, sol
     not_vacum = lambda x: tuple(ind[x]) not in lp_sols or lp_sols[tuple(ind[x])]
     combs = list(filter(not_vacum, combs))
-    print(len(combs))
     sols = Parallel(n_jobs=7, verbose=1)(
             delayed(_helper)(comb, transformer, glob_trnX, glob_trny) for comb in combs)
     status, sols = zip(*sols)
@@ -436,7 +435,6 @@ class NNOptAttack():
         else:
             self.tree = KDTree(self.trnX)
         self.lp_sols = {}
-        print(np.shape(self.trnX), len(self.trny))
 
     def perturb(self, X, y, eps=None, logging=False, n_jobs=1):
         raise NotImplementedError()
@@ -471,7 +469,7 @@ class NNAttack(NNOptAttack):
         #knn.fit(glob_trnX.dot(transformer.T), glob_trny)
 
         ret = []
-        for i, (target_x, target_y) in tqdm(enumerate(zip(X, y)), desc="Perturb"):
+        for i, (target_x, target_y) in tqdm(enumerate(zip(X, y)), ascii=True, desc="Perturb"):
             ret.append(get_adv(target_x.astype(np.float64), target_y, self.tree,
                                self.farthest, self.K, self.faropp,
                                transformer, self.lp_sols, ord=self.ord))
@@ -486,7 +484,6 @@ class RevNNAttack(NNOptAttack):
         super().__init__(trnX=trnX, trny=trny, n_neighbors=n_neighbors,
                 farthest=farthest, faropp=faropp, transformer=transformer,
                 ord=ord)
-        print(method)
         self.method = method
 
     #@profile
@@ -505,7 +502,7 @@ class RevNNAttack(NNOptAttack):
         knn.fit(glob_trnX.dot(transformer.T), glob_trny)
 
         ret = []
-        for i, (target_x, target_y) in tqdm(enumerate(zip(X, y)), desc="Perturb"):
+        for i, (target_x, target_y) in tqdm(enumerate(zip(X, y)), ascii=True, desc="Perturb"):
             ret.append(
                 rev_get_adv(target_x.astype(np.float64), target_y,
                     self.tree, self.farthest, self.K, self.faropp,
@@ -542,7 +539,7 @@ class HybridNNAttack(NNOptAttack):
         knn.fit(glob_trnX.dot(transformer.T), glob_trny)
 
         ret = []
-        for i, (target_x, target_y) in tqdm(enumerate(zip(X, y)), desc="Perturb"):
+        for i, (target_x, target_y) in tqdm(enumerate(zip(X, y)), ascii=True, desc="Perturb"):
             pert = get_adv(target_x.astype(np.float64), target_y, self.tree,
                     self.farthest, self.K, self.faropp, transformer,
                     self.lp_sols, ord=self.ord, n_jobs=self.n_jobs)
