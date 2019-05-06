@@ -1,8 +1,7 @@
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 
-from .robust_nn.eps_separation import find_eps_separated_set
-from .adversarial_dt import get_aug_data
+from .defense import get_aug_data
 
 class AdversarialKnn(KNeighborsClassifier):
     def __init__(self, n_neighbors=5, weights='uniform', algorithm='auto',
