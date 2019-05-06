@@ -57,20 +57,7 @@ class OrdVarClass(VariableClass, metaclass=RegisteringChoiceType):
         """L1 norm"""
         return 1
 
-auto_var = AutoVar(
-    logging_level=logging.INFO,
-    before_experiment_hooks=[
-        partial(check_result_file_exist, get_name_fn=get_file_name),
-        #partial(save_parameter_to_file, get_name_fn=partial(get_file_name, name_only=False))
-    ],
-    after_experiment_hooks=[
-        partial(save_result_to_file, get_name_fn=get_file_name)
-    ],
-    settings={
-        'server_url': '',
-        'result_file_dir': './results/'
-    }
-)
+auto_var = AutoVar(logging_level=logging.CRITICAL)
 
 auto_var.add_variable_class(OrdVarClass())
 auto_var.add_variable_class(DatasetVarClass())
