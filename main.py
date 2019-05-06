@@ -11,7 +11,6 @@ import tensorflow as tf
 tf.logging.set_verbosity(tf.logging.ERROR)
 import keras.backend
 import tensorflow.keras.backend
-from bistiming import SimpleTimer
 
 from nnattack.variables import auto_var
 
