@@ -114,6 +114,7 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var()
     @staticmethod
     def pgd(auto_var, var_value, inter_var):
+        """Projected gradient descent attack"""
         return inter_var['model']
 
     @register_var()

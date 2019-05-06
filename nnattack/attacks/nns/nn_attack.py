@@ -1,19 +1,16 @@
 import itertools
-import tempfile
 import os
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 from cvxopt import matrix, solvers
 import cvxopt.glpk
-#import cvxopt
 import numpy as np
 from sklearn.neighbors import KDTree
-import scipy
+from sklearn.neighbors import KNeighborsClassifier
 import joblib
 from joblib import Parallel, delayed
-from sklearn.neighbors import KNeighborsClassifier
-from bistiming import IterTimer
+from tqdm import tqdm
 
 from .cutils import c_get_half_space, get_all_half_spaces, get_constraints, check_feasibility
 from ..utils import solve_lp, solve_qp
@@ -474,13 +471,10 @@ class NNAttack(NNOptAttack):
         #knn.fit(glob_trnX.dot(transformer.T), glob_trny)
 
         ret = []
-        with IterTimer("Perturbing", len(X)) as timer:
-            for i, (target_x, target_y) in enumerate(zip(X, y)):
-                timer.update(i)
-                #ret.append(get_adv(target_x, target_y, self.tree,
-                ret.append(get_adv(target_x.astype(np.float64), target_y, self.tree,
-                                   self.farthest, self.K, self.faropp,
-                                   transformer, self.lp_sols, ord=self.ord))
+        for i, (target_x, target_y) in tqdm(enumerate(zip(X, y)), desc="Perturb"):
+            ret.append(get_adv(target_x.astype(np.float64), target_y, self.tree,
+                               self.farthest, self.K, self.faropp,
+                               transformer, self.lp_sols, ord=self.ord))
 
         self.perts = np.asarray(ret)
         return attack_with_eps_constraint(self.perts, self.ord, eps)
@@ -511,16 +505,14 @@ class RevNNAttack(NNOptAttack):
         knn.fit(glob_trnX.dot(transformer.T), glob_trny)
 
         ret = []
-        with IterTimer("Perturbing", len(X)) as timer:
-            for i, (target_x, target_y) in enumerate(zip(X, y)):
-                timer.update(i)
-                ret.append(
-                    rev_get_adv(target_x.astype(np.float64), target_y,
-                        self.tree, self.farthest, self.K, self.faropp,
-                        transformer, self.lp_sols, ord=self.ord,
-                        method=self.method, knn=knn, n_jobs=self.n_jobs
-                    )
+        for i, (target_x, target_y) in tqdm(enumerate(zip(X, y)), desc="Perturb"):
+            ret.append(
+                rev_get_adv(target_x.astype(np.float64), target_y,
+                    self.tree, self.farthest, self.K, self.faropp,
+                    transformer, self.lp_sols, ord=self.ord,
+                    method=self.method, knn=knn, n_jobs=self.n_jobs
                 )
+            )
 
         self.perts = np.asarray(ret)
         return attack_with_eps_constraint(self.perts, self.ord, eps)
@@ -550,23 +542,19 @@ class HybridNNAttack(NNOptAttack):
         knn.fit(glob_trnX.dot(transformer.T), glob_trny)
 
         ret = []
-        perts = []
-        rev_perts = []
-        with IterTimer("Perturbing", len(X)) as timer:
-            for i, (target_x, target_y) in enumerate(zip(X, y)):
-                timer.update(i)
-                pert = get_adv(target_x.astype(np.float64), target_y, self.tree,
-                        self.farthest, self.K, self.faropp, transformer,
-                        self.lp_sols, ord=self.ord, n_jobs=self.n_jobs)
-                rev_pert = rev_get_adv(target_x.astype(np.float64), target_y,
-                        self.tree, self.rev_farthest, self.K, self.faropp, transformer,
-                        self.lp_sols, ord=self.ord, method=self.method, knn=knn)
-                n_pert = np.linalg.norm(pert, ord=self.ord)
-                n_revpert = np.linalg.norm(rev_pert, ord=self.ord)
-                if n_pert == 0 or (n_pert > n_revpert):
-                    ret.append(rev_pert)
-                else:
-                    ret.append(pert)
+        for i, (target_x, target_y) in tqdm(enumerate(zip(X, y)), desc="Perturb"):
+            pert = get_adv(target_x.astype(np.float64), target_y, self.tree,
+                    self.farthest, self.K, self.faropp, transformer,
+                    self.lp_sols, ord=self.ord, n_jobs=self.n_jobs)
+            rev_pert = rev_get_adv(target_x.astype(np.float64), target_y,
+                    self.tree, self.rev_farthest, self.K, self.faropp, transformer,
+                    self.lp_sols, ord=self.ord, method=self.method, knn=knn)
+            n_pert = np.linalg.norm(pert, ord=self.ord)
+            n_revpert = np.linalg.norm(rev_pert, ord=self.ord)
+            if n_pert == 0 or (n_pert > n_revpert):
+                ret.append(rev_pert)
+            else:
+                ret.append(pert)
 
 
         self.perts = np.asarray(ret)
