@@ -70,10 +70,8 @@ def estimate_model_roubstness(model, X, y, perturbs, eps_list, ord,
             'eps': eps_list[i],
             'tst_acc': (pred == y).mean().astype(float),
         })
-        #print(ret[-1])
     return ret
 
-#@profile
 def eps_accuracy(auto_var):
     random_state = set_random_seed(auto_var)
     ord = auto_var.get_var("ord")
@@ -81,7 +79,6 @@ def eps_accuracy(auto_var):
     X, y, eps_list = auto_var.get_var("dataset")
     idxs = np.arange(len(X))
     random_state.shuffle(idxs)
-    #trnX, tstX, trny, tsty = X[idxs[:-100]], X[idxs[-100:]], y[idxs[:-100]], y[idxs[-100:]]
     trnX, tstX, trny, tsty = X[idxs[:-200]], X[idxs[-200:]], y[idxs[:-200]], y[idxs[-200:]]
 
     scaler = MinMaxScaler()
@@ -89,7 +86,6 @@ def eps_accuracy(auto_var):
     tstX = scaler.transform(tstX)
 
     lbl_enc = OneHotEncoder(categories=[np.sort(np.unique(y))], sparse=False)
-    #lbl_enc = OneHotEncoder(sparse=False)
     lbl_enc.fit(trny.reshape(-1, 1))
 
     auto_var.set_intermidiate_variable("lbl_enc", lbl_enc)
@@ -123,8 +119,8 @@ def eps_accuracy(auto_var):
     idxs = np.where(pred == tsty)[0]
     random_state.shuffle(idxs)
     tstX, tsty = tstX[idxs[:100]], tsty[idxs[:100]]
-    #if len(tsty) != 100:
-    #    raise ValueError("didn't got 100 testing examples")
+    if len(tsty) != 100:
+        raise ValueError("didn't got 100 testing examples")
 
     augX = None
     if ('adv' in model_name) or ('robustv1' in model_name) or ('robustv2' in model_name):
@@ -174,19 +170,6 @@ def eps_accuracy(auto_var):
     baseline_results = estimate_model_roubstness(
         model, tstX, tsty, tst_perturbs, eps_list, ord, with_baseline=True, trnX=trnX)
     ret['baseline_results'] = baseline_results
-
-        #for i in range(len(eps_list)):
-        #    eps = eps_list[i]
-        #    assert np.all(np.linalg.norm(tst_perturbs[i], axis=1, ord=ord) <= (eps + 1e-6)), (np.linalg.norm(tst_perturbs[i], axis=1, ord=ord), eps)
-        #    temp_tstX = tstX + tst_perturbs[i]
-
-        #    tst_pred = model.predict(temp_tstX)
-
-        #    results.append({
-        #        'eps': eps_list[i],
-        #        'tst_acc': (tst_pred == tsty).mean(),
-        #    })
-        #    print(results[-1])
 
     ret['trnX_len'] = len(trnX)
     if augX is not None:
