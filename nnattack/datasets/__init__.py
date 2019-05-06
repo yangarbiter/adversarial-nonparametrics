@@ -9,7 +9,8 @@ LINF_EPS = [0.01 * i for i in range(0, 81, 1)]
 class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
     var_name = 'dataset'
 
-    @register_var(argument=r"halfmoon_(?P<n_samples>\d+)")
+    @register_var(argument=r"halfmoon_(?P<n_samples>\d+)",
+                  shown_name="halfmoon")
     @staticmethod
     def halfmoon(auto_var, var_value, inter_var, n_samples):
         from sklearn.datasets import make_moons
@@ -50,7 +51,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         y = y.astype(int)
         return X, y, LINF_EPS
 
-    @register_var(argument=r"splice(?P<n_dims>_pca\d+)?")
+    @register_var(argument=r"splice(?P<n_dims>_pca\d+)?", shown_name="splice")
     @staticmethod
     def splice(auto_var, var_value, inter_var, n_dims):
         X, y = load_svmlight_file("./nnattack/datasets/files/splice")
@@ -115,7 +116,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         y = y.astype(int)
         return X, y, LINF_EPS
 
-    @register_var(argument=r"ijcnn1_(?P<n_samples>\d+)")
+    @register_var(argument=r"ijcnn1_(?P<n_samples>\d+)", shown_name="ijcnn")
     @staticmethod
     def ijcnn1(auto_var, var_value, inter_var, n_samples):
         n_samples = int(n_samples)
@@ -132,7 +133,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
         return X, y, LINF_EPS
 
-    @register_var(argument=r"covtypebin_(?P<n_samples>\d+)")
+    @register_var(argument=r"covtypebin_(?P<n_samples>\d+)", shown_name="covtype")
     @staticmethod
     def covtypebin(auto_var, var_value, inter_var, n_samples):
         # https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary/covtype.libsvm.binary.bz2
@@ -200,7 +201,8 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
         return X, y, LINF_EPS
 
-    @register_var(argument=r"mnist17_(?P<n_samples>\d+)(?P<n_dims>_pca\d+)?")
+    @register_var(argument=r"mnist17_(?P<n_samples>\d+)(?P<n_dims>_pca\d+)?",
+                  shown_name="mnist17")
     @staticmethod
     def mnist17(auto_var, var_value, inter_var, n_samples, n_dims):
         from keras.datasets import mnist
@@ -229,7 +231,8 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
         return X, y, eps
 
-    @register_var(argument=r"mnist35_(?P<n_samples>\d+)(?P<n_dims>_pca\d+)?")
+    @register_var(argument=r"mnist35_(?P<n_samples>\d+)(?P<n_dims>_pca\d+)?",
+                  shown_name="mnist35")
     @staticmethod
     def mnist35(auto_var, var_value, inter_var, n_samples, n_dims):
         from keras.datasets import mnist
@@ -258,7 +261,8 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
         return X, y, eps
 
-    @register_var(argument=r"fashion_mnist06_(?P<n_samples>\d+)(?P<n_dims>_pca\d+)?")
+    @register_var(argument=r"fashion_mnist06_(?P<n_samples>\d+)(?P<n_dims>_pca\d+)?",
+                  shown_name="f-mnist06")
     @staticmethod
     def fashion_mnist06(auto_var, var_value, inter_var, n_samples, n_dims):
         from keras.datasets import fashion_mnist
@@ -289,7 +293,8 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
         return X, y, eps
 
-    @register_var(argument=r"fashion_mnist35_(?P<n_samples>\d+)(?P<n_dims>_pca\d+)?")
+    @register_var(argument=r"fashion_mnist35_(?P<n_samples>\d+)(?P<n_dims>_pca\d+)?",
+                  shown_name="f-mnist35")
     @staticmethod
     def fashion_mnist35(auto_var, var_value, inter_var, n_samples, n_dims):
         from keras.datasets import fashion_mnist

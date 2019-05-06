@@ -58,6 +58,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var(argument='random_forest_(?P<n_trees>\d+)(?P<depth>_d\d+)?')
     @staticmethod
     def random_forest(auto_var, var_value, inter_var, n_trees, depth):
+        """Random Forest Classifier"""
         from sklearn.ensemble import RandomForestClassifier
         depth = int(depth[2:]) if depth else None
         n_trees = int(n_trees)
@@ -84,15 +85,6 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         attack_model = None
         if train == 'adv':
             attack_model = auto_var.get_var("attack")
-        #if train == 'robust':
-        #    model = RandomForestClassifier(
-        #        n_estimators=n_trees,
-        #        criterion='entropy',
-        #        splitter='robust',
-        #        eps=eps,
-        #        max_depth=depth,
-        #        random_state=auto_var.get_var("random_seed"),
-        #    )
         model = AdversarialRf(
             n_estimators=n_trees,
             criterion='entropy',
@@ -109,6 +101,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var(argument='decision_tree(?P<depth>_d\d+)?')
     @staticmethod
     def decision_tree(auto_var, var_value, inter_var, depth):
+        """Decision Tree Classifier"""
         from sklearn.tree import DecisionTreeClassifier
         depth = int(depth[2:]) if depth else None
         model = DecisionTreeClassifier(

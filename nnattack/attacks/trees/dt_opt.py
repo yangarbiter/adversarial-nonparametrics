@@ -7,7 +7,7 @@ from cvxopt import matrix, solvers
 import cvxopt.glpk
 import cvxopt
 
-from .base import AttackModel
+from ..base import AttackModel
 
 solvers.options['maxiters'] = 30
 solvers.options['show_progress'] = False

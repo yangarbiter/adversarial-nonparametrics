@@ -6,6 +6,7 @@ from nnattack.variables import auto_var, get_file_name
 
 from params import (
     compare_attacks,
+    tst_scores,
 
     rf_optimality,
     nn_optimality,
@@ -46,6 +47,7 @@ def main():
         dt_robustness_figs(),
 
         nn_k1_robustness(),
+        tst_scores(),
 
         #rf_optimality(),
         #nn_optimality(),

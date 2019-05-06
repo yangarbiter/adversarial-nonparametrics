@@ -169,6 +169,55 @@ class compare_defense(RobustExperiments):
         cls.grid_params = grid_params
         return RobustExperiments.__new__(cls, *args, **kwargs)
 
+class tst_scores(RobustExperiments):
+    def __new__(cls, *args, **kwargs):
+        cls.name = "tst_scores"
+        grid_params = []
+        grid_params.append({
+            'model': [
+                #'adv_nn_k1_10', 'adv_nn_k1_30', 'adv_nn_k1_50',
+                'knn1', 'robustv1_nn_k1_10', 'robustv1_nn_k1_30', 'robustv1_nn_k1_50',
+                #'robustv2_nn_k1_10', 'robustv2_nn_k1_30', 'robustv2_nn_k1_50',
+            ],
+            'ord': ['inf'],
+            'dataset': datasets,
+            'attack': ['nnopt_k1_all'], #, 'blackbox'],
+            'random_seed': random_seed,
+        })
+        grid_params.append({
+            'model': [
+                #'adv_nn_k1_10', 'adv_nn_k1_30', 'adv_nn_k1_50',
+                'knn3', 'robustv1_nn_k3_10', 'robustv1_nn_k3_30', 'robustv1_nn_k3_50',
+                #'robustv2_nn_k1_10', 'robustv2_nn_k1_30', 'robustv2_nn_k1_50',
+            ],
+            'ord': ['inf'],
+            'dataset': datasets,
+            'attack': ['rev_nnopt_k3_50_region'], #, 'blackbox'],
+            'random_seed': random_seed,
+        })
+        grid_params.append({
+            'model': [
+                'decision_tree_d5',
+                'robustv1_decision_tree_d5_10', 'robustv1_decision_tree_d5_30', 'robustv1_decision_tree_d5_50',
+            ],
+            'ord': ['inf'],
+            'dataset': tree_datasets,
+            'attack': ['dt_attack_opt'],
+            'random_seed': random_seed,
+        })
+        grid_params.append({
+            'model': [
+                'random_forest_100_d5',
+                'robustv1_rf_100_10_d5', 'robustv1_rf_100_30_d5', 'robustv1_rf_100_50_d5',
+            ],
+            'ord': ['inf'],
+            'dataset': tree_datasets,
+            'attack': ['rf_attack_rev_100'],
+            'random_seed': random_seed,
+        })
+        cls.grid_params = grid_params
+        return RobustExperiments.__new__(cls, *args, **kwargs)
+
 class nn_k1_robustness(RobustExperiments):
     def __new__(cls, *args, **kwargs):
         cls.name = "1nn_robustness"
