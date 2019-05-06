@@ -101,7 +101,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var(argument='decision_tree(?P<depth>_d\d+)?')
     @staticmethod
     def decision_tree(auto_var, var_value, inter_var, depth):
-        """Decision Tree Classifier"""
+        """Original Decision Tree Classifier"""
         from sklearn.tree import DecisionTreeClassifier
         depth = int(depth[2:]) if depth else None
         model = DecisionTreeClassifier(
@@ -115,11 +115,17 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?decision_tree(?P<depth>_d\d+)?_(?P<eps>\d+)')
     @staticmethod
     def adv_decision_tree(auto_var, var_value, inter_var, train, eps, depth):
+        """ Decision Tree classifier
+        train:
+          adv: adversarial training
+          robust: robust splitting
+          robustv1: adversarial pruning
+          robustv2: Wang's defense for 1-NN
+        eps: defense strength """
         from .adversarial_dt import AdversarialDt
         eps = int(eps) * 0.01
         train = train[:-1] if train else None
         depth = int(depth[2:]) if depth else None
-        print(eps)
 
         trnX, trny = inter_var['trnX'], inter_var['trny']
         model = auto_var.get_var_with_argument("model", "decision_tree")
@@ -187,6 +193,12 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var(argument=r"(?P<train>[a-zA-Z0-9]+_)?nn_k(?P<n_neighbors>\d+)_(?P<eps>\d+)")
     @staticmethod
     def adv_robustnn(auto_var, var_value, inter_var, n_neighbors, train, eps):
+        """ Nearest Neighbor classifier
+        train:
+          adv: adversarial training
+          robustv1: adversarial pruning
+          robustv2: Wang's defense for 1-NN
+        eps: defense strength """
         from .adversarial_knn import AdversarialKnn
         eps = int(eps) * 0.01
         train = train[:-1] if train else None
@@ -207,6 +219,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var(argument='knn(?P<n_neighbors>\d+)')
     @staticmethod
     def knn(auto_var, var_value, inter_var, n_neighbors):
+        """Original Nearest Neighbor classifier"""
         n_neighbors = int(n_neighbors)
         return KNeighborsClassifier(n_neighbors=n_neighbors)
 

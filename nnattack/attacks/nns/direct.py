@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.neighbors import KDTree
 
-from .base import AttackModel
+from ..base import AttackModel
 
 class DirectAttack(AttackModel):
     def __init__(self, n_neighbors, ord=2):

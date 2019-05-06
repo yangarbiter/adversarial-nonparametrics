@@ -11,12 +11,12 @@ import numpy
 import numpy.distutils
 
 extra_link_args = ['-lblas']
-include_dirs = (numpy.distutils.misc_util.get_numpy_include_dirs())
+include_dirs = numpy.distutils.misc_util.get_numpy_include_dirs()
 
 extensions = cythonize(
     Extension(
-        "nnattack.attacks.cutils",
-        ["nnattack/attacks/cutils.pyx"],
+        "nnattack.attacks.nns.cutils",
+        ["nnattack/attacks/nns/cutils.pyx"],
         extra_link_args=extra_link_args,
         extra_compile_args=['-std=c11'],
         include_dirs=include_dirs,

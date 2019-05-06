@@ -6,6 +6,7 @@ from nnattack.variables import auto_var, get_file_name
 
 from params import (
     compare_attacks,
+    compare_defense,
     tst_scores,
 
     rf_optimality,
@@ -22,8 +23,6 @@ from params import (
     dt_robustness,
     rf_robustness,
 
-    compare_defense,
-
     rf_optimality_figs,
     nn_k1_optimality_figs,
     nn_k3_optimality_figs,
@@ -32,7 +31,6 @@ from main import eps_accuracy
 
 logging.basicConfig(level=logging.DEBUG)
 
-#auto_var.settings['result_file_dir'] = '/results/'
 DEBUG = True if os.environ.get('DEBUG', False) else False
 
 def main():

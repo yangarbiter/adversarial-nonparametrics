@@ -10,7 +10,7 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var(argument=r"nnopt_k(?P<n_neighbors>\d+)_(?P<n_search>\d+)")
     @staticmethod
     def nnopt(auto_var, var_value, inter_var, n_neighbors, n_search):
-        from .nn_attack import NNAttack
+        from .nns.nn_attack import NNAttack
         n_neighbors = int(n_neighbors)
         n_search = int(n_search)
         return NNAttack(inter_var['trnX'], inter_var['trny'],
@@ -20,7 +20,8 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var(argument=r"rev_nnopt_k(?P<n_neighbors>\d+)_(?P<n_search>\d+)_region")
     @staticmethod
     def rev_nnopt_region(auto_var, var_value, inter_var, n_neighbors, n_search):
-        from .nn_attack import RevNNAttack
+        """RBA-Approx for Nearest Neighbor"""
+        from .nns.nn_attack import RevNNAttack
         n_neighbors = int(n_neighbors)
         n_search = int(n_search)
         return RevNNAttack(inter_var['trnX'], inter_var['trny'],
@@ -33,7 +34,7 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @staticmethod
     def hybrid_nnopt(auto_var, var_value, inter_var, n_neighbors, n_search,
             rev_n_search):
-        from .nn_attack import HybridNNAttack
+        from .nns.nn_attack import HybridNNAttack
         n_neighbors = int(n_neighbors)
         n_search = int(n_search)
         rev_n_search = int(rev_n_search)
@@ -47,7 +48,7 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var(argument=r"rev_nnopt_k(?P<n_neighbors>\d+)_(?P<n_search>\d+)")
     @staticmethod
     def rev_nnopt(auto_var, var_value, inter_var, n_neighbors, n_search):
-        from .nn_attack import RevNNAttack
+        from .nns.nn_attack import RevNNAttack
         n_neighbors = int(n_neighbors)
         n_search = int(n_search)
 
@@ -59,7 +60,7 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var()
     @staticmethod
     def gradient_based(auto_var, var_value, inter_var):
-        from .gradient_based import GradientBased
+        from .nns.gradient_based import GradientBased
         return GradientBased(
                    sess=auto_var.inter_var['sess'],
                    trnX=auto_var.inter_var['trnX'],
@@ -67,24 +68,16 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
                    ord=auto_var.get_var('ord'),
                )
 
-    @register_var()
+    @register_var(argument=r"nnopt_k(?P<n_neighbors>\d+)_all")
     @staticmethod
-    def nnopt_k3_all(auto_var, var_value, inter_var):
+    def nnopt_all(auto_var, var_value, inter_var, n_neighbors):
+        """RBA-Exact for nearest neighbor"""
         from .nn_attack import NNAttack
-        n_neighbors = 3
-        return NNAttack(inter_var['trnX'], inter_var['trny'],
-            n_neighbors=n_neighbors, farthest=-1,
-            ord=auto_var.get_var('ord'))
-
-    @register_var()
-    @staticmethod
-    def nnopt_k1_all(auto_var, var_value, inter_var):
-        from .nn_attack import NNAttack
-        n_neighbors = 1
+        n_neighbors = int(n_neighbors)
         return NNAttack(inter_var['trnX'], inter_var['trny'],
             n_neighbors=n_neighbors, farthest=-1,
             ord=auto_var.get_var('ord'), n_jobs=8)
-    
+
     @register_var(argument=r"kernelsub_c(?P<c>\d+)_(?P<attack>[a-zA-Z0-9]+)")
     @staticmethod
     def kernelSubTf(auto_var, var_value, inter_var, c, attack):
@@ -101,7 +94,8 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var(argument=r"direct_k(?P<n_neighbors>\d+)")
     @staticmethod
     def direct(auto_var, var_value, inter_var, n_neighbors):
-        from .direct import DirectAttack
+        """Direct Attack for Nearest Neighbor"""
+        from .nns.direct import DirectAttack
         trnX = inter_var['trnX']
         trny = inter_var['trny']
         ord = auto_var.get_var('ord')
@@ -124,6 +118,7 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var()
     @staticmethod
     def blackbox(auto_var, var_value, inter_var):
+        """Cheng's black box attack (BBox)"""
         from .blackbox import BlackBoxAttack
         ret = BlackBoxAttack(
             model=inter_var['model'],
@@ -135,6 +130,7 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var()
     @staticmethod
     def dt_papernot(auto_var, var_value, inter_var):
+        """Papernot's attack on decision tree"""
         from .trees.papernots import Papernots
         attack_model = Papernots(
             clf=inter_var['tree_clf'],
@@ -146,7 +142,8 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var()
     @staticmethod
     def dt_attack_opt(auto_var, var_value, inter_var):
-        from .dt_opt import DTOpt
+        """RBA-Exact for Decision Tree"""
+        from .trees.dt_opt import DTOpt
         attack_model = DTOpt(
             clf=inter_var['tree_clf'],
             ord=auto_var.get_var('ord'),
@@ -157,7 +154,8 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var(argument=r"rf_attack_all")
     @staticmethod
     def rf_attack_all(auto_var, var_value, inter_var):
-        from .rf_attack import RFAttack
+        """RBA-Exact for Random Forest"""
+        from .trees.rf_attack import RFAttack
 
         attack_model = RFAttack(
             trnX=inter_var['trnX'],
@@ -173,7 +171,8 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var(argument=r"rf_attack_rev(?P<n_search>_\d+)?")
     @staticmethod
     def rf_attack_rev(auto_var, var_value, inter_var, n_search):
-        from .rf_attack import RFAttack
+        """RBA-Approx for Random Forest"""
+        from .trees.rf_attack import RFAttack
         n_search = int(n_search[1:]) if n_search is not None else -1
 
         attack_model = RFAttack(
