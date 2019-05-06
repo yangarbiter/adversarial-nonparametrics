@@ -5,6 +5,7 @@ import numpy as np
 from autovar.base import RegisteringChoiceType, VariableClass, register_var
 
 class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
+    """Defines which attack method to use."""
     var_name = "attack"
 
     @register_var(argument=r"nnopt_k(?P<n_neighbors>\d+)_(?P<n_search>\d+)")
@@ -72,7 +73,7 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @staticmethod
     def nnopt_all(auto_var, var_value, inter_var, n_neighbors):
         """RBA-Exact for nearest neighbor"""
-        from .nn_attack import NNAttack
+        from .nns.nn_attack import NNAttack
         n_neighbors = int(n_neighbors)
         return NNAttack(inter_var['trnX'], inter_var['trny'],
             n_neighbors=n_neighbors, farthest=-1,

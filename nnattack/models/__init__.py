@@ -53,6 +53,8 @@ def cross_validation(auto_var: AutoVar, grid, valid_eps:float):
 
 
 class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
+    """Defines which classifier to use.
+    The defense is implemented in this option."""
     var_name = "model"
 
     @register_var(argument='random_forest_(?P<n_trees>\d+)(?P<depth>_d\d+)?')

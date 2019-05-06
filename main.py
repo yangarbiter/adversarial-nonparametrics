@@ -101,8 +101,8 @@ def eps_accuracy(auto_var):
     auto_var.set_intermidiate_variable("trnX", trnX)
     auto_var.set_intermidiate_variable("trny", trny)
 
-    model_name = auto_var.get_variable_value("model")
-    attack_name = auto_var.get_variable_value("attack")
+    model_name = auto_var.get_variable_name("model")
+    attack_name = auto_var.get_variable_name("attack")
     if 'adv_rf' in model_name:
         pre_model = auto_var.get_var_with_argument('model', model_name[4:])
         pre_model.fit(trnX, trny)

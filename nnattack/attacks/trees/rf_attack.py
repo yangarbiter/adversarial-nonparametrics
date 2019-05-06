@@ -8,7 +8,7 @@ from tqdm import tqdm
 import joblib
 from joblib import Parallel, delayed
 
-from .base import AttackModel
+from ..base import AttackModel
 from .dt_opt import get_tree_constraints
 from ..utils import solve_lp, solve_qp
 

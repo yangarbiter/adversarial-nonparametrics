@@ -15,11 +15,11 @@ from .models import ModelVarClass
 from .attacks import AttackVarClass
 
 def get_file_name(auto_var, name_only=False):
-    dataset = auto_var.get_variable_value('dataset')
-    model_name = auto_var.get_variable_value('model')
-    attack_name = auto_var.get_variable_value('attack')
-    ord = auto_var.get_variable_value('ord')
-    random_seed = auto_var.get_variable_value('random_seed')
+    dataset = auto_var.get_variable_name('dataset')
+    model_name = auto_var.get_variable_name('model')
+    attack_name = auto_var.get_variable_name('attack')
+    ord = auto_var.get_variable_name('ord')
+    random_seed = auto_var.get_variable_name('random_seed')
 
     name = "%s-%s-%s-rs%d" % (
         dataset, model_name, attack_name, random_seed)
@@ -36,21 +36,25 @@ def get_file_name(auto_var, name_only=False):
     return name
 
 class OrdVarClass(VariableClass, metaclass=RegisteringChoiceType):
+    """Defines which distance measure to use for attack."""
     var_name = "ord"
 
     @register_var()
     @staticmethod
-    def inf(auto_var, var_value, inter_var):
+    def inf(auto_var):
+        """L infinity norm"""
         return np.inf
 
     @register_var(argument='2')
     @staticmethod
-    def l2(auto_var, var_value, inter_var):
+    def l2(auto_var):
+        """L2 norm"""
         return 2
 
     @register_var(argument='1')
     @staticmethod
-    def l1(auto_var, var_value, inter_var):
+    def l1(auto_var):
+        """L1 norm"""
         return 1
 
 auto_var = AutoVar(

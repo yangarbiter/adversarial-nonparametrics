@@ -7,12 +7,14 @@ from autovar.base import RegisteringChoiceType, register_var, VariableClass
 LINF_EPS = [0.01 * i for i in range(0, 81, 1)]
 
 class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
+    """Defines the dataset to use"""
     var_name = 'dataset'
 
     @register_var(argument=r"halfmoon_(?P<n_samples>\d+)",
                   shown_name="halfmoon")
     @staticmethod
     def halfmoon(auto_var, var_value, inter_var, n_samples):
+        """halfmoon dataset, n_samples gives the number of samples"""
         from sklearn.datasets import make_moons
         n_samples = int(n_samples)
         X, y = make_moons(n_samples=n_samples, noise=0.25,
