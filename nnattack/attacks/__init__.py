@@ -8,16 +8,6 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
     """Defines which attack method to use."""
     var_name = "attack"
 
-    @register_var(argument=r"nnopt_k(?P<n_neighbors>\d+)_(?P<n_searches>\d+)")
-    @staticmethod
-    def nnopt(auto_var, var_value, inter_var, n_neighbors, n_searches):
-        from .nns.nn_attack import NNAttack
-        n_neighbors = int(n_neighbors)
-        n_searches = int(n_searches)
-        return NNAttack(inter_var['trnX'], inter_var['trny'],
-            n_neighbors=n_neighbors, n_searches=n_searches,
-            ord=auto_var.get_var('ord'))
-
     @register_var(argument=r"RBA_Approx_KNN_k(?P<n_neighbors>\d+)_(?P<n_searches>\d+)",
                   shown_name="RBA-Approx")
     @register_var(argument=r"rev_nnopt_k(?P<n_neighbors>\d+)_(?P<n_searches>\d+)_region",
@@ -35,34 +25,6 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
                 n_neighbors=n_neighbors,
                 ord=auto_var.get_var('ord')
             )
-
-    @register_var(argument=r"hybrid_nnopt_k(?P<n_neighbors>\d+)_(?P<n_searches>\d+)_(?P<rev_n_searches>\d+)")
-    @staticmethod
-    def hybrid_nnopt(auto_var, var_value, inter_var, n_neighbors, n_searches,
-            rev_n_searches):
-        from .nns.nn_attack import HybridNNAttack
-        n_neighbors = int(n_neighbors)
-        n_searches = int(n_searches)
-        rev_n_searches = int(rev_n_searches)
-
-        return HybridNNAttack(inter_var['trnX'], inter_var['trny'],
-            n_searches=n_searches,
-            rev_n_searches=rev_n_searches,
-            n_neighbors=n_neighbors,
-            ord=auto_var.get_var('ord'))
-
-    @register_var(argument=r"rev_nnopt_k(?P<n_neighbors>\d+)_(?P<n_searches>\d+)")
-    @staticmethod
-    def rev_nnopt(auto_var, var_value, inter_var, n_neighbors, n_searches):
-        from .nns.nn_attack import RevNNAttack
-        n_neighbors = int(n_neighbors)
-        n_searches = int(n_searches)
-
-        return RevNNAttack(inter_var['trnX'], inter_var['trny'],
-            n_searches=n_searches,
-            n_neighbors=n_neighbors,
-            method="self",
-            ord=auto_var.get_var('ord'))
 
     @register_var()
     @staticmethod
@@ -121,12 +83,6 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
         attack_model = DirectAttack(n_neighbors=n_neighbors, ord=ord)
         attack_model.fit(trnX, trny)
         return attack_model
-
-    @register_var()
-    @staticmethod
-    def kernel_sub_pgd(auto_var, var_value, inter_var):
-        """For kernel classifier"""
-        return inter_var['model']
 
     @register_var()
     @staticmethod
@@ -206,28 +162,6 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
             method='rev',
             clf=inter_var['tree_clf'],
             ord=auto_var.get_var('ord'),
-            random_state=inter_var['random_state'],
-        )
-        return attack_model
-
-    @register_var()
-    @staticmethod
-    def sklinsvc_opt(auto_var, var_value, inter_var):
-        return inter_var['model']
-
-    @register_var()
-    @staticmethod
-    def sklr_opt(auto_var, var_value, inter_var):
-        return inter_var['model']
-
-    @register_var()
-    @staticmethod
-    def skada_opt(auto_var, var_value, inter_var):
-        from .ada_attack import ADAAttack
-        attack_model = ADAAttack(
-            clf=inter_var['tree_clf'],
-            ord=auto_var.get_var('ord'),
-            n_features=inter_var['trnX'].shape[1],
             random_state=inter_var['random_state'],
         )
         return attack_model

@@ -12,46 +12,6 @@ from autovar import AutoVar
 from autovar.base import RegisteringChoiceType, VariableClass, register_var
 
 
-def exp_fn(auto_var, trnX, valX, trny, valy, eps:float):
-    auto_var.set_intermidiate_variable('sess', tf.Session())
-    auto_var.set_intermidiate_variable("trnX", trnX)
-    auto_var.set_intermidiate_variable("trny", trny)
-    model = auto_var.get_var('model')
-    model.fit(trnX, trny)
-    auto_var.set_intermidiate_variable('model', model)
-    attack = auto_var.get_var('attack')
-
-    pert = attack.perturb(valX, valy, eps=eps)
-
-    return (model.predict(valX + pert) == valy).mean()
-
-def cross_validation(auto_var: AutoVar, grid, valid_eps:float):
-    X = auto_var.get_intermidiate_variable('trnX')
-    y = auto_var.get_intermidiate_variable('trny')
-
-    # TODO add clone method
-    sess = auto_var.inter_var.pop('sess')
-    val_auto_var = deepcopy(auto_var)
-    auto_var.inter_var['sess'] = sess
-    val_auto_var._read_only = False
-    val_auto_var._no_hooks = True
-
-    # shuffle
-    kf = KFold(n_splits=3)
-    rets = []
-    for i, (train, test) in enumerate(kf.split(X)):
-        print(f"{i}-th cross validation.....")
-        fn = partial(exp_fn, trnX=X[train], trny=y[train],
-                     valX=X[test], valy=y[test], eps=valid_eps)
-
-        params, results = val_auto_var.run_grid_params(fn, grid_params=grid)
-        #params, ret = auto_var.run_grid_params(fn, grid)
-        rets.append(results)
-    scores = np.array(rets).mean(axis=0)
-    print("xvalidation results:", params, scores)
-    return params[np.argmax(scores)]
-
-
 class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
     """Defines which classifier to use.
     The defense is implemented in this option."""
@@ -177,34 +137,6 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         )
         return clf
 
-    @register_var(argument=r'(?P<train>[a-zA-Z0-9]+_)?kernel_sub_tf_xvalid_(?P<eps>\d+)')
-    @staticmethod
-    def adv_kernel_xvalid(auto_var, var_value, inter_var, train, eps):
-        grid = {
-            'model': [
-                'kernel_sub_tf_c1_1',
-                'kernel_sub_tf_c1_5',
-                'kernel_sub_tf_c1_10',
-                'kernel_sub_tf_c1_15',
-                'kernel_sub_tf_c1_20',
-            ]
-        }
-        valid_eps = float(eps) * 0.1
-        if train is not None:
-            for i in range(len(grid['model'])):
-                grid['model'][i] = train + grid['model'][i]
-        model_name = cross_validation(auto_var, grid, valid_eps)['model']
-        #auto_var.set_variable_value('model', 'model_name')
-        model = auto_var.get_var_with_argument('model', model_name)
-        auto_var.set_intermidiate_variable("tree_clf", model)
-        return model
-
-    @register_var(argument=r"robust1nn")
-    @staticmethod
-    def robust1nn(auto_var, var_value, inter_var):
-        from .robust_nn import Robust_1NN
-        return Robust_1NN(Delta=0.45, delta=0.1, ord=auto_var.get_var("ord"))
-
     @register_var(argument=r"(?P<train>[a-zA-Z0-9]+_)?nn_k(?P<n_neighbors>\d+)_(?P<eps>\d+)")
     @staticmethod
     def adv_robustnn(auto_var, var_value, inter_var, n_neighbors, train, eps):
@@ -251,59 +183,6 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         )
         return clf
 
-    @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?sklr(?P<eps>_\d+)?')
-    @staticmethod
-    def sklr(auto_var, var_value, inter_var, train, eps):
-        from .sklr import SkLr
-        eps = float(eps[1:])*0.01 if eps else 0.
-        train = train[:-1] if train else None
-        clf = SkLr(
-            ord=auto_var.get_var("ord"),
-            train_type=train,
-            eps=eps,
-            solver="liblinear",
-        )
-        return clf
-
-    @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?adadt_(?P<n_estimators>\d+)(?P<eps>_\d+)?')
-    @staticmethod
-    def skadadt(auto_var, var_value, inter_var, train, n_estimators, eps):
-        from .adversarial_adaboost import AdversarialAda
-        from sklearn.tree import DecisionTreeClassifier
-        eps = int(eps) * 0.1 if eps is not None else 0.
-        n_estimators = int(n_estimators)
-        train = train[1:] if train is not None else None
-
-        if train == 'adv':
-            # TODO
-            attack_model = None
-        else:
-            attack_model = None
-        model = AdversarialAda(
-            base_estimator=DecisionTreeClassifier(criterion='entropy', max_depth=1),
-            algorithm='SAMME',
-            n_estimators=n_estimators,
-            train_type=train,
-            attack_model=attack_model,
-            eps=eps,
-            ord=auto_var.get_var("ord"),
-            random_state=auto_var.get_var("random_seed"))
-        auto_var.set_intermidiate_variable("tree_clf", model)
-        return model
-
-    @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?sklinsvc(?P<eps>_\d+)?')
-    @staticmethod
-    def sklinsvc(auto_var, var_value, inter_var, train, eps):
-        from .sklinsvc import SkLinSVC
-        eps = float(eps[1:])*0.01 if eps else 0.
-        train = train[:-1] if train else None
-        clf = SkLinSVC(
-            ord=auto_var.get_var("ord"),
-            train_type=train,
-            eps=eps,
-        )
-        return clf
-
     @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?mlp(?P<eps>_\d+)?')
     @staticmethod
     def adv_mlp(auto_var, var_value, inter_var, train, eps):
@@ -334,65 +213,3 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
             epochs=2000,
         )
         return model
-
-    @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?logistic_regression(?P<eps>_\d+)?')
-    @staticmethod
-    def adv_logistic_regression(auto_var, var_value, inter_var, train, eps):
-        from .keras_model import KerasModel
-        eps = float(eps[1:])*0.01 if eps else 0.
-        train = train[:-1] if train else None
-
-        n_features = inter_var['trnX'].shape[1:]
-        n_classes = len(set(inter_var['trny']))
-
-        model = KerasModel(
-            lbl_enc=inter_var['lbl_enc'],
-            n_features=n_features,
-            n_classes=n_classes,
-            sess=inter_var['sess'],
-            architecture='logistic_regression',
-            train_type=train,
-            ord=auto_var.get_var("ord"),
-            eps=eps,
-            attacker=None,
-            eps_list=inter_var['eps_list'],
-            epochs=2000,
-        )
-        return model
-
-    @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?decision_tree_xvalid_(?P<eps>\d+)')
-    @staticmethod
-    def adv_dt_xvalid(auto_var, var_value, inter_var, train, eps):
-        grid = {
-            'model': [
-                'decision_tree_1',
-                'decision_tree_5',
-                'decision_tree_10',
-                'decision_tree_15',
-                'decision_tree_20',
-            ]
-        }
-        valid_eps = float(eps) * 0.1
-        if train is not None:
-            for i in range(len(grid['model'])):
-                grid['model'][i] = train + grid['model'][i]
-        model_name = cross_validation(auto_var, grid, valid_eps)['model']
-        #auto_var.set_variable_value('model', 'model_name')
-        model = auto_var.get_var_with_argument('model', model_name)
-        auto_var.set_intermidiate_variable("tree_clf", model)
-        return model
-
-    #@register_var(argument=r"adv_advPruningnn_k(?P<n_neighbors>\d+)_xvalid")
-    #@staticmethod
-    #def adv_advPruningnn_xvalid(auto_var, var_value, inter_var, n_neighbors):
-    #    n_neighbors = int(n_neighbors)
-    #    grid = {
-    #        'model': [
-    #            f'adv_advPruningnn_k{n_neighbors}_1',
-    #            f'adv_advPruningnn_k{n_neighbors}_5',
-    #            f'adv_advPruningnn_k{n_neighbors}_10'
-    #            f'adv_advPruningnn_k{n_neighbors}_15'
-    #            f'adv_advPruningnn_k{n_neighbors}_20'
-    #        ]
-    #    }
-    #    cross_validation(auto_var, grid)
