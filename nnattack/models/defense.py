@@ -1,18 +1,77 @@
+"""
+Download from https://raw.githubusercontent.com/EricYizhenWang/robust_nn_icml/master/robust_1nn.py
+"""
+from __future__ import division
+
 import numpy as np
+from sklearn.neighbors import NearestNeighbors, KNeighborsClassifier
+from scipy.spatial.distance import cdist
 
 from .robust_nn.eps_separation import find_eps_separated_set
-from .robust_nn.robust_1nn import get_aug_v2
+from .eps_separation import find_eps_separated_set
+
+def find_confident_label(X, Y, k, Delta):
+    thres = 2*Delta
+    neigh = NearestNeighbors(k)
+    neigh.fit(X)
+    nn = neigh.kneighbors(X, k, return_distance=False)
+    Y_hat = np.array([[Y[j] for j in i] for i in nn])
+    Y_hat = np.sum(Y_hat, axis=1)/k
+    Y_hat = [0 if (abs(Y_hat[i]) < thres) else np.sign(Y_hat[i])
+             for i in range(X.shape[0])]
+    Y_hat = np.array(Y_hat)
+    return Y_hat
+
+def find_red_points(X, Y, Y_hat, eps, ord):
+    n = X.shape[0]
+    d = cdist(X, X, 'minkowski', ord)
+
+    is_close = (d < eps)
+    is_red = np.ones((n, 1))
+    for i in range(n):
+        for j in range(n):
+            if (is_close[i, j]) and (Y_hat[i] != Y_hat[j]):
+                is_red[i] = 0
+
+            if Y_hat[i] != Y[i]:
+                is_red[i] = 0
+    red_pts = [np.array([X[i] for i in range(n) if is_red[i]]),
+               np.array([Y[i] for i in range(n) if is_red[i]])]
+    other_pts = [np.array([X[i] for i in range(n) if not is_red[i]]),
+                 np.array([Y[i] for i in range(n) if not is_red[i]])]
+
+    [X_red, Y_red] = [red_pts[0], red_pts[1]]
+    [X_other, Y_other] = [other_pts[0], other_pts[1]]
+    return X_red, Y_red, X_other, Y_other
+
+def get_aug_v2(X, Y, Delta, delta, eps, ord):
+    k = min(int(3*np.log(X.shape[0]/delta)/(np.log(2)*(Delta**2))), len(X))
+
+    Y_hat = find_confident_label(X, Y, k, Delta)
+    X_red, Y_red, X_other, Y_other = find_red_points(
+            X, Y, eps=eps, Y_hat=Y_hat, ord=ord)
+
+    print("X_red: ", X_red.shape)
+    [X, Y] = [X_other, Y_other]
+    print("X_other: ", X.shape)
+    X, Y = find_eps_separated_set(X, eps/2, Y, ord=ord)
+
+    if X_red.shape[0] > 0:
+        X_train = np.concatenate([X, X_red])
+        Y_train = np.concatenate([Y, Y_red])
+    else:
+        X_train = X
+        Y_train = Y
+    return X_train, Y_train
 
 def get_aug_data(model, X, y, eps):
     if model.train_type in ['adv', 'robustv1', 'robustv1min', 'robustv2']:
         if eps is None and model.eps is None:
-            raise ValueError("eps should not be None with train type %s", model.train_type)
+            raise ValueError("eps should not be None with train type %s" % model.train_type)
         elif eps is None:
             eps = model.eps
 
     sep_measure = model.sep_measure if model.sep_measure else model.ord
-
-    print("XXXXXXXXX %f", eps)
 
     if model.train_type == 'adv':
         advX = model.attack_model.perturb(X, y=y, eps=eps)

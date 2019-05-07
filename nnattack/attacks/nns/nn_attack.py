@@ -287,7 +287,7 @@ def get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
         return ret, sol
     not_vacum = lambda x: tuple(ind[x]) not in lp_sols or lp_sols[tuple(ind[x])]
     combs = list(filter(not_vacum, combs))
-    sols = Parallel(n_jobs=7, verbose=1)(
+    sols = Parallel(n_jobs=7, verbose=0)(
             delayed(_helper)(comb, transformer, glob_trnX, glob_trny) for comb in combs)
     status, sols = zip(*sols)
     for i, s in enumerate(status):
