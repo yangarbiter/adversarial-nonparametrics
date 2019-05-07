@@ -141,3 +141,18 @@ def union_param_key(grid_param, key):
         #return set.union(*[set(g[key]) for g in grid_param])
     else:
         return grid_param[key]
+
+
+def table_wrapper(table_df, table_name, caption=''):
+    t = """
+\\begin{table}[h!]
+\\tiny
+\\centering
+\\setlength{\\tabcolsep}{2.0pt}
+"""
+    t += table_df.to_latex(escape=False)
+    t += """\\caption{%s}
+\\label{table:%s}
+\\end{table}
+""" % (caption, table_name)
+    return t

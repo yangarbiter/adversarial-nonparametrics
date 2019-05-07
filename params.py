@@ -4,24 +4,25 @@ from utils import RobustExperiments
 random_seed = list(range(1))
 
 datasets = [
-    #'iris', 'wine',
+    #'iris',
+    #'wine',
     #'digits_pca5',
     #'digits_pca25',
     #'covtype_3200',
     #'splice',
+    #'abalone',
+    #'mnist35_2200_pca5', 'fashion_mnist35_2200_pca5',
+    #'ijcnn1_2200',
+    #'mnist35_2200_pca25',
     'australian',
     'fourclass',
     'diabetes',
     'cancer',
-    #'abalone',
-    #'mnist35_2200_pca5', 'fashion_mnist35_2200_pca5',
-    #'ijcnn1_2200',
     'halfmoon_2200',
     'covtypebin_1200',
     'fashion_mnist35_2200_pca25',
     'fashion_mnist06_2200_pca25',
     'mnist17_2200_pca25',
-    #'mnist35_2200_pca25',
 ]
 
 tree_datasets = [
@@ -223,21 +224,15 @@ class nn_k1_robustness(RobustExperiments):
         cls.name = "1nn_robustness"
         grid_params = []
         grid_params.append({
-            'model': ['knn1'],
-            'ord': ['inf'],
-            'dataset': datasets,
-            'attack': ['nnopt_k1_all', 'blackbox'],
-            'random_seed': random_seed,
-        })
-        grid_params.append({
             'model': [
-                #'adv_nn_k1_10', 'adv_nn_k1_30', 'adv_nn_k1_50',
+                'knn1',
                 'robustv1_nn_k1_10', 'robustv1_nn_k1_30', 'robustv1_nn_k1_50',
+                #'adv_nn_k1_10', 'adv_nn_k1_30', 'adv_nn_k1_50',
                 #'robustv2_nn_k1_10', 'robustv2_nn_k1_30', 'robustv2_nn_k1_50',
             ],
             'ord': ['inf'],
             'dataset': datasets,
-            'attack': ['nnopt_k1_all'], #, 'blackbox'],
+            'attack': ['nnopt_k1_all', 'blackbox'],
             'random_seed': random_seed,
         })
         cls.grid_params = grid_params
@@ -248,20 +243,14 @@ class nn_k3_robustness(RobustExperiments):
         cls.name = "3nn_robustness"
         grid_params = []
         grid_params.append({
-            'model': ['knn3'],
-            'ord': ['inf'],
-            'dataset': datasets,
-            'attack': ['rev_nnopt_k3_50_region', 'blackbox'],
-            'random_seed': random_seed,
-        })
-        grid_params.append({
             'model': [
-                #'adv_nn_k3_10', 'adv_nn_k3_30', 'adv_nn_k3_50',
+                'knn3',
                 'robustv1_nn_k3_10', 'robustv1_nn_k3_30', 'robustv1_nn_k3_50',
+                #'adv_nn_k3_10', 'adv_nn_k3_30', 'adv_nn_k3_50',
                 #'robustv2_nn_k3_10', 'robustv2_nn_k3_30', 'robustv1_nn_k3_50',
             ],
             'ord': ['inf'],
-            'dataset': robust_datasets,
+            'dataset': datasets,
             'attack': ['rev_nnopt_k3_50_region', 'blackbox'],
             'random_seed': random_seed,
         })

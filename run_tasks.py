@@ -37,7 +37,7 @@ def main():
     experiments = [
         compare_nns(),
         compare_attacks(),
-        #compare_defense(),
+        compare_defense(),
 
         nn_k1_robustness_figs(),
         nn_k3_robustness_figs(),
