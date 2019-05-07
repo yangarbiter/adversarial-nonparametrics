@@ -72,7 +72,7 @@ class Robust_1NN():
         self.ord = ord
         self.Delta = Delta
         self.delta = delta
-        
+
         self.train_type = train_type
 
     def find_confident_label(self):
