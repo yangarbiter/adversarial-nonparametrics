@@ -8,7 +8,6 @@ from sklearn.neighbors import NearestNeighbors, KNeighborsClassifier
 from scipy.spatial.distance import cdist
 
 from .robust_nn.eps_separation import find_eps_separated_set
-from .eps_separation import find_eps_separated_set
 
 def find_confident_label(X, Y, k, Delta):
     thres = 2*Delta

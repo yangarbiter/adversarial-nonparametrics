@@ -119,7 +119,6 @@ class KerasModel(BaseEstimator):
             train(self.sess, loss, X.astype(np.float32), Y.astype(np.float32),
                     args=train_params)
             self.augX, self.augy = None, None
-            #import ipdb; ipdb.set_trace()
 
             #pre_model = clone_model(self.model)
             #pre_model.compile(loss=self.loss, optimizer=self.optimizer, metrics=[])
@@ -156,7 +155,6 @@ class KerasModel(BaseEstimator):
             #Y = self.lbl_enc.transform(y.reshape(-1, 1))
             #print('XD', (clf.predict(X + self._get_pert(X, Y, eps=self.eps, model=self.model))==y).mean())
             #print('XD', (self.predict(X + self._get_pert(X, Y, eps=self.eps, model=self.model))==y).mean())
-            #import ipdb; ipdb.set_trace()
         elif self.train_type == 'robustv1':
             y = y.astype(int)*2-1
             self.augX, self.augy = find_eps_separated_set(
@@ -198,10 +196,7 @@ class KerasModel(BaseEstimator):
     def _get_pert(self, X, Y, eps:float, model):
         x = tf.placeholder(tf.float32, shape=([None] + list(self.n_features))) 
         y = tf.placeholder(tf.float32, shape=(None, self.n_classes))
-        #model = clone_model(model)
 
-        #with tf.Session().as_default() as sess:
-        #with self.sess.as_default() as sess:
         wrap = KerasModelWrapper(model)
         pgd = ProjectedGradientDescent(wrap, ord=self.ord, sess=self.sess)
         if eps >= 0.05:
@@ -265,7 +260,6 @@ class InputGenerator(object):
         with self.lock:
             _, index_array = next(self.index_generator)
         batch_X = self.X[index_array]
-        import ipdb; ipdb.set_trace()
 
         if self.Y is None:
             return batch_X

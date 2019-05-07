@@ -25,7 +25,7 @@ def set_random_seed(auto_var):
     keras.backend.set_session(sess)
     keras.layers.core.K.set_learning_phase(0)
     tensorflow.keras.backend.set_session(sess)
-    #sess.run(tf.global_variables_initializer())
+    sess.run(tf.global_variables_initializer())
     auto_var.set_intermidiate_variable("sess", sess)
     random_state = np.random.RandomState(auto_var.get_var("random_seed"))
     auto_var.set_intermidiate_variable("random_state", random_state)

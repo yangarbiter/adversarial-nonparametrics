@@ -50,9 +50,9 @@ def main():
         #rf_optimality(),
         #nn_optimality(),
 
-        #rf_optimality_figs(),
-        #nn_k1_optimality_figs(),
-        #nn_k3_optimality_figs(),
+        rf_optimality_figs(),
+        nn_k1_optimality_figs(),
+        nn_k3_optimality_figs(),
     ]
     grid_params = []
     for exp in experiments:
@@ -66,6 +66,7 @@ def main():
         run_param['n_jobs'] = 1
         run_param['allow_failure'] = False
     else:
+        run_param['n_jobs'] = 1
         run_param['allow_failure'] = True
 
     auto_var.run_grid_params(exp_fn, grid_params, **run_param)
