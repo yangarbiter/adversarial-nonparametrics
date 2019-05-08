@@ -77,6 +77,16 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var(argument=r"(?P<train>[a-zA-Z0-9]+_)?rf_(?P<n_trees>\d+)_(?P<eps>\d+)(?P<depth>_d\d+)?")
     @staticmethod
     def adv_robustrf(auto_var, var_value, inter_var, train, eps, n_trees, depth):
+        """Random Forest Classifier with defense
+        n_trees: number of trees in the forest
+        depth: maximum depth of each tree
+        train:
+          None: undefended decision tree
+          adv: adversarial training
+          robust: robust splitting
+          robustv1: adversarial pruning
+          robustv2: Wang's defense for 1-NN
+        eps: defense strength """
         from .adversarial_dt import AdversarialRf
         from sklearn.ensemble import RandomForestClassifier
         eps = int(eps) * 0.01
@@ -117,8 +127,9 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var(argument=r'(?P<train>[a-zA-Z0-9]+_)?decision_tree(?P<depth>_d\d+)?_(?P<eps>\d+)')
     @staticmethod
     def adv_decision_tree(auto_var, var_value, inter_var, train, eps, depth):
-        """ Decision Tree classifier
+        """Decision Tree classifier
         train:
+          None: undefended decision tree
           adv: adversarial training
           robust: robust splitting
           robustv1: adversarial pruning
@@ -197,6 +208,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
     def adv_robustnn(auto_var, var_value, inter_var, n_neighbors, train, eps):
         """ Nearest Neighbor classifier
         train:
+          None: undefended
           adv: adversarial training
           robustv1: adversarial pruning
           robustv2: Wang's defense for 1-NN
@@ -292,6 +304,12 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?mlp(?P<eps>_\d+)?')
     @staticmethod
     def adv_mlp(auto_var, var_value, inter_var, train, eps):
+        """ Multi-layer perceptrum classifier
+        train:
+          None: undefended
+          adv: adversarial training
+          robustv1: adversarial pruning
+        eps: defense strength """
         from .keras_model import KerasModel
         eps = float(eps[1:])*0.01 if eps else 0.
         train = train[:-1] if train else None
