@@ -10,8 +10,6 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
     @register_var(argument=r"RBA_Approx_KNN_k(?P<n_neighbors>\d+)_(?P<n_searches>\d+)",
                   shown_name="RBA-Approx")
-    @register_var(argument=r"rev_nnopt_k(?P<n_neighbors>\d+)_(?P<n_searches>\d+)_region",
-                  shown_name="RBA-Approx")
     @staticmethod
     def rev_nnopt_region(auto_var, var_value, inter_var, n_neighbors, n_searches):
         """RBA-Approx for Nearest Neighbor"""
@@ -39,8 +37,6 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
                )
 
     @register_var(argument=r"RBA_Exact_KNN_k(?P<n_neighbors>\d+)",
-                  shown_name="RBA-Exact")
-    @register_var(argument=r"nnopt_k(?P<n_neighbors>\d+)_all",
                   shown_name="RBA-Exact")
     @staticmethod
     def nnopt_all(auto_var, var_value, inter_var, n_neighbors):
@@ -115,7 +111,6 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
         return attack_model
 
     @register_var(argument=r"RBA_Exact_DT", shown_name="RBA-Exact")
-    @register_var(argument=r"dt_attack_opt", shown_name="RBA-Exact")
     @staticmethod
     def dt_attack_opt(auto_var, var_value, inter_var):
         """RBA-Exact for Decision Tree"""
@@ -128,7 +123,6 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
         return attack_model
 
     @register_var(argument=r"RBA_Exact_RF", shown_name="RBA-Exact")
-    @register_var(argument=r"rf_attack_all", shown_name="RBA-Exact")
     @staticmethod
     def rf_attack_all(auto_var, var_value, inter_var):
         """RBA-Exact for Random Forest"""
@@ -146,8 +140,6 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
         return attack_model
 
     @register_var(argument=r"RBA_Approx_RF(?P<n_searches>_\d+)?",
-                  shown_name="RBA-Approx")
-    @register_var(argument=r"rf_attack_rev(?P<n_searches>_\d+)?",
                   shown_name="RBA-Approx")
     @staticmethod
     def rf_attack_rev(auto_var, var_value, inter_var, n_searches):
