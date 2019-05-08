@@ -7,6 +7,9 @@ import cvxopt
 
 from .robust_nn.eps_separation import find_eps_separated_set
 
+solvers.options['show_progress'] = False
+cvxopt.glpk.options["msg_lev"] = "GLP_MSG_OFF"
+
 class SkLr(LogisticRegression):
     def __init__(self, **kwargs):
         print(kwargs)
@@ -101,7 +104,7 @@ def get_sol_l2(target_x, G, h):
         ret = np.array(sol['x'], np.float64).reshape(-1)
         return ret - target_x
     else:
-        raise
+        raise ValueError
 
 def get_sol_linf(target_x, G, h):
     fet_dim = target_x.shape[0]
@@ -121,4 +124,4 @@ def get_sol_linf(target_x, G, h):
         sol = np.array(lp_sol['x']).reshape(-1)[:-1]
         return sol - target_x
     else:
-        raise
+        raise ValueError

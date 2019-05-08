@@ -114,6 +114,46 @@ class compare_attacks(RobustExperiments):
         cls.grid_params = grid_params
         return RobustExperiments.__new__(cls, *args, **kwargs)
 
+class parametric_defense(RobustExperiments):
+    def __new__(cls, *args, **kwargs):
+        cls.name = "parametric_defense"
+        grid_params = []
+        grid_params.append({
+            'model': [
+                'sklr',
+                'adv_sklr_30',
+                'robustv1_sklr_30',
+            ],
+            'ord': ['inf'],
+            'dataset': tree_datasets,
+            'attack': ['pgd'],
+            'random_seed': random_seed,
+        })
+        grid_params.append({
+            'model': [
+                'logistic_regression',
+                'adv_logistic_regression_30',
+                'robustv1_logistic_regression_30',
+            ],
+            'ord': ['inf'],
+            'dataset': tree_datasets,
+            'attack': ['pgd'],
+            'random_seed': random_seed,
+        })
+        grid_params.append({
+            'model': [
+                'mlp',
+                'adv_mlp_30',
+                'robustv1_mlp_30',
+            ],
+            'ord': ['inf'],
+            'dataset': tree_datasets,
+            'attack': ['pgd'],
+            'random_seed': random_seed,
+        })
+        cls.grid_params = grid_params
+        return RobustExperiments.__new__(cls, *args, **kwargs)
+
 class compare_defense(RobustExperiments):
     def __new__(cls, *args, **kwargs):
         cls.name = "compare_defense"
