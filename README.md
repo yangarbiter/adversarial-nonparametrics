@@ -1,15 +1,19 @@
 # Nonparametric Adversarial Attack and Defense
 
-## Install
+## Installation
+
+Python 3.6+
 
 ### Dependencies
+
 ```
 pip install --upgrade -r requirements.txt
 ```
 
 #### LP, QP Solvers
-Install gruobi: https://www.cvxpy.org/install/index.html#install-with-gurobi-support
-Install GLPK: https://www.cvxpy.org/install/index.html#install-with-cvxopt-and-glpk-support
+
+- Install gruobi: https://www.cvxpy.org/install/index.html#install-with-gurobi-support
+- Install GLPK: https://www.cvxpy.org/install/index.html#install-with-cvxopt-and-glpk-support
 
 ### Install C-extensions
 ```
@@ -20,6 +24,8 @@ Install GLPK: https://www.cvxpy.org/install/index.html#install-with-cvxopt-and-g
 ```
 pip install --upgrade ./scikit-learn
 ```
+
+## Implementations
 
 ## Examples
 

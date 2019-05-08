@@ -1,3 +1,6 @@
+"""
+Module for implementation of Region Based Attack
+"""
 import itertools
 import os
 import warnings
@@ -244,7 +247,7 @@ def get_sol_linf(target_x, tuple_x, faropp, kdtree, transformer,
 
 
 #@profile
-def get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
+def get_adv(target_x, target_y, kdtree, n_searches, n_neighbors, faropp,
         transformer, lp_sols, ord=2, n_jobs=1):
     ind = kdtree.query(target_x.dot(transformer.T).reshape((1, -1)),
                        k=n_neighbors, return_distance=False)[0]
@@ -253,16 +256,16 @@ def get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
         return np.zeros_like(target_x)
 
     temp = (target_x, np.inf)
-    if farthest == -1:
-        farthest = glob_trnX.shape[0]
+    if n_searches == -1:
+        n_searches = glob_trnX.shape[0]
         ind = np.arange(glob_trnX.shape[0])
     else:
         ind = kdtree.query(target_x.dot(transformer.T).reshape((1, -1)),
-                        k=farthest, return_distance=False)
+                        k=n_searches, return_distance=False)
         ind = ind[0]
 
     combs = []
-    for comb in itertools.combinations(range(farthest), n_neighbors):
+    for comb in itertools.combinations(range(n_searches), n_neighbors):
         comb = list(comb)
         # majority
         if target_y != np.argmax(np.bincount(glob_trny[ind[comb]])):
@@ -349,10 +352,10 @@ def attack_with_eps_constraint(perts, ord, eps):
         return perts
 
 #@profile
-def rev_get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
+def rev_get_adv(target_x, target_y, kdtree, n_searches, n_neighbors, faropp,
         transformer, lp_sols, ord=2, method='self', knn=None, n_jobs=1):
-    if farthest == -1:
-        farthest = glob_trnX.shape[0]
+    if n_searches == -1:
+        n_searches = glob_trnX.shape[0]
     temp = (target_x, np.inf)
 
     # already predicted wrong
@@ -374,7 +377,7 @@ def rev_get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
 
     ind = kdtree.query(target_x.dot(transformer.T).reshape((1, -1)),
                        k=len(glob_trnX), return_distance=False)[0]
-    ind = list(filter(lambda x: pred_trny[x] != target_y, ind))[:farthest]
+    ind = list(filter(lambda x: pred_trny[x] != target_y, ind))[:n_searches]
 
     for i in ind:
         if method == 'self':
@@ -419,14 +422,14 @@ def rev_get_adv(target_x, target_y, kdtree, farthest, n_neighbors, faropp,
     return temp[0] - target_x
 
 class NNOptAttack():
-    def __init__(self, trnX, trny, n_neighbors=3, farthest=-1, faropp=-1,
+    def __init__(self, trnX, trny, n_neighbors=3, n_searches=-1, faropp=-1,
             transformer=None, ord=2, n_jobs=1):
         #furthest >= K
         self.n_jobs = n_jobs
         self.K = n_neighbors
         self.trnX = trnX
         self.trny = trny
-        self.farthest = min(farthest, len(trnX))
+        self.n_searches = min(n_searches, len(trnX))
         self.faropp = faropp
         self.transformer = transformer
         self.ord = ord
@@ -441,10 +444,10 @@ class NNOptAttack():
 
 
 class NNAttack(NNOptAttack):
-    def __init__(self, trnX, trny, n_neighbors=3, farthest=-1, faropp=-1,
+    def __init__(self, trnX, trny, n_neighbors=3, n_searches=-1, faropp=-1,
             transformer=None, ord=2, n_jobs=1):
         super().__init__(trnX=trnX, trny=trny, n_neighbors=n_neighbors,
-                farthest=farthest, faropp=faropp, transformer=transformer,
+                n_searches=n_searches, faropp=faropp, transformer=transformer,
                 ord=ord, n_jobs=n_jobs)
 
     #@profile
@@ -461,7 +464,7 @@ class NNAttack(NNOptAttack):
 
         #ret = Parallel(n_jobs=-1, backend="threading", batch_size='auto',
         #               verbose=5)(
-        #    delayed(get_adv)(target_x, target_y, self.tree, self.farthest, self.K,
+        #    delayed(get_adv)(target_x, target_y, self.tree, self.n_searches, self.K,
         #                     self.faropp, transformer, self.lp_sols,
         #                     ord=self.ord) for target_x, target_y in zip(X, y))
 
@@ -471,18 +474,79 @@ class NNAttack(NNOptAttack):
         ret = []
         for i, (target_x, target_y) in tqdm(enumerate(zip(X, y)), ascii=True, desc="Perturb"):
             ret.append(get_adv(target_x.astype(np.float64), target_y, self.tree,
-                               self.farthest, self.K, self.faropp,
+                               self.n_searches, self.K, self.faropp,
                                transformer, self.lp_sols, ord=self.ord))
 
         self.perts = np.asarray(ret)
         return attack_with_eps_constraint(self.perts, self.ord, eps)
 
+class KNNRegionBasedAttackApprox(NNOptAttack):
+    """
+    Approximated Region Based Attack (RBA-Approx) for K-NN
+    
+    Arguments:
+        trnX {ndarray, shape=(n_samples, n_features)} -- Training data
+        trny {ndarray, shape=(n_samples)} -- Training label
+    
+    Keyword Arguments:
+        n_neighbors {int} -- Number of neighbors for the target k-NN classifier (default: {3})
+        n_searches {int} -- Number of regions to search, -1 means all regions (default: {-1})
+        ord {int} -- Order of the norm for perturbation distance, see numpy.linalg.norm for more information (default: {2})
+        n_jobs {int} -- number of cores to run (default: {1})
+        faropp {int} -- Not used (default: {-1})
+    """
+    def __init__(self, trnX: np.array, trny: np.array, n_neighbors: int = 3,
+                 n_searches: int = -1, faropp: int = -1, ord=2, n_jobs=1):
+        super().__init__(trnX=trnX, trny=trny, n_neighbors=n_neighbors,
+                n_searches=n_searches, faropp=-1, transformer=None, ord=ord)
+
+    #@profile
+    def perturb(self, X, y, eps=None, n_jobs=1):
+        transformer = np.eye(self.trnX.shape[1])
+
+        global glob_trnX
+        global glob_trny
+        glob_trnX = self.trnX
+        glob_trny = self.trny
+
+        knn = KNeighborsClassifier(n_neighbors=self.K)
+        knn.fit(glob_trnX.dot(transformer.T), glob_trny)
+
+        ret = []
+        for i, (target_x, target_y) in tqdm(enumerate(zip(X, y)), ascii=True, desc="Perturb"):
+            ret.append(
+                rev_get_adv(target_x.astype(np.float64), target_y,
+                    self.tree, self.n_searches, self.K, self.faropp,
+                    transformer, self.lp_sols, ord=self.ord,
+                    method='region', knn=knn, n_jobs=self.n_jobs
+                )
+            )
+
+        self.perts = np.asarray(ret)
+        return attack_with_eps_constraint(self.perts, self.ord, eps)
 
 class RevNNAttack(NNOptAttack):
-    def __init__(self, trnX, trny, n_neighbors=3, farthest=-1, faropp=-1,
-            transformer=None, ord=2, method='self', n_jobs=1):
+    """
+    Approximated Region Based Attack (RBA-Approx)
+    
+    Arguments:
+        trnX {ndarray, shape=(n_samples, n_features)} -- Training data
+        trny {ndarray, shape=(n_samples)} -- Training label
+    
+    Keyword Arguments:
+        n_neighbors {int} -- Number of neighbors for the target k-NN classifier (default: {3})
+        n_searches {int} -- Number of regions to search (default: {-1})
+        ord {int} -- Order of the norm for perturbation distance, see numpy.linalg.norm for more information (default: {2})
+        n_jobs {int} -- number of cores to run (default: {1})
+        faropp {int} -- Not used (default: {-1})
+        transformer {[type]} -- Not used (default: {None})
+        method {str} -- Not used (default: {'region'})
+    """
+    def __init__(self, trnX: np.array, trny: np.array, n_neighbors: int = 3,
+                 n_searches: int = -1, faropp: int = -1, transformer=None, ord=2,
+                 method='region', n_jobs=1):
         super().__init__(trnX=trnX, trny=trny, n_neighbors=n_neighbors,
-                farthest=farthest, faropp=faropp, transformer=transformer,
+                n_searches=n_searches, faropp=faropp, transformer=transformer,
                 ord=ord)
         self.method = method
 
@@ -505,7 +569,7 @@ class RevNNAttack(NNOptAttack):
         for i, (target_x, target_y) in tqdm(enumerate(zip(X, y)), ascii=True, desc="Perturb"):
             ret.append(
                 rev_get_adv(target_x.astype(np.float64), target_y,
-                    self.tree, self.farthest, self.K, self.faropp,
+                    self.tree, self.n_searches, self.K, self.faropp,
                     transformer, self.lp_sols, ord=self.ord,
                     method=self.method, knn=knn, n_jobs=self.n_jobs
                 )
@@ -515,13 +579,13 @@ class RevNNAttack(NNOptAttack):
         return attack_with_eps_constraint(self.perts, self.ord, eps)
 
 class HybridNNAttack(NNOptAttack):
-    def __init__(self, trnX, trny, n_neighbors=3, farthest=-1, faropp=-1,
-            rev_farthest=-1, transformer=None, ord=2, method='self', n_jobs=1):
+    def __init__(self, trnX, trny, n_neighbors=3, n_searches=-1, faropp=-1,
+            rev_n_searches=-1, transformer=None, ord=2, method='self', n_jobs=1):
         super().__init__(trnX=trnX, trny=trny, n_neighbors=n_neighbors,
-                farthest=farthest, faropp=faropp, transformer=transformer,
+                n_searches=n_searches, faropp=faropp, transformer=transformer,
                 ord=ord)
         self.method = method
-        self.rev_farthest = rev_farthest
+        self.rev_n_searches = rev_n_searches
 
     #@profile
     def perturb(self, X, y, eps=None, n_jobs=1):
@@ -541,7 +605,7 @@ class HybridNNAttack(NNOptAttack):
         ret = []
         for i, (target_x, target_y) in tqdm(enumerate(zip(X, y)), ascii=True, desc="Perturb"):
             pert = get_adv(target_x.astype(np.float64), target_y, self.tree,
-                    self.farthest, self.K, self.faropp, transformer,
+                    self.n_searches, self.K, self.faropp, transformer,
                     self.lp_sols, ord=self.ord, n_jobs=self.n_jobs)
             rev_pert = rev_get_adv(target_x.astype(np.float64), target_y,
                     self.tree, self.rev_farthest, self.K, self.faropp, transformer,

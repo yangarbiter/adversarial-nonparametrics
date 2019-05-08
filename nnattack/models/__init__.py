@@ -57,7 +57,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
     The defense is implemented in this option."""
     var_name = "model"
 
-    @register_var(argument='random_forest_(?P<n_trees>\d+)(?P<depth>_d\d+)?')
+    @register_var(argument=r"random_forest_(?P<n_trees>\d+)(?P<depth>_d\d+)?")
     @staticmethod
     def random_forest(auto_var, var_value, inter_var, n_trees, depth):
         """Random Forest Classifier"""
@@ -100,7 +100,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         auto_var.set_intermidiate_variable("tree_clf", model)
         return model
 
-    @register_var(argument='decision_tree(?P<depth>_d\d+)?')
+    @register_var(argument=r"decision_tree(?P<depth>_d\d+)?")
     @staticmethod
     def decision_tree(auto_var, var_value, inter_var, depth):
         """Original Decision Tree Classifier"""
@@ -114,7 +114,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         auto_var.set_intermidiate_variable("tree_clf", model)
         return model
 
-    @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?decision_tree(?P<depth>_d\d+)?_(?P<eps>\d+)')
+    @register_var(argument=r'(?P<train>[a-zA-Z0-9]+_)?decision_tree(?P<depth>_d\d+)?_(?P<eps>\d+)')
     @staticmethod
     def adv_decision_tree(auto_var, var_value, inter_var, train, eps, depth):
         """ Decision Tree classifier
@@ -147,7 +147,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         auto_var.set_intermidiate_variable("tree_clf", model)
         return model
 
-    @register_var(argument='(?P<train>[a-zA-Z0-9]+)_kernel_sub_tf_c(?P<c>\d+)_(?P<eps>\d+)')
+    @register_var(argument=r'(?P<train>[a-zA-Z0-9]+)_kernel_sub_tf_c(?P<c>\d+)_(?P<eps>\d+)')
     @staticmethod
     def adv_kernel_sub_tf(auto_var, var_value, inter_var, train, eps, c):
         from .kernel_sub_tf import KernelSubTFModel
@@ -164,7 +164,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         )
         return clf
 
-    @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?kernel_sub_tf_xvalid_(?P<eps>\d+)')
+    @register_var(argument=r'(?P<train>[a-zA-Z0-9]+_)?kernel_sub_tf_xvalid_(?P<eps>\d+)')
     @staticmethod
     def adv_kernel_xvalid(auto_var, var_value, inter_var, train, eps):
         grid = {

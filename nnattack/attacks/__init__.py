@@ -8,55 +8,58 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
     """Defines which attack method to use."""
     var_name = "attack"
 
-    @register_var(argument=r"nnopt_k(?P<n_neighbors>\d+)_(?P<n_search>\d+)")
+    @register_var(argument=r"nnopt_k(?P<n_neighbors>\d+)_(?P<n_searches>\d+)")
     @staticmethod
-    def nnopt(auto_var, var_value, inter_var, n_neighbors, n_search):
+    def nnopt(auto_var, var_value, inter_var, n_neighbors, n_searches):
         from .nns.nn_attack import NNAttack
         n_neighbors = int(n_neighbors)
-        n_search = int(n_search)
+        n_searches = int(n_searches)
         return NNAttack(inter_var['trnX'], inter_var['trny'],
-            n_neighbors=n_neighbors, farthest=n_search,
+            n_neighbors=n_neighbors, n_searches=n_searches,
             ord=auto_var.get_var('ord'))
 
-    @register_var(argument=r"rev_nnopt_k(?P<n_neighbors>\d+)_(?P<n_search>\d+)_region",
+    @register_var(argument=r"rev_nnopt_k(?P<n_neighbors>\d+)_(?P<n_searches>\d+)_region",
                   shown_name="RBA-Approx")
     @staticmethod
-    def rev_nnopt_region(auto_var, var_value, inter_var, n_neighbors, n_search):
+    def rev_nnopt_region(auto_var, var_value, inter_var, n_neighbors, n_searches):
         """RBA-Approx for Nearest Neighbor"""
-        from .nns.nn_attack import RevNNAttack
+        from .nns.nn_attack import KNNRegionBasedAttackApprox
         n_neighbors = int(n_neighbors)
-        n_search = int(n_search)
-        return RevNNAttack(inter_var['trnX'], inter_var['trny'],
-            farthest=n_search,
-            method='region',
-            n_neighbors=n_neighbors,
-            ord=auto_var.get_var('ord'))
+        n_searches = int(n_searches)
+        return KNNRegionBasedAttackApprox(
+                inter_var['trnX'],
+                inter_var['trny'],
+                n_searches=n_searches,
+                n_neighbors=n_neighbors,
+                ord=auto_var.get_var('ord')
+            )
 
-    @register_var(argument=r"hybrid_nnopt_k(?P<n_neighbors>\d+)_(?P<n_search>\d+)_(?P<rev_n_search>\d+)")
+    @register_var(argument=r"hybrid_nnopt_k(?P<n_neighbors>\d+)_(?P<n_searches>\d+)_(?P<rev_n_searches>\d+)")
     @staticmethod
-    def hybrid_nnopt(auto_var, var_value, inter_var, n_neighbors, n_search,
-            rev_n_search):
+    def hybrid_nnopt(auto_var, var_value, inter_var, n_neighbors, n_searches,
+            rev_n_searches):
         from .nns.nn_attack import HybridNNAttack
         n_neighbors = int(n_neighbors)
-        n_search = int(n_search)
-        rev_n_search = int(rev_n_search)
+        n_searches = int(n_searches)
+        rev_n_searches = int(rev_n_searches)
 
         return HybridNNAttack(inter_var['trnX'], inter_var['trny'],
-            farthest=n_search,
-            rev_farthest=rev_n_search,
+            n_searches=n_searches,
+            rev_n_searches=rev_n_searches,
             n_neighbors=n_neighbors,
             ord=auto_var.get_var('ord'))
 
-    @register_var(argument=r"rev_nnopt_k(?P<n_neighbors>\d+)_(?P<n_search>\d+)")
+    @register_var(argument=r"rev_nnopt_k(?P<n_neighbors>\d+)_(?P<n_searches>\d+)")
     @staticmethod
-    def rev_nnopt(auto_var, var_value, inter_var, n_neighbors, n_search):
+    def rev_nnopt(auto_var, var_value, inter_var, n_neighbors, n_searches):
         from .nns.nn_attack import RevNNAttack
         n_neighbors = int(n_neighbors)
-        n_search = int(n_search)
+        n_searches = int(n_searches)
 
         return RevNNAttack(inter_var['trnX'], inter_var['trny'],
-            farthest=n_search,
+            n_searches=n_searches,
             n_neighbors=n_neighbors,
+            method="self",
             ord=auto_var.get_var('ord'))
 
     @register_var()
@@ -79,7 +82,7 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
         from .nns.nn_attack import NNAttack
         n_neighbors = int(n_neighbors)
         return NNAttack(inter_var['trnX'], inter_var['trny'],
-            n_neighbors=n_neighbors, farthest=-1,
+            n_neighbors=n_neighbors, n_searches=-1,
             ord=auto_var.get_var('ord'), n_jobs=8)
 
     @register_var(argument=r"kernelsub_c(?P<c>\d+)_(?P<attack>[a-zA-Z0-9]+)")
@@ -174,18 +177,18 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
         )
         return attack_model
 
-    @register_var(argument=r"rf_attack_rev(?P<n_search>_\d+)?",
+    @register_var(argument=r"rf_attack_rev(?P<n_searches>_\d+)?",
                   shown_name="RBA-Approx")
     @staticmethod
-    def rf_attack_rev(auto_var, var_value, inter_var, n_search):
+    def rf_attack_rev(auto_var, var_value, inter_var, n_searches):
         """RBA-Approx for Random Forest"""
         from .trees.rf_attack import RFAttack
-        n_search = int(n_search[1:]) if n_search is not None else -1
+        n_searches = int(n_searches[1:]) if n_searches is not None else -1
 
         attack_model = RFAttack(
             trnX=inter_var['trnX'],
             trny=inter_var['trny'],
-            n_searches=n_search,
+            n_searcheses=n_searches,
             method='rev',
             clf=inter_var['tree_clf'],
             ord=auto_var.get_var('ord'),
