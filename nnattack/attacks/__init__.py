@@ -18,6 +18,8 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
             n_neighbors=n_neighbors, n_searches=n_searches,
             ord=auto_var.get_var('ord'))
 
+    @register_var(argument=r"RBA_Approx_KNN_k(?P<n_neighbors>\d+)_(?P<n_searches>\d+)",
+                  shown_name="RBA-Approx")
     @register_var(argument=r"rev_nnopt_k(?P<n_neighbors>\d+)_(?P<n_searches>\d+)_region",
                   shown_name="RBA-Approx")
     @staticmethod
@@ -74,6 +76,8 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
                    ord=auto_var.get_var('ord'),
                )
 
+    @register_var(argument=r"RBA_Exact_KNN_k(?P<n_neighbors>\d+)",
+                  shown_name="RBA-Exact")
     @register_var(argument=r"nnopt_k(?P<n_neighbors>\d+)_all",
                   shown_name="RBA-Exact")
     @staticmethod
@@ -81,9 +85,14 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
         """RBA-Exact for nearest neighbor"""
         from .nns.nn_attack import NNAttack
         n_neighbors = int(n_neighbors)
-        return NNAttack(inter_var['trnX'], inter_var['trny'],
-            n_neighbors=n_neighbors, n_searches=-1,
-            ord=auto_var.get_var('ord'), n_jobs=8)
+        return NNAttack(
+            inter_var['trnX'],
+            inter_var['trny'],
+            n_neighbors=n_neighbors,
+            n_searches=-1,
+            ord=auto_var.get_var('ord'),
+            n_jobs=8
+        )
 
     @register_var(argument=r"kernelsub_c(?P<c>\d+)_(?P<attack>[a-zA-Z0-9]+)")
     @staticmethod
@@ -160,6 +169,7 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
         )
         return attack_model
 
+    @register_var(argument=r"RBA_Exact_RF", shown_name="RBA-Exact")
     @register_var(argument=r"rf_attack_all", shown_name="RBA-Exact")
     @staticmethod
     def rf_attack_all(auto_var, var_value, inter_var):
@@ -177,6 +187,8 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
         )
         return attack_model
 
+    @register_var(argument=r"RBA_Approx_RF(?P<n_searches>_\d+)?",
+                  shown_name="RBA-Approx")
     @register_var(argument=r"rf_attack_rev(?P<n_searches>_\d+)?",
                   shown_name="RBA-Approx")
     @staticmethod
@@ -188,7 +200,7 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
         attack_model = RFAttack(
             trnX=inter_var['trnX'],
             trny=inter_var['trny'],
-            n_searcheses=n_searches,
+            n_searches=n_searches,
             method='rev',
             clf=inter_var['tree_clf'],
             ord=auto_var.get_var('ord'),

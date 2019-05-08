@@ -462,14 +462,45 @@ class NNAttack(NNOptAttack):
         glob_trnX = self.trnX
         glob_trny = self.trny
 
-        #ret = Parallel(n_jobs=-1, backend="threading", batch_size='auto',
-        #               verbose=5)(
-        #    delayed(get_adv)(target_x, target_y, self.tree, self.n_searches, self.K,
-        #                     self.faropp, transformer, self.lp_sols,
-        #                     ord=self.ord) for target_x, target_y in zip(X, y))
+        ret = []
+        for i, (target_x, target_y) in tqdm(enumerate(zip(X, y)), ascii=True, desc="Perturb"):
+            ret.append(get_adv(target_x.astype(np.float64), target_y, self.tree,
+                               self.n_searches, self.K, self.faropp,
+                               transformer, self.lp_sols, ord=self.ord))
 
-        #knn = KNeighborsClassifier(n_neighbors=self.K)
-        #knn.fit(glob_trnX.dot(transformer.T), glob_trny)
+        self.perts = np.asarray(ret)
+        return attack_with_eps_constraint(self.perts, self.ord, eps)
+
+class KNNRegionBasedAttackExact(NNOptAttack):
+    """
+    Exact Region Based Attack (RBA-Exact) for K-NN
+    
+    Arguments:
+        trnX {ndarray, shape=(n_samples, n_features)} -- Training data
+        trny {ndarray, shape=(n_samples)} -- Training label
+    
+    Keyword Arguments:
+        n_neighbors {int} -- Number of neighbors for the target k-NN classifier (default: {3})
+        n_searches {int} -- Number of regions to search, -1 means all regions (default: {-1})
+        ord {int} -- Order of the norm for perturbation distance, see numpy.linalg.norm for more information (default: {2})
+        n_jobs {int} -- number of cores to run (default: {1})
+    """
+    def __init__(self, trnX, trny, n_neighbors=3, n_searches=-1, ord=2, n_jobs=1):
+        super().__init__(trnX=trnX, trny=trny, n_neighbors=n_neighbors,
+                n_searches=-1, faropp=-1, transformer=None,
+                ord=ord, n_jobs=n_jobs)
+
+    #@profile
+    def perturb(self, X, y, eps=None, n_jobs=1):
+        if self.transformer:
+            transformer = self.transformer.transformer()
+        else:
+            transformer = np.eye(self.trnX.shape[1])
+
+        global glob_trnX
+        global glob_trny
+        glob_trnX = self.trnX
+        glob_trny = self.trny
 
         ret = []
         for i, (target_x, target_y) in tqdm(enumerate(zip(X, y)), ascii=True, desc="Perturb"):
@@ -493,10 +524,9 @@ class KNNRegionBasedAttackApprox(NNOptAttack):
         n_searches {int} -- Number of regions to search, -1 means all regions (default: {-1})
         ord {int} -- Order of the norm for perturbation distance, see numpy.linalg.norm for more information (default: {2})
         n_jobs {int} -- number of cores to run (default: {1})
-        faropp {int} -- Not used (default: {-1})
     """
     def __init__(self, trnX: np.array, trny: np.array, n_neighbors: int = 3,
-                 n_searches: int = -1, faropp: int = -1, ord=2, n_jobs=1):
+                 n_searches: int = -1, ord=2, n_jobs=1):
         super().__init__(trnX=trnX, trny=trny, n_neighbors=n_neighbors,
                 n_searches=n_searches, faropp=-1, transformer=None, ord=ord)
 
