@@ -309,4 +309,4 @@ class RFAttack(AttackModel):
             raise ValueError("Not supported method %s", self.method)
 
         self.perts = pert_X
-        return self._pert_with_eps_constraint(self, pert_X, eps)
+        return self._pert_with_eps_constraint(pert_X, eps)
