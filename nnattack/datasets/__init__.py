@@ -94,23 +94,6 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         y = y.astype(int)
         return X, y, LINF_EPS
 
-    @register_var(argument=r"ijcnn1_(?P<n_samples>\d+)", shown_name="ijcnn")
-    @staticmethod
-    def ijcnn1(auto_var, var_value, inter_var, n_samples):
-        n_samples = int(n_samples)
-        X, y = load_svmlight_file("./nnattack/datasets/files/ijcnn1.tr")
-        X = X.todense()
-
-        idx1 = np.random.choice(np.where(y==1)[0], n_samples//2, replace=False)
-        idx2 = np.random.choice(np.where(y==-1)[0], n_samples//2, replace=False)
-        y[idx1] = 0
-        y[idx2] = 1
-        X = np.vstack((X[idx1], X[idx2])).astype(np.float)
-        y = np.concatenate((y[idx1], y[idx2]))
-        y = y.astype(int)
-
-        return X, y, LINF_EPS
-
     @register_var(argument=r"covtypebin_(?P<n_samples>\d+)", shown_name="covtype")
     @staticmethod
     def covtypebin(auto_var, var_value, inter_var, n_samples):
@@ -156,36 +139,6 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         X = X.reshape(len(X), -1)
         idx1 = np.random.choice(np.where(y==1)[0], n_samples//2, replace=False)
         idx2 = np.random.choice(np.where(y==7)[0], n_samples//2, replace=False)
-        y[idx1] = 0
-        y[idx2] = 1
-        X = np.vstack((X[idx1], X[idx2])).astype(np.float) / 255.
-        y = np.concatenate((y[idx1], y[idx2]))
-
-        if n_dims:
-            pca = PCA(n_components=n_dims,
-                    random_state=auto_var.get_var("random_seed"))
-            X = pca.fit_transform(X)
-
-        if auto_var.get_var("ord") == 2:
-            eps = [0.1 * i for i in range(0, 41, 1)]
-        else:
-            eps = LINF_EPS
-
-        return X, y, eps
-
-    @register_var(argument=r"mnist35_(?P<n_samples>\d+)(?P<n_dims>_pca\d+)?",
-                  shown_name="mnist35")
-    @staticmethod
-    def mnist35(auto_var, var_value, inter_var, n_samples, n_dims):
-        from keras.datasets import mnist
-        from sklearn.decomposition import PCA
-        n_samples = int(n_samples)
-        n_dims = int(n_dims[4:]) if n_dims else None
-
-        (X, y), (_, _) = mnist.load_data()
-        X = X.reshape(len(X), -1)
-        idx1 = np.random.choice(np.where(y==3)[0], n_samples//2, replace=False)
-        idx2 = np.random.choice(np.where(y==5)[0], n_samples//2, replace=False)
         y[idx1] = 0
         y[idx2] = 1
         X = np.vstack((X[idx1], X[idx2])).astype(np.float) / 255.
