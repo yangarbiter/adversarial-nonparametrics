@@ -18,7 +18,8 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
             n_neighbors=n_neighbors, farthest=n_search,
             ord=auto_var.get_var('ord'))
 
-    @register_var(argument=r"rev_nnopt_k(?P<n_neighbors>\d+)_(?P<n_search>\d+)_region")
+    @register_var(argument=r"rev_nnopt_k(?P<n_neighbors>\d+)_(?P<n_search>\d+)_region",
+                  shown_name="RBA-Approx")
     @staticmethod
     def rev_nnopt_region(auto_var, var_value, inter_var, n_neighbors, n_search):
         """RBA-Approx for Nearest Neighbor"""
@@ -69,7 +70,8 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
                    ord=auto_var.get_var('ord'),
                )
 
-    @register_var(argument=r"nnopt_k(?P<n_neighbors>\d+)_all")
+    @register_var(argument=r"nnopt_k(?P<n_neighbors>\d+)_all",
+                  shown_name="RBA-Exact")
     @staticmethod
     def nnopt_all(auto_var, var_value, inter_var, n_neighbors):
         """RBA-Exact for nearest neighbor"""
@@ -141,7 +143,7 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
         )
         return attack_model
 
-    @register_var()
+    @register_var(shown_name="RBA-Exact")
     @staticmethod
     def dt_attack_opt(auto_var, var_value, inter_var):
         """RBA-Exact for Decision Tree"""
@@ -153,7 +155,7 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
         )
         return attack_model
 
-    @register_var(argument=r"rf_attack_all")
+    @register_var(argument=r"rf_attack_all", shown_name="RBA-Exact")
     @staticmethod
     def rf_attack_all(auto_var, var_value, inter_var):
         """RBA-Exact for Random Forest"""
@@ -170,7 +172,8 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
         )
         return attack_model
 
-    @register_var(argument=r"rf_attack_rev(?P<n_search>_\d+)?")
+    @register_var(argument=r"rf_attack_rev(?P<n_search>_\d+)?",
+                  shown_name="RBA-Approx")
     @staticmethod
     def rf_attack_rev(auto_var, var_value, inter_var, n_search):
         """RBA-Approx for Random Forest"""

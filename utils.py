@@ -104,6 +104,11 @@ def params_to_dataframe(grid_param, columns=None):
                             params[i]['missed_count'] = results[i]['avg_pert']['missed_count']
                         else:
                             params[i]['missed_count'] = 0
+                    elif column == 'aug_len':
+                        if column not in results[i]:
+                            params[i][column] = results[i]['trnX_len']
+                        else:
+                            params[i][column] = results[i][column]
                     else:
                         params[i][column] = results[i][column]
 

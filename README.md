@@ -21,7 +21,7 @@ Install GLPK: https://www.cvxpy.org/install/index.html#install-with-cvxopt-and-g
 pip install --upgrade ./scikit-learn
 ```
 
-## Example
+## Examples
 
 - Run 3-NN using RBA-Approx searching 50 regions on dataset mnist 1 versus 7.
   The dataset has a total of 300 examples, 100 for training, from the 200

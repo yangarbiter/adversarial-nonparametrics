@@ -232,7 +232,7 @@ class nn_k1_robustness(RobustExperiments):
             ],
             'ord': ['inf'],
             'dataset': datasets,
-            'attack': ['nnopt_k1_all', 'blackbox'],
+            'attack': ['nnopt_k1_all'],#, 'blackbox'],
             'random_seed': random_seed,
         })
         cls.grid_params = grid_params
@@ -251,7 +251,7 @@ class nn_k3_robustness(RobustExperiments):
             ],
             'ord': ['inf'],
             'dataset': datasets,
-            'attack': ['rev_nnopt_k3_50_region', 'blackbox'],
+            'attack': ['rev_nnopt_k3_50_region'],#, 'blackbox'],
             'random_seed': random_seed,
         })
         cls.grid_params = grid_params
