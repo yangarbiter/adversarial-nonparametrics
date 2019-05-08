@@ -157,6 +157,7 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
         )
         return attack_model
 
+    @register_var(argument=r"RBA_Exact_DT", shown_name="RBA-Exact")
     @register_var(shown_name="RBA-Exact")
     @staticmethod
     def dt_attack_opt(auto_var, var_value, inter_var):

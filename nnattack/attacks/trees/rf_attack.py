@@ -155,8 +155,21 @@ def rev_get_sol_linf(target_x, target_y: int, pred_trn_y, regions, clf,
 
 
 class RFAttack(AttackModel):
-    def __init__(self, trnX, trny, clf: RandomForestClassifier, ord,
-            method: str, n_searches=-1, random_state=None):
+    def __init__(self, trnX: np.ndarray, trny: np.ndarray, clf: RandomForestClassifier,
+                ord, method: str, n_searches:int = -1, random_state=None):
+        """Attack on Random forest classifier
+        
+        Arguments:
+            trnX {ndarray, shape=(n_samples, n_features)} -- Training data
+            trny {ndarray, shape=(n_samples)} -- Training label
+            clf {RandomForestClassifier} -- The Random Forest classifier
+            ord {int} -- Order of the norm for perturbation distance, see numpy.linalg.norm for more information
+            method {str} -- 'all' means optimal attack (RBA-Exact), 'rev' means RBA-Approx
+        
+        Keyword Arguments:
+            n_searches {int} -- number of regions to search, only used when method=='rev' (default: {-1})
+            random_state {[type]} -- random seed (default: {None})
+        """
         super().__init__(ord=ord)
         paths, constraints = [], []
         self.clf = clf
@@ -287,14 +300,6 @@ class RFAttack(AttackModel):
                                     pred_trn_y, temp_regions,
                                     self.clf, self.trnX[ind])
 
-                #temp_regions = [self.regions[i] for i in ind[:20]]
-                #pert_x2 = get_sol_fn(target_x, y[sample_id],
-                #                    pred_trn_y, temp_regions,
-                #                    self.clf, self.trnX[ind])
-                #pert_X2[sample_id, :] = pert_x2
-                #print(np.linalg.norm(pert_x, np.inf), np.linalg.norm(pert_x2, np.inf))
-                #print(np.linalg.norm(pert_x, np.inf) <= np.linalg.norm(pert_x2, np.inf))
-
                 if np.linalg.norm(pert_x) != 0:
                     assert self.clf.predict([X[sample_id] + pert_x])[0] != y[sample_id]
                     pert_X[sample_id, :] = pert_x
@@ -304,18 +309,4 @@ class RFAttack(AttackModel):
             raise ValueError("Not supported method %s", self.method)
 
         self.perts = pert_X
-
-        if isinstance(eps, list):
-            rret = []
-            norms = np.linalg.norm(pert_X, axis=1, ord=self.ord)
-            for ep in eps:
-                t = np.copy(pert_X)
-                t[norms > ep, :] = 0
-                rret.append(t)
-            return rret
-        elif eps is not None:
-            pert_X[np.linalg.norm(pert_X, axis=1, ord=self.ord) > eps, :] = 0
-            return pert_X
-        else:
-            return pert_X
-
+        return self._pert_with_eps_constraint(self, pert_X, eps)

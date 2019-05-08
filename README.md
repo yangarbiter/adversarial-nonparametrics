@@ -27,6 +27,11 @@ pip install --upgrade ./scikit-learn
 
 ## Implementations
 
+- [RBA-Approx-KNN](nnattack/attacks/nns/nn_attack.py): class KNNRegionBasedAttackApprox
+- [RBA-Exact-KNN](nnattack/attacks/nns/nn_attack.py): class KNNRegionBasedAttackExact
+- [RBA-Approx-RF](nnattack/attacks/trees/rf_attack.py): class KNNRegionBasedAttackApprox
+- [RBA-Exact-RF](nnattack/attacks/trees/dt_opt.py): class KNNRegionBasedAttackExact
+
 ## Examples
 
 - Run 3-NN using RBA-Approx searching 50 regions on dataset mnist 1 versus 7.
