@@ -159,7 +159,7 @@ class compare_defense(RobustExperiments):
         cls.name = "compare_defense"
         grid_params = []
         grid_params.append({
-            'model': ['knn1', 'adv_nn_k1_30', 'robustv2_nn_k1_30', 'robustv1_nn_k1_30'],
+            'model': ['knn1', 'adv_nn_k1_30', 'advPruning_nn_k1_30', 'robustv1_nn_k1_30'],
             'ord': ['inf'],
             'dataset': datasets,
             'attack': ['nnopt_k1_all'],
@@ -218,7 +218,7 @@ class tst_scores(RobustExperiments):
             'model': [
                 #'adv_nn_k1_10', 'adv_nn_k1_30', 'adv_nn_k1_50',
                 'knn1', 'robustv1_nn_k1_10', 'robustv1_nn_k1_30', 'robustv1_nn_k1_50',
-                #'robustv2_nn_k1_10', 'robustv2_nn_k1_30', 'robustv2_nn_k1_50',
+                #'advPruning_nn_k1_10', 'advPruning_nn_k1_30', 'advPruning_nn_k1_50',
             ],
             'ord': ['inf'],
             'dataset': datasets,
@@ -229,7 +229,7 @@ class tst_scores(RobustExperiments):
             'model': [
                 #'adv_nn_k1_10', 'adv_nn_k1_30', 'adv_nn_k1_50',
                 'knn3', 'robustv1_nn_k3_10', 'robustv1_nn_k3_30', 'robustv1_nn_k3_50',
-                #'robustv2_nn_k1_10', 'robustv2_nn_k1_30', 'robustv2_nn_k1_50',
+                #'advPruning_nn_k1_10', 'advPruning_nn_k1_30', 'advPruning_nn_k1_50',
             ],
             'ord': ['inf'],
             'dataset': datasets,
@@ -268,7 +268,7 @@ class nn_k1_robustness(RobustExperiments):
                 'knn1',
                 'robustv1_nn_k1_10', 'robustv1_nn_k1_30', 'robustv1_nn_k1_50',
                 #'adv_nn_k1_10', 'adv_nn_k1_30', 'adv_nn_k1_50',
-                #'robustv2_nn_k1_10', 'robustv2_nn_k1_30', 'robustv2_nn_k1_50',
+                #'advPruning_nn_k1_10', 'advPruning_nn_k1_30', 'advPruning_nn_k1_50',
             ],
             'ord': ['inf'],
             'dataset': datasets,
@@ -287,7 +287,7 @@ class nn_k3_robustness(RobustExperiments):
                 'knn3',
                 'robustv1_nn_k3_10', 'robustv1_nn_k3_30', 'robustv1_nn_k3_50',
                 #'adv_nn_k3_10', 'adv_nn_k3_30', 'adv_nn_k3_50',
-                #'robustv2_nn_k3_10', 'robustv2_nn_k3_30', 'robustv1_nn_k3_50',
+                #'advPruning_nn_k3_10', 'advPruning_nn_k3_30', 'robustv1_nn_k3_50',
             ],
             'ord': ['inf'],
             'dataset': datasets,
@@ -305,7 +305,7 @@ class rf_robustness(RobustExperiments):
             #'adv_rf_100_10_d5', 'adv_rf_100_30_d5', 'adv_rf_100_50_d5',
             #'robust_rf_100_10_d5', 'robust_rf_100_30_d5', 'robust_rf_100_50_d5',
             'robustv1_rf_100_10_d5', 'robustv1_rf_100_30_d5', 'robustv1_rf_100_50_d5',
-            #'robustv2_rf_100_10_d5', 'robustv2_rf_100_30_d5', 'robustv2_rf_100_50_d5',
+            #'advPruning_rf_100_10_d5', 'advPruning_rf_100_30_d5', 'advPruning_rf_100_50_d5',
         ]
         attacks = ['rf_attack_rev_100']
 
@@ -327,7 +327,7 @@ class dt_robustness(RobustExperiments):
             'decision_tree_d5',
             #'robust_decision_tree_d5_10', 'robust_decision_tree_d5_30', 'robust_decision_tree_d5_50',
             'robustv1_decision_tree_d5_10', 'robustv1_decision_tree_d5_30', 'robustv1_decision_tree_d5_50',
-            #'robustv2_decision_tree_d5_10', 'robustv2_decision_tree_d5_30', 'robustv1_decision_tree_d5_50',
+            #'advPruning_decision_tree_d5_10', 'advPruning_decision_tree_d5_30', 'robustv1_decision_tree_d5_50',
         ]
         attacks = ['dt_attack_opt']
 
@@ -396,7 +396,7 @@ class rf_optimality(RobustExperiments):
             'model': [
                 'robust_rf_3_20_d5', 'robust_rf_3_30_d5',
                 'robustv1_rf_3_20_d5', 'robustv1_rf_3_20_d5',
-                #'robustv2_rf_3_30_d5', 'robustv2_rf_3_30_d5',
+                #'advPruning_rf_3_30_d5', 'advPruning_rf_3_30_d5',
             ],
             'ord': ['inf'],
             'dataset': small_datasets,
@@ -422,7 +422,7 @@ class nn_optimality(RobustExperiments):
         grid_params.append({
             'model': [
                 'robustv1_nn_k3_30', 'robustv1_nn_k3_20',
-                #'robustv2_nn_k3_20', 'robustv2_nn_k3_30',
+                #'advPruning_nn_k3_20', 'advPruning_nn_k3_30',
             ],
             'ord': ['inf'],
             'dataset': small_datasets,

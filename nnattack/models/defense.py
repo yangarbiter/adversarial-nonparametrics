@@ -65,7 +65,7 @@ def get_aug_v2(X, Y, Delta, delta, eps, ord):
     return X_train, Y_train
 
 def get_aug_data(model, X, y, eps):
-    if model.train_type in ['adv', 'robustv1', 'robustv1min', 'robustv2']:
+    if model.train_type in ['adv', 'robustv1', 'robustv1min', 'advPruning']:
         if eps is None and model.eps is None:
             raise ValueError("eps should not be None with train type %s" % model.train_type)
         elif eps is None:
@@ -116,7 +116,7 @@ def get_aug_data(model, X, y, eps):
         augX, augy = find_eps_separated_set(X, eps/2, y, sep_measure)
         augy = (augy+1)//2
 
-    elif model.train_type == 'robustv2':
+    elif model.train_type == 'advPruning':
         if len(np.unique(y)) != 2:
             raise ValueError("Can only deal with number of classes = 2"
                              "got %d", len(np.unique(y)))

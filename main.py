@@ -123,7 +123,7 @@ def eps_accuracy(auto_var):
         raise ValueError("didn't got 100 testing examples")
 
     augX = None
-    if ('adv' in model_name) or ('robustv1' in model_name) or ('robustv2' in model_name):
+    if ('adv' in model_name) or ('robustv1' in model_name) or ('advPruning' in model_name):
         assert hasattr(model, 'augX')
         auto_var.set_intermidiate_variable("trnX", model.augX)
         auto_var.set_intermidiate_variable("trny", model.augy)

@@ -48,6 +48,6 @@ python ./main.py --dataset mnist17_300_pca25 --model knn3 \
   The forest has 100 trees and maximum depth of 5.
   The attack is RBA-Approx searching 100 regions.
 ```
-python ./main.py --dataset mnist17_300_pca25 --model robustv2_rf_100_30_d5 \
+python ./main.py --dataset mnist17_300_pca25 --model advPruning_rf_100_30_d5 \
                  --attack rf_attack_rev_100 --random_seed 0 --ord inf
 ```

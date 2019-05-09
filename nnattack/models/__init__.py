@@ -85,7 +85,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
           adv: adversarial training
           robust: robust splitting
           robustv1: adversarial pruning
-          robustv2: Wang's defense for 1-NN
+          advPruning: Wang's defense for 1-NN
         eps: defense strength """
         from .adversarial_dt import AdversarialRf
         from sklearn.ensemble import RandomForestClassifier
@@ -133,7 +133,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
           adv: adversarial training
           robust: robust splitting
           robustv1: adversarial pruning
-          robustv2: Wang's defense for 1-NN
+          advPruning: Wang's defense for 1-NN
         eps: defense strength """
         from .adversarial_dt import AdversarialDt
         eps = int(eps) * 0.01
@@ -211,7 +211,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
           None: undefended
           adv: adversarial training
           robustv1: adversarial pruning
-          robustv2: Wang's defense for 1-NN
+          advPruning: Wang's defense for 1-NN
         eps: defense strength """
         from .adversarial_knn import AdversarialKnn
         eps = int(eps) * 0.01
