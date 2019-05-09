@@ -182,7 +182,7 @@ def eps_accuracy(auto_var):
     if augX is not None:
         ret['aug_len'] = len(augX)
 
-    print("average perturbation", ret['avg_pert']['avg'])
+    print("Average perturbation:", ret['avg_pert']['avg'])
     return ret
 
 def main():
