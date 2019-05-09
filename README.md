@@ -43,6 +43,8 @@ pip install --upgrade git+https://github.com/nonparametric-adversarial/scikit-le
 - [Adversarial Pruning Knn](nnattack/models/adversarial_knn.py): class AdversarialKnn
 
 ### Usage
+The last line will print out the average perturbation.
+
 ```
 usage: main.py [-h] [--no-hooks] --ord ORD --dataset DATASET --model MODEL
                --attack ATTACK --random_seed RANDOM_SEED
