@@ -209,7 +209,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         )
         return clf
 
-	@register_var(argument='(?P<train>[a-zA-Z0-9]+_)?logistic_regression(?P<eps>_\d+)?')
+    @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?logistic_regression(?P<eps>_\d+)?')
     @staticmethod
     def adv_logistic_regression(auto_var, var_value, inter_var, train, eps):
         from .keras_model import KerasModel
