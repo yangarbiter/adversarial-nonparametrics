@@ -39,6 +39,9 @@ pip install --upgrade ./scikit-learn
 
 ## Examples
 
+- To reproduce number in the paper, please set random_seed to 0 and set ord to
+  inf.
+
 - Run 3-NN using RBA-Approx searching 50 regions on dataset mnist 1 versus 7.
   The dataset has a total of 300 examples, 100 for training, from the 200
   leftout examples, select 100 corrected predicted data for purturbation.
@@ -54,4 +57,12 @@ python ./main.py --dataset mnist17_300_pca25 --model knn3 \
 ```
 python ./main.py --dataset mnist17_300_pca25 --model advPruning_rf_100_30_d5 \
                  --attack RBA_Approx_RF_100 --random_seed 0 --ord inf
+```
+
+- Train 1-NN with adversarial pruned (AP) dataset (defense strength is 0.3).
+  The forest has 100 trees and maximum depth of 5.
+  The attack is RBA-Approx searching 100 regions.
+```
+python ./main.py --dataset australian --model advPruning_nn_k1_30 \
+                 --attack RBA_Exact_KNN_k1 --random_seed 0 --ord inf
 ```
