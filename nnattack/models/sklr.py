@@ -31,7 +31,8 @@ class SkLr(LogisticRegression):
             print("number of augX", np.shape(self.augX), len(self.augy))
         elif self.train_type == 'robustv1':
             y = y.astype(int)*2-1
-            self.augX, self.augy = find_eps_separated_set(X, self.eps/2, y)
+            self.augX, self.augy = find_eps_separated_set(X, self.eps/2, y,
+                                                          ord=self.ord)
             self.augy = (self.augy+1)//2
             print("number of augX", np.shape(self.augX), len(self.augy))
         elif self.train_type is None:

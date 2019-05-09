@@ -79,7 +79,8 @@ def get_result(auto_var):
 
 
 def params_to_dataframe(grid_param, columns=None):
-    params, loaded_results = auto_var.run_grid_params(get_result, grid_param, with_hook=False, verbose=0, n_jobs=1)
+    params, loaded_results = auto_var.run_grid_params(
+            get_result, grid_param, with_hook=False, verbose=0, n_jobs=1)
     if columns is None:
         results = [r['results'] if isinstance(r, dict) else r for r in loaded_results]
     else:
@@ -95,7 +96,7 @@ def params_to_dataframe(grid_param, columns=None):
                 params[i][f'eps_{r["eps"]:.2f}_tst'] = r['tst_acc']
         else:
             for column in columns:
-                if column not in results[i]:
+                if column not in results[i] and column != 'aug_len':
                     params[i][column] = np.nan
                 else:
                     if column == 'avg_pert':

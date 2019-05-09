@@ -118,17 +118,17 @@ class parametric_defense(RobustExperiments):
     def __new__(cls, *args, **kwargs):
         cls.name = "parametric_defense"
         grid_params = []
-        grid_params.append({
-            'model': [
-                'sklr',
-                'adv_sklr_30',
-                'robustv1_sklr_30',
-            ],
-            'ord': ['inf'],
-            'dataset': tree_datasets,
-            'attack': ['pgd'],
-            'random_seed': random_seed,
-        })
+        #grid_params.append({
+        #    'model': [
+        #        'sklr',
+        #        'adv_sklr_30',
+        #        'robustv1_sklr_30',
+        #    ],
+        #    'ord': ['inf'],
+        #    'dataset': tree_datasets,
+        #    'attack': ['pgd'],
+        #    'random_seed': random_seed,
+        #})
         grid_params.append({
             'model': [
                 'logistic_regression',
@@ -302,34 +302,19 @@ class rf_robustness(RobustExperiments):
         cls.name = "rf-robustness"
         models = [
             'random_forest_100_d5',
-            'adv_rf_100_10_d5', 'adv_rf_100_30_d5', 'adv_rf_100_50_d5',
-            'robust_rf_100_10_d5', 'robust_rf_100_30_d5', 'robust_rf_100_50_d5',
+            #'adv_rf_100_10_d5', 'adv_rf_100_30_d5', 'adv_rf_100_50_d5',
+            #'robust_rf_100_10_d5', 'robust_rf_100_30_d5', 'robust_rf_100_50_d5',
             'robustv1_rf_100_10_d5', 'robustv1_rf_100_30_d5', 'robustv1_rf_100_50_d5',
             #'robustv2_rf_100_10_d5', 'robustv2_rf_100_30_d5', 'robustv2_rf_100_50_d5',
         ]
+        attacks = ['rf_attack_rev_100']
 
         grid_params = []
         grid_params.append({
             'model': models,
             'ord': ['inf'],
-            'dataset': large_datasets,
-            'attack': ['rf_attack_rev_100', 'blackbox',],
-            'random_seed': random_seed,
-        })
-        grid_params.append({
-            'model': ['random_forest_100_d5'],
-            'ord': ['inf'],
-            'dataset': datasets,
-            'attack': ['rf_attack_rev_100', 'blackbox',],
-            'random_seed': random_seed,
-        })
-        grid_params.append({
-            'model': models,
-            'ord': ['inf'],
-            'dataset': robust_datasets,
-            'attack': [
-                'rf_attack_rev_100', 'blackbox',
-            ],
+            'dataset': tree_datasets,
+            'attack': attacks,
             'random_seed': random_seed,
         })
         cls.grid_params = grid_params
@@ -340,28 +325,18 @@ class dt_robustness(RobustExperiments):
         cls.name = "dt-robustness"
         models = [
             'decision_tree_d5',
-            'robust_decision_tree_d5_10', 'robust_decision_tree_d5_30', 'robust_decision_tree_d5_50',
+            #'robust_decision_tree_d5_10', 'robust_decision_tree_d5_30', 'robust_decision_tree_d5_50',
             'robustv1_decision_tree_d5_10', 'robustv1_decision_tree_d5_30', 'robustv1_decision_tree_d5_50',
             #'robustv2_decision_tree_d5_10', 'robustv2_decision_tree_d5_30', 'robustv1_decision_tree_d5_50',
         ]
+        attacks = ['dt_attack_opt']
 
         grid_params = []
         grid_params.append({
             'model': models,
             'ord': ['inf'],
-            'dataset': robust_datasets,
-            'attack': [
-                'dt_attack_opt', 'blackbox',
-            ],
-            'random_seed': random_seed,
-        })
-        grid_params.append({
-            'model': models,
-            'ord': ['inf'],
-            'dataset': robust_datasets,
-            'attack': [
-                'dt_attack_opt', 'blackbox',
-            ],
+            'dataset': tree_datasets,
+            'attack': attacks,
             'random_seed': random_seed,
         })
         cls.grid_params = grid_params
