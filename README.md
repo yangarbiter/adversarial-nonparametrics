@@ -32,6 +32,10 @@ pip install --upgrade ./scikit-learn
 - [RBA-Approx-RF](nnattack/attacks/trees/rf_attack.py): class KNNRegionBasedAttackApprox
 - [RBA-Exact-RF](nnattack/attacks/trees/rf_attack.py): class KNNRegionBasedAttackApprox
 - [RBA-Exact-DT](nnattack/attacks/trees/dt_opt.py): class KNNRegionBasedAttackExact
+- [Adversarial Pruning](nnattack/models/defense.py)
+- [Adversarial Pruning Decision Tree](nnattack/models/adversarial_dt.py): class AdversarialDt
+- [Adversarial Pruning Random Forest](nnattack/models/adversarial_dt.py): class AdversarialRf
+- [Adversarial Pruning Knn](nnattack/models/adversarial_knn.py): class AdversarialKnn
 
 ## Examples
 
@@ -41,7 +45,7 @@ pip install --upgrade ./scikit-learn
   The feature dimension of the dataset is reduced to 25 using PCA.
 ```
 python ./main.py --dataset mnist17_300_pca25 --model knn3 \
-                 --attack rev_nnopt_k3_50_region --random_seed 0 --ord inf
+                 --attack RBA_Approx_KNN_k3_50 --random_seed 0 --ord inf
 ```
 
 - Train random forest with adversarial pruned (AP) dataset (defense strength is 0.3).
@@ -49,5 +53,5 @@ python ./main.py --dataset mnist17_300_pca25 --model knn3 \
   The attack is RBA-Approx searching 100 regions.
 ```
 python ./main.py --dataset mnist17_300_pca25 --model advPruning_rf_100_30_d5 \
-                 --attack rf_attack_rev_100 --random_seed 0 --ord inf
+                 --attack RBA_Approx_RF_100 --random_seed 0 --ord inf
 ```

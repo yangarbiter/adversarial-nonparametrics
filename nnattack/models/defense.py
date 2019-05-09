@@ -82,7 +82,10 @@ def get_aug_data(model, X, y, eps):
         augy = np.concatenate((y, y[ind]))
 
     elif model.train_type == 'adv2':
+        print(auto_var.var_value)
         model_name = auto_var.get_variable_name("model")
+        aug_model_name = "_".join(model_name.split("_")[1:])
+        print(aug_model_name)
         for _ in range(5):
             if "decision_tree" in model_name:
                 auto_var.get_var_with_argument("model", "decision_tree_d5").fit(X, y=y)
