@@ -73,38 +73,46 @@ optional arguments:
                             The defense is implemented in this option.
                         Options:
                           random_forest_(?P<n_trees>\d+)(?P<depth>_d\d+)?: Random Forest Classifier
+                          (?P<train>[a-zA-Z0-9]+_)?rf_(?P<n_trees>\d+)_(?P<eps>\d+)(?P<depth>_d\d+)?: None
                           decision_tree(?P<depth>_d\d+)?: Original Decision Tree Classifier
-                          (?P<train>[a-zA-Z0-9]+_)?decision_tree(?P<depth>_d\d+)?_(?P<eps>\d+):  Decision Tree classifier
+                          (?P<train>[a-zA-Z0-9]+_)?decision_tree(?P<depth>_d\d+)?_(?P<eps>\d+): Decision Tree classifier
                                 train:
+                                  None: undefended decision tree
                                   adv: adversarial training
                                   robust: robust splitting
                                   robustv1: adversarial pruning
-                                  robustv2: Wang's defense for 1-NN
+                                  advPruning: Wang's defense for 1-NN
                                 eps: defense strength
-                          (?P<train>[a-zA-Z0-9]+_)?rf_(?P<n_trees>\d+)_(?P<eps>\d+)(?P<depth>_d\d+)?: None
                           (?P<train>[a-zA-Z0-9]+)_kernel_sub_tf_c(?P<c>\d+)_(?P<eps>\d+): None
                           (?P<train>[a-zA-Z0-9]+_)?nn_k(?P<n_neighbors>\d+)_(?P<eps>\d+):  Nearest Neighbor classifier
                                 train:
+                                  None: undefended
                                   adv: adversarial training
                                   robustv1: adversarial pruning
-                                  robustv2: Wang's defense for 1-NN
+                                  advPruning: Wang's defense for 1-NN
                                 eps: defense strength
                           knn(?P<n_neighbors>\d+): Original Nearest Neighbor classifier
                           kernel_sub_tf: None
-                          (?P<train>[a-zA-Z0-9]+_)?mlp(?P<eps>_\d+)?: None
+                          (?P<train>[a-zA-Z0-9]+_)?logistic_regression(?P<eps>_\d+)?: None
+                          (?P<train>[a-zA-Z0-9]+_)?mlp(?P<eps>_\d+)?:  Multi-layer perceptrum classifier
+                                train:
+                                  None: undefended
+                                  adv: adversarial training
+                                  robustv1: adversarial pruning
+                                eps: defense strength
   --attack ATTACK       Defines which attack method to use.
                         Options:
-                          rev_nnopt_k(?P<n_neighbors>\d+)_(?P<n_search>\d+)_region: RBA-Approx for Nearest Neighbor
+                          RBA_Approx_KNN_k(?P<n_neighbors>\d+)_(?P<n_searches>\d+): RBA-Approx for Nearest Neighbor
                           gradient_based: Gradient Based Extension
-                          nnopt_k(?P<n_neighbors>\d+)_all: RBA-Exact for nearest neighbor
+                          RBA_Exact_KNN_k(?P<n_neighbors>\d+): RBA-Exact for nearest neighbor
                           kernelsub_c(?P<c>\d+)_(?P<attack>[a-zA-Z0-9]+): Kernel substitution model
                           direct_k(?P<n_neighbors>\d+): Direct Attack for Nearest Neighbor
                           pgd: Projected gradient descent attack
                           blackbox: Cheng's black box attack (BBox)
                           dt_papernot: Papernot's attack on decision tree
-                          dt_attack_opt: RBA-Exact for Decision Tree
-                          rf_attack_all: RBA-Exact for Random Forest
-                          rf_attack_rev(?P<n_search>_\d+)?: RBA-Approx for Random Forest
+                          RBA_Exact_DT: RBA-Exact for Decision Tree
+                          RBA_Exact_RF: RBA-Exact for Random Forest
+                          RBA_Approx_RF(?P<n_searches>_\d+)?: RBA-Approx for Random Forest
   --random_seed RANDOM_SEED
 ```
 
