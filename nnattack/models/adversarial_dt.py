@@ -5,14 +5,23 @@ from sklearn.ensemble import RandomForestClassifier
 from .defense import get_aug_data
 
 class AdversarialDt(DecisionTreeClassifier):
-    def __init__(self, **kwargs):
-        self.ord = kwargs.pop("ord", np.inf)
-        self.sep_measure = kwargs.pop("sep_measure", None)
-        self.attack_model = kwargs.pop("attack_model", None)
-        self.train_type = kwargs.pop("train_type", 'adv')
-        self.delta = kwargs.pop("delta", 0.1)
-        self.Delta = kwargs.pop("Delta", 0.45)
-        #self.eps = kwargs.pop("eps", 0.1)
+    def __init__(self, ord=np.inf, sep_measure=None, attack_model=None,
+                 train_type='adv', **kwargs):
+        """Decision Tree Classifier with defense
+        
+        Keyword Arguments:
+            ord {float} -- adversarial example perturbation measure (default: {np.inf})
+            sep_measure {float} -- The distance measure for data, if None, it will be the same as `ord` (default: {None})
+            attack_model {Attack Model} -- The Attack Model, only use when `train_type` is 'adv' (default: {None})
+            train_type {str} -- None for undefended classifier, 'advPruning' for adversarial pruning, 'adv' for adversarial training (default: {'adv'})
+
+        Other Arguments follows the original scikit-learn argument (sklearn.tree.DecisionTreeClassifier).
+        """
+            
+        self.ord = ord
+        self.sep_measure = sep_measure 
+        self.attack_model = attack_model
+        self.train_type = train_type
 
         if self.train_type is None:
             pass
@@ -35,26 +44,31 @@ class AdversarialDt(DecisionTreeClassifier):
         return super().fit(self.augX, self.augy)
 
 class AdversarialRf(RandomForestClassifier):
-    def __init__(self, **kwargs):
-        print(kwargs)
-        self.ord = kwargs.pop("ord", np.inf)
-        #self.eps = kwargs.pop("eps", 0.1)
-        self.sep_measure = kwargs.pop("sep_measure", None)
-        self.attack_model = kwargs.pop("attack_model", None)
-        self.train_type = kwargs.pop("train_type", None)
-        self.delta = kwargs.pop("delta", 0.1)
-        self.Delta = kwargs.pop("Delta", 0.45)
+    def __init__(self, ord=np.inf, sep_measure=None, attack_model=None,
+                 train_type='adv', **kwargs):
+        """Random Forest Classifier with defense
+        
+        Keyword Arguments:
+            ord {float} -- adversarial example perturbation measure (default: {np.inf})
+            sep_measure {float} -- The distance measure for data, if None, it will be the same as `ord` (default: {None})
+            attack_model {Attack Model} -- The Attack Model, only use when `train_type` is 'adv' (default: {None})
+            train_type {str} -- None for undefended classifier, 'advPruning' for adversarial pruning, 'adv' for adversarial training (default: {'adv'})
+
+        Other Arguments follows the original scikit-learn argument (sklearn.tree.RandomForestClassifier).
+        """
+            
+        self.ord = ord
+        self.sep_measure = sep_measure 
+        self.attack_model = attack_model
+        self.train_type = train_type
 
         if self.train_type is None:
             pass
         elif self.train_type == 'robust':
             kwargs['splitter'] = 'robust'
-            #kwargs['eps'] = self.eps
-            #kwargs['n_jobs'] = 4
         elif self.train_type[:7] == 'robust_':
             # for hybrid
             kwargs['splitter'] = 'robust'
-            #kwargs['eps'] = self.eps
             self.train_type = self.train_type[7:]
 
         # The modified RandomForestClassifier eats the esp argument

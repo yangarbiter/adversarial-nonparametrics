@@ -65,6 +65,22 @@ def get_aug_v2(X, Y, Delta, delta, eps, ord):
     return X_train, Y_train
 
 def get_aug_data(model, X, y, eps):
+    """Augment the data for defense, returns the augmented data
+    
+    Arguments:
+        model {Classifier} -- The original classifier model, model.train_type defines the way to augment the data.
+            model.train_type == 'adv': adversarial training
+            model.train_type == 'advPruning': adversarial pruning
+            model.train_type == 'robustv1': Wang's defense for 1-NN
+            model.train_type is None: Do nothing returns the original data
+        X {ndarray, dim=2} -- feature vectors
+        y {ndarray, dim=1} -- labels
+        eps {float} -- defense strength
+    
+    Returns:
+        augX {ndarray, dim=2} -- augmented feature vectors
+        augy {ndarray, dim=1} -- augmented labels
+    """
     if model.train_type in ['adv', 'robustv1', 'robustv1min', 'advPruning']:
         if eps is None and model.eps is None:
             raise ValueError("eps should not be None with train type %s" % model.train_type)
