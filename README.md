@@ -48,27 +48,36 @@ git+https://github.com/nonparametric-adversarial/scikit-learn.git
 - To reproduce number in the paper, please set random_seed to 0 and set ord to
   inf.
 
-- Run 3-NN using RBA-Approx searching 50 regions on dataset mnist 1 versus 7.
-  The dataset has a total of 300 examples, 100 for training, from the 200
-  leftout examples, select 100 corrected predicted data for purturbation.
-  The feature dimension of the dataset is reduced to 25 using PCA.
+1. Run 3-NN using RBA-Approx searching 50 regions on dataset mnist 1 versus 7.
+   The dataset has a total of 300 examples, 100 for training, from the 200
+   leftout examples, select 100 corrected predicted data for purturbation.
+   The feature dimension of the dataset is reduced to 25 using PCA.
 ```
 python ./main.py --dataset mnist17_300_pca25 --model knn3 \
                  --attack RBA_Approx_KNN_k3_50 --random_seed 0 --ord inf
 ```
 
-- Train random forest with adversarial pruned (AP) dataset (defense strength is 0.3).
-  The forest has 100 trees and maximum depth of 5.
-  The attack is RBA-Approx searching 100 regions.
+2. Train random forest with adversarial pruned (AP) dataset (defense strength is 0.3).
+   The forest has 100 trees and maximum depth of 5.
+   The attack is RBA-Approx searching 100 regions.
 ```
 python ./main.py --dataset mnist17_300_pca25 --model advPruning_rf_100_30_d5 \
                  --attack RBA_Approx_RF_100 --random_seed 0 --ord inf
 ```
 
-- Train 1-NN with adversarial pruned (AP) dataset (defense strength is 0.3).
-  The forest has 100 trees and maximum depth of 5.
-  The attack is RBA-Approx searching 100 regions.
+3 Train 1-NN with adversarial pruned (AP) dataset (defense strength is 0.3).
+  The attack is RBA-Exact.
 ```
 python ./main.py --dataset australian --model advPruning_nn_k1_30 \
                  --attack RBA_Exact_KNN_k1 --random_seed 0 --ord inf
 ```
+
+4. Train undefended 1-NN.
+  The attack is RBA-Exact.
+```
+python ./main.py --dataset australian --model knn1 \
+                 --attack RBA_Exact_KNN_k1 --random_seed 0 --ord inf
+```
+
+The improvement ration for knn1 with RBA-Exact on australian dataset  is the
+number returned from 3 over the number returned from 4.
