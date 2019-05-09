@@ -20,15 +20,14 @@ pip install --upgrade -r requirements.txt
 ./setup.py build_ext -i
 ```
 
-### for robust splitting
+### For robust splitting
 If you want to run robust splitting defense (https://arxiv.org/abs/1902.10660),
 you'll have to install the modified scikit-learn in the package with the
 following commend. More installation detail please reference to
 https://github.com/scikit-learn/scikit-learn.
 
 ```
-pip install --upgrade
-git+https://github.com/nonparametric-adversarial/scikit-learn.git
+pip install --upgrade git+https://github.com/nonparametric-adversarial/scikit-learn.git
 ```
 
 ## Implementations
