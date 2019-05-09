@@ -259,6 +259,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
             ord=auto_var.get_var("ord"),
             train_type=train,
             eps=eps,
+            solver="liblinear",
         )
         return clf
 

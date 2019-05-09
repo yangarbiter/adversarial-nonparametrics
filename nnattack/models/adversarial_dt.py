@@ -6,7 +6,6 @@ from .defense import get_aug_data
 
 class AdversarialDt(DecisionTreeClassifier):
     def __init__(self, **kwargs):
-        print(kwargs)
         self.ord = kwargs.pop("ord", np.inf)
         self.sep_measure = kwargs.pop("sep_measure", None)
         self.attack_model = kwargs.pop("attack_model", None)

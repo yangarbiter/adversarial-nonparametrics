@@ -29,6 +29,17 @@ class SkLr(LogisticRegression):
             self.augX = np.vstack((X, X[ind]+advX[ind]))
             self.augy = np.concatenate((y, y[ind]))
             print("number of augX", np.shape(self.augX), len(self.augy))
+        elif self.train_type == 'adv2':
+            for i in range(10):
+                clf = LogisticRegression().fit(X, y)
+                advX = self._get_perturb(X, y=y, eps=self.eps, model=clf)
+
+                ind = np.where(np.linalg.norm(advX, axis=1) != 0)
+
+                X = np.vstack((X, X[ind]+advX[ind]))
+                y = np.concatenate((y, y[ind]))
+            self.augX, self.augy = X, y
+            print("number of augX", np.shape(self.augX), len(self.augy))
         elif self.train_type == 'robustv1':
             y = y.astype(int)*2-1
             self.augX, self.augy = find_eps_separated_set(X, self.eps/2, y,

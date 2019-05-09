@@ -8,6 +8,7 @@ from sklearn.neighbors import NearestNeighbors, KNeighborsClassifier
 from scipy.spatial.distance import cdist
 
 from .robust_nn.eps_separation import find_eps_separated_set
+from ..variables import auto_var
 
 def find_confident_label(X, Y, k, Delta):
     thres = 2*Delta
@@ -79,6 +80,25 @@ def get_aug_data(model, X, y, eps):
 
         augX = np.vstack((X, X[ind]+advX[ind]))
         augy = np.concatenate((y, y[ind]))
+
+    elif model.train_type == 'adv2':
+        model_name = auto_var.get_variable_name("model")
+        for _ in range(5):
+            if "decision_tree" in model_name:
+                auto_var.get_var_with_argument("model", "decision_tree_d5").fit(X, y=y)
+            elif "rf" in model_name:
+                auto_var.get_var_with_argument("model", "random_forest_100_d5").fit(X, y=y)
+            elif "nn" in model_name:
+                auto_var.get_var_with_argument("model", "_".join(model_name.split("_")[1:3])).fit(X, y=y)
+            else:
+                raise ValueError()
+            advX = auto_var.get_var("attack").perturb(X, y=y, eps=eps)
+            ind = np.where(np.linalg.norm(advX, axis=1) != 0)
+            X = np.vstack((X, X[ind]+advX[ind]))
+            y = np.concatenate((y, y[ind]))
+            auto_var.set_intermidiate_variable("trnX", X)
+            auto_var.set_intermidiate_variable("trny", y)
+        augX, augy = X, y
 
     elif model.train_type == 'robustv1min':
         if len(np.unique(y)) != 2:

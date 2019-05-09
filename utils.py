@@ -32,38 +32,6 @@ class RobustExperiments(Experiments):
         cls.run_param = {'verbose': 1, 'n_jobs': 4,}
         return Experiments.__new__(cls, *args, **kwargs)
 
-    def to_data_frame(self, objects: Union[List[str], str, None] = None):
-        params, loaded_results = auto_var.run_grid_params(get_result,
-                self.grid_params, with_hook=False, verbose=0, n_jobs=1)
-        if objects is None:
-            results = [r['results'] if isinstance(r, dict) else r for r in loaded_results]
-        else:
-            results = loaded_results
-
-        params, results = zip(*[(params[i], results[i]) for i in range(len(params)) if results[i]])
-        params, results = list(params), list(results)
-        for i, param in enumerate(params):
-            if objects is None:
-                for r in results[i]:
-                    #params[i][f'eps_{r["eps"]:.2f}_trn'] = r['trn_acc']
-                    params[i][f'eps_{r["eps"]:.2f}_tst'] = r['tst_acc']
-            else:
-                for column in objects:
-                    if column not in results[i]:
-                        params[i][column] = np.nan
-                    else:
-                        if column == 'avg_pert':
-                            params[i][column] = results[i][column]['avg']
-                            if 'missed_count' in results[i]['avg_pert']:
-                                params[i]['missed_count'] = results[i]['avg_pert']['missed_count']
-                            else:
-                                params[i]['missed_count'] = 0
-                        else:
-                            params[i][column] = results[i][column]
-
-        df = pd.DataFrame(params)
-        return df
-
 def get_result(auto_var):
     file_name = get_file_name(auto_var, name_only=True).replace("_", "-")
     file_path = f"./results/{file_name}.json"
@@ -76,7 +44,6 @@ def get_result(auto_var):
         print("problem with %s" % file_path)
         raise e
     return ret
-
 
 def params_to_dataframe(grid_param, columns=None):
     params, loaded_results = auto_var.run_grid_params(
