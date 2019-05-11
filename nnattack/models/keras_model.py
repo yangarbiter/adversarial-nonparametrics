@@ -1,25 +1,62 @@
 import itertools
 import threading
 
-from cleverhans.attacks import ProjectedGradientDescent
+from cleverhans.attacks import ProjectedGradientDescent, FastGradientMethod
 from cleverhans.utils_keras import KerasModelWrapper
 from cleverhans.loss import CrossEntropy
 from cleverhans.train import train
 from cleverhans.utils_tf import initialize_uninitialized_global_variables
 
 import tensorflow as tf
-import tensorflow.keras as keras
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Dense, Input
-from tensorflow.keras.optimizers import Adam, Nadam
-from tensorflow.keras.regularizers import l2
-from tensorflow.keras.models import clone_model
+#import tensorflow.keras as keras
+#from tensorflow.keras.models import Model
+#from tensorflow.keras.layers import Dense, Input
+#from tensorflow.keras.optimizers import Adam, Nadam
+#from tensorflow.keras.regularizers import l2
+#from tensorflow.keras.models import clone_model
+
+import keras
+from keras.models import Model, clone_model
+from keras.layers import Dense, Input
+from keras.optimizers import Adam, Nadam
+from keras.regularizers import l2
 
 import numpy as np
 from sklearn.base import BaseEstimator
-from sklearn.linear_model import LogisticRegression
+#from sklearn.linear_model import LogisticRegression
 
 from .robust_nn.eps_separation import find_eps_separated_set
+
+def get_adversarial_acc_metric(model, fgsm, fgsm_params):
+    def adv_acc(y, _):
+        # Generate adversarial examples
+        #x_adv = fgsm.generate(model.input, **fgsm_params)
+        x_adv = fgsm.generate(model.get_input_at(0), **fgsm_params)
+        # Consider the attack to be constant
+        x_adv = tf.stop_gradient(x_adv)
+
+        # Accuracy on the adversarial examples
+        preds_adv = model(x_adv)
+        return keras.metrics.categorical_accuracy(y, preds_adv)
+    return adv_acc
+
+def get_adversarial_loss(model, fgsm, fgsm_params):
+    def adv_loss(y, preds):
+        # Cross-entropy on the legitimate examples
+        cross_ent = keras.losses.categorical_crossentropy(y, preds)
+
+        # Generate adversarial examples
+        #x_adv = fgsm.generate(model.input, **fgsm_params)
+        x_adv = fgsm.generate(model.get_input_at(0), **fgsm_params)
+        # Consider the attack to be constant
+        x_adv = tf.stop_gradient(x_adv)
+
+        # Cross-entropy on the adversarial examples
+        preds_adv = model(x_adv)
+        cross_ent_adv = keras.losses.categorical_crossentropy(y, preds_adv)
+
+        return 0.5 * cross_ent + 0.5 * cross_ent_adv
+    return adv_loss
 
 def logistic_regression(input_x, input_shape, n_classes, l2_weight=0.0, **kwargs):
     inputs = Input(shape=input_shape, tensor=input_x)
@@ -40,7 +77,7 @@ class KerasModel(BaseEstimator):
             l2_weight=1e-5, architecture='arch_001', random_state=None,
             attacker=None, callbacks=None, train_type:str=None, eps:float=0.1,
             ord=np.inf, eps_list=None):
-        tf.keras.backend.set_session(sess)
+        keras.backend.set_session(sess)
         self.n_features = n_features
         self.n_classes = n_classes
         self.batch_size = batch_size
@@ -80,10 +117,10 @@ class KerasModel(BaseEstimator):
         #self.y = tf.placeholder(tf.float32, shape=(None, n_classes))
         ###############
 
-        self.attacker = None
-        if self.train_type == 'adv':
-            #self.attacker = attacker(model=self.model)
-            self.attacker = self
+        #self.attacker = None
+        #if self.train_type == 'adv':
+        #    #self.attacker = attacker(model=self.model)
+        #    self.attacker = self
 
     def fit(self, X, y, sample_weight=None):
         if self.train_type is not None:
@@ -102,23 +139,51 @@ class KerasModel(BaseEstimator):
             #    epochs=self.epochs,
             #    verbose=1,
             #)
-
+            #######################################
+            #Y = self.lbl_enc.transform(y.reshape(-1, 1))
+            #train_params = {
+            #    'init_all': True,
+            #    'rng': self.random_state,
+            #    'nb_epochs': self.epochs,
+            #    'batch_size': self.batch_size,
+            #    'learning_rate': self.learning_rate,
+            #    'optimizor': tf.train.RMSPropOptimizer,
+            #}
+            #wrap = KerasModelWrapper(self.model)
+            #pgd = ProjectedGradientDescent(wrap, sess=self.sess, nb_iter=20)
+            #pgd_params = {'eps': self.eps}
+            ##attack = pgd.generate(x, y=y, **pgd_params)
+            #def attack(x):
+            #    return pgd.generate(x, **pgd_params)
+            #loss = CrossEntropy(wrap, smoothing=0.1, attack=attack)
+            #def evaluate():
+            #    #print("XDDD %f", self.sess.run(loss))
+            #    print('Test accuracy on legitimate examples: %0.4f' % self.score(X, y))
+            #train(self.sess, loss, X.astype(np.float32), Y.astype(np.float32),
+            #        args=train_params, evaluate=evaluate)
+            ######################################
             Y = self.lbl_enc.transform(y.reshape(-1, 1))
-            train_params = {
-                'nb_epochs': self.epochs,
-                'batch_size': self.batch_size,
-                'learning_rate': self.learning_rate,
-            }
-            wrap = KerasModelWrapper(self.model)
-            pgd = ProjectedGradientDescent(wrap, sess=self.sess)
-            pgd_params = {'eps': self.eps}
-            #attack = pgd.generate(x, y=y, **pgd_params)
-            def attack(x):
-                return pgd.generate(x, **pgd_params)
-            loss = CrossEntropy(wrap, attack=attack)
-            train(self.sess, loss, X.astype(np.float32), Y.astype(np.float32),
-                    args=train_params)
-            self.augX, self.augy = None, None
+            wrap_2 = KerasModelWrapper(self.model)
+            fgsm_2 = ProjectedGradientDescent(wrap_2, sess=self.sess)
+            self.model(self.model.input)
+            fgsm_params = {'eps': self.eps}
+
+            # Use a loss function based on legitimate and adversarial examples
+            adv_loss_2 = get_adversarial_loss(self.model, fgsm_2, fgsm_params)
+            adv_acc_metric_2 = get_adversarial_acc_metric(self.model, fgsm_2, fgsm_params)
+            self.model.compile(
+                #optimizer=keras.optimizers.Adam(self.learning_rate),
+                optimizer=keras.optimizers.Nadam(),
+                loss=adv_loss_2,
+                metrics=['accuracy', adv_acc_metric_2]
+            )
+            self.model.fit(X, Y,
+                batch_size=self.batch_size,
+                epochs=self.epochs,
+                verbose=2
+            )
+            print(self.model.predict(X))
+            print((self.model.predict(X).argmax(1) == y).mean())
 
             #pre_model = clone_model(self.model)
             #pre_model.compile(loss=self.loss, optimizer=self.optimizer, metrics=[])
@@ -155,6 +220,8 @@ class KerasModel(BaseEstimator):
             #Y = self.lbl_enc.transform(y.reshape(-1, 1))
             #print('XD', (clf.predict(X + self._get_pert(X, Y, eps=self.eps, model=self.model))==y).mean())
             #print('XD', (self.predict(X + self._get_pert(X, Y, eps=self.eps, model=self.model))==y).mean())
+            self.augX, self.augy = None, None
+
         elif self.train_type == 'robustv1':
             y = y.astype(int)*2-1
             self.augX, self.augy = find_eps_separated_set(

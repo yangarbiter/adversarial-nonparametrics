@@ -133,7 +133,7 @@ class parametric_defense(RobustExperiments):
             'model': [
                 'logistic_regression',
                 'adv_logistic_regression_30',
-                'robustv1_logistic_regression_30',
+                'advPruning_logistic_regression_30',
             ],
             'ord': ['inf'],
             'dataset': tree_datasets,
@@ -144,7 +144,7 @@ class parametric_defense(RobustExperiments):
             'model': [
                 'mlp',
                 'adv_mlp_30',
-                'robustv1_mlp_30',
+                'advPruning_mlp_30',
             ],
             'ord': ['inf'],
             'dataset': tree_datasets,
@@ -196,17 +196,17 @@ class compare_defense(RobustExperiments):
             'attack': ['rf_attack_rev_100'],
             'random_seed': random_seed,
         })
-        grid_params.append({
-            'model': [
-                'mlp',
-                'adv_mlp_30',
-                'robustv1_mlp_30',
-            ],
-            'ord': ['inf'],
-            'dataset': tree_datasets,
-            'attack': ['pgd'],
-            'random_seed': random_seed,
-        })
+        #grid_params.append({
+        #    'model': [
+        #        'mlp',
+        #        'adv_mlp_30',
+        #        'robustv1_mlp_30',
+        #    ],
+        #    'ord': ['inf'],
+        #    'dataset': tree_datasets,
+        #    'attack': ['pgd'],
+        #    'random_seed': random_seed,
+        #})
         cls.grid_params = grid_params
         return RobustExperiments.__new__(cls, *args, **kwargs)
 

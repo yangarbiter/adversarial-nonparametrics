@@ -329,7 +329,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
             eps=eps,
             attacker=None,
             eps_list=inter_var['eps_list'],
-            epochs=200,
+            epochs=2000,
         )
         return model
 
@@ -354,7 +354,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
             eps=eps,
             attacker=None,
             eps_list=inter_var['eps_list'],
-            epochs=200,
+            epochs=2000,
         )
         return model
 

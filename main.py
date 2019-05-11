@@ -10,7 +10,7 @@ from sklearn.metrics import pairwise_distances
 import tensorflow as tf
 tf.logging.set_verbosity(tf.logging.ERROR)
 import keras.backend
-import tensorflow.keras.backend
+#import tensorflow.keras.backend
 
 from nnattack.variables import auto_var
 
@@ -24,7 +24,7 @@ def set_random_seed(auto_var):
     sess = tf.Session()
     keras.backend.set_session(sess)
     keras.layers.core.K.set_learning_phase(0)
-    tensorflow.keras.backend.set_session(sess)
+    #tensorflow.keras.backend.set_session(sess)
     sess.run(tf.global_variables_initializer())
     auto_var.set_intermidiate_variable("sess", sess)
     random_state = np.random.RandomState(auto_var.get_var("random_seed"))
@@ -146,9 +146,9 @@ def eps_accuracy(auto_var):
     else:
         perts = np.zeros_like(tstX)
         for pert in tst_perturbs:
-            pred = model.predict(tstX + perts)
+            pred = model.predict(tstX + pert)
             for i in range(len(pred)):
-                if pred[i] == tsty[i]:
+                if (pred[i] != tsty[i]) and np.linalg.norm(perts[i])==0:
                     perts[i] = pert[i]
 
     perts = perts.astype(float)

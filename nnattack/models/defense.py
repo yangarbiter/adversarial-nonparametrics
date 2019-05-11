@@ -132,7 +132,7 @@ def get_aug_data(model, X, y, eps):
             raise ValueError("Can only deal with number of classes = 2"
                              "got %d", len(np.unique(y)))
         y = y.astype(int)*2-1
-        augX, augy = find_eps_separated_set(X, eps/2, y, sep_measure)
+        augX, augy = find_eps_separated_set(X, eps/2, y, ord=sep_measure)
         augy = (augy+1)//2
 
     elif model.train_type == 'advPruning':
