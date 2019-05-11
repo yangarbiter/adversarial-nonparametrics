@@ -21,7 +21,7 @@ class AdversarialAda(AdaBoostClassifier):
 
             self.augX = np.vstack((X, X[ind]+advX[ind]))
             self.augy = np.concatenate((y, y[ind]))
-        elif self.train_type == 'robustv1':
+        elif self.train_type == 'advPruning':
             y = y.astype(int)*2-1
             self.augX, self.augy = find_eps_separated_set(X, self.eps/2, y)
             self.augy = (self.augy+1)//2

@@ -13,7 +13,7 @@ class AdversarialDt(DecisionTreeClassifier):
             ord {float} -- adversarial example perturbation measure (default: {np.inf})
             sep_measure {float} -- The distance measure for data, if None, it will be the same as `ord` (default: {None})
             attack_model {Attack Model} -- The Attack Model, only use when `train_type` is 'adv' (default: {None})
-            train_type {str} -- None for undefended classifier, 'advPruning' for adversarial pruning, 'adv' for adversarial training (default: {'adv'})
+            train_type {str} -- None for undefended classifier, 'robustv2' for adversarial pruning, 'adv' for adversarial training (default: {'adv'})
 
         Other Arguments follows the original scikit-learn argument (sklearn.tree.DecisionTreeClassifier).
         """
@@ -52,7 +52,7 @@ class AdversarialRf(RandomForestClassifier):
             ord {float} -- adversarial example perturbation measure (default: {np.inf})
             sep_measure {float} -- The distance measure for data, if None, it will be the same as `ord` (default: {None})
             attack_model {Attack Model} -- The Attack Model, only use when `train_type` is 'adv' (default: {None})
-            train_type {str} -- None for undefended classifier, 'advPruning' for adversarial pruning, 'adv' for adversarial training (default: {'adv'})
+            train_type {str} -- None for undefended classifier, 'robustv2' for adversarial pruning, 'adv' for adversarial training (default: {'adv'})
 
         Other Arguments follows the original scikit-learn argument (sklearn.tree.RandomForestClassifier).
         """

@@ -222,7 +222,7 @@ class KerasModel(BaseEstimator):
             #print('XD', (self.predict(X + self._get_pert(X, Y, eps=self.eps, model=self.model))==y).mean())
             self.augX, self.augy = None, None
 
-        elif self.train_type == 'robustv1':
+        elif self.train_type == 'advPruning':
             y = y.astype(int)*2-1
             self.augX, self.augy = find_eps_separated_set(
                     X, self.eps/2, y, ord=self.ord)

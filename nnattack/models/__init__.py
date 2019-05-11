@@ -84,8 +84,8 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
           None: undefended decision tree
           adv: adversarial training
           robust: robust splitting
-          robustv1: adversarial pruning
-          advPruning: Wang's defense for 1-NN
+          advPruning: adversarial pruning
+          robustv2: Wang's defense for 1-NN
         eps: defense strength """
         from .adversarial_dt import AdversarialRf
         from sklearn.ensemble import RandomForestClassifier
@@ -132,8 +132,8 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
           None: undefended decision tree
           adv: adversarial training
           robust: robust splitting
-          robustv1: adversarial pruning
-          advPruning: Wang's defense for 1-NN
+          advPruning: adversarial pruning
+          robustv2: Wang's defense for 1-NN
         eps: defense strength """
         from .adversarial_dt import AdversarialDt
         eps = int(eps) * 0.01
@@ -210,8 +210,8 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         train:
           None: undefended
           adv: adversarial training
-          robustv1: adversarial pruning
-          advPruning: Wang's defense for 1-NN
+          advPruning: adversarial pruning
+          robustv2: Wang's defense for 1-NN
         eps: defense strength """
         from .adversarial_knn import AdversarialKnn
         eps = int(eps) * 0.01
@@ -309,7 +309,7 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         train:
           None: undefended
           adv: adversarial training
-          robustv1: adversarial pruning
+          advPruning: adversarial pruning
         eps: defense strength """
         from .keras_model import KerasModel
         eps = float(eps[1:])*0.01 if eps else 0.
@@ -380,17 +380,17 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         auto_var.set_intermidiate_variable("tree_clf", model)
         return model
 
-    #@register_var(argument=r"adv_robustv1nn_k(?P<n_neighbors>\d+)_xvalid")
+    #@register_var(argument=r"adv_advPruningnn_k(?P<n_neighbors>\d+)_xvalid")
     #@staticmethod
-    #def adv_robustv1nn_xvalid(auto_var, var_value, inter_var, n_neighbors):
+    #def adv_advPruningnn_xvalid(auto_var, var_value, inter_var, n_neighbors):
     #    n_neighbors = int(n_neighbors)
     #    grid = {
     #        'model': [
-    #            f'adv_robustv1nn_k{n_neighbors}_1',
-    #            f'adv_robustv1nn_k{n_neighbors}_5',
-    #            f'adv_robustv1nn_k{n_neighbors}_10'
-    #            f'adv_robustv1nn_k{n_neighbors}_15'
-    #            f'adv_robustv1nn_k{n_neighbors}_20'
+    #            f'adv_advPruningnn_k{n_neighbors}_1',
+    #            f'adv_advPruningnn_k{n_neighbors}_5',
+    #            f'adv_advPruningnn_k{n_neighbors}_10'
+    #            f'adv_advPruningnn_k{n_neighbors}_15'
+    #            f'adv_advPruningnn_k{n_neighbors}_20'
     #        ]
     #    }
     #    cross_validation(auto_var, grid)

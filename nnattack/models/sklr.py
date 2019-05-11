@@ -40,7 +40,7 @@ class SkLr(LogisticRegression):
                 y = np.concatenate((y, y[ind]))
             self.augX, self.augy = X, y
             print("number of augX", np.shape(self.augX), len(self.augy))
-        elif self.train_type == 'robustv1':
+        elif self.train_type == 'advPruning':
             y = y.astype(int)*2-1
             self.augX, self.augy = find_eps_separated_set(X, self.eps/2, y,
                                                           ord=self.ord)

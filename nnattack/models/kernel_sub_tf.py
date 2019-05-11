@@ -47,7 +47,7 @@ class KernelSubTFModel(object):
             self.trny = np.concatenate((y, y))
             self.augX, self.augy = self.trnX, self.trny
             print("number of augX", np.shape(self.augX), len(self.augy))
-        elif self.train_type == 'robustv1':
+        elif self.train_type == 'advPruning':
             y = y.astype(int)*2-1
             self.augX, self.augy = find_eps_separated_set(X, self.eps/2, y)
             self.augy = (self.augy+1)//2

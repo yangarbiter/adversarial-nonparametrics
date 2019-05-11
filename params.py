@@ -122,7 +122,7 @@ class parametric_defense(RobustExperiments):
         #    'model': [
         #        'sklr',
         #        'adv_sklr_30',
-        #        'robustv1_sklr_30',
+        #        'advPruning_sklr_30',
         #    ],
         #    'ord': ['inf'],
         #    'dataset': tree_datasets,
@@ -133,7 +133,7 @@ class parametric_defense(RobustExperiments):
             'model': [
                 'logistic_regression',
                 'adv_logistic_regression_30',
-                'advPruning_logistic_regression_30',
+                'robustv2_logistic_regression_30',
             ],
             'ord': ['inf'],
             'dataset': tree_datasets,
@@ -144,7 +144,7 @@ class parametric_defense(RobustExperiments):
             'model': [
                 'mlp',
                 'adv_mlp_30',
-                'advPruning_mlp_30',
+                'robustv2_mlp_30',
             ],
             'ord': ['inf'],
             'dataset': tree_datasets,
@@ -159,14 +159,14 @@ class compare_defense(RobustExperiments):
         cls.name = "compare_defense"
         grid_params = []
         grid_params.append({
-            'model': ['knn1', 'adv_nn_k1_30', 'advPruning_nn_k1_30', 'robustv1_nn_k1_30'],
+            'model': ['knn1', 'adv_nn_k1_30', 'robustv2_nn_k1_30', 'advPruning_nn_k1_30'],
             'ord': ['inf'],
             'dataset': datasets,
             'attack': ['nnopt_k1_all'],
             'random_seed': random_seed,
         })
         grid_params.append({
-            'model': ['knn3', 'adv_nn_k3_30', 'robustv1_nn_k3_30'],
+            'model': ['knn3', 'adv_nn_k3_30', 'advPruning_nn_k3_30'],
             'ord': ['inf'],
             'dataset': datasets,
             'attack': ['rev_nnopt_k3_50_region'],
@@ -177,7 +177,7 @@ class compare_defense(RobustExperiments):
                 'decision_tree_d5',
                 'adv_decision_tree_d5_30',
                 'robust_decision_tree_d5_30',
-                'robustv1_decision_tree_d5_30',
+                'advPruning_decision_tree_d5_30',
             ],
             'ord': ['inf'],
             'dataset': tree_datasets,
@@ -189,7 +189,7 @@ class compare_defense(RobustExperiments):
                 'random_forest_100_d5',
                 'adv_rf_100_30_d5',
                 'robust_rf_100_30_d5',
-                'robustv1_rf_100_30_d5',
+                'advPruning_rf_100_30_d5',
             ],
             'ord': ['inf'],
             'dataset': tree_datasets,
@@ -200,7 +200,7 @@ class compare_defense(RobustExperiments):
         #    'model': [
         #        'mlp',
         #        'adv_mlp_30',
-        #        'robustv1_mlp_30',
+        #        'advPruning_mlp_30',
         #    ],
         #    'ord': ['inf'],
         #    'dataset': tree_datasets,
@@ -217,8 +217,8 @@ class tst_scores(RobustExperiments):
         grid_params.append({
             'model': [
                 #'adv_nn_k1_10', 'adv_nn_k1_30', 'adv_nn_k1_50',
-                'knn1', 'robustv1_nn_k1_10', 'robustv1_nn_k1_30', 'robustv1_nn_k1_50',
-                #'advPruning_nn_k1_10', 'advPruning_nn_k1_30', 'advPruning_nn_k1_50',
+                'knn1', 'advPruning_nn_k1_10', 'advPruning_nn_k1_30', 'advPruning_nn_k1_50',
+                #'robustv2_nn_k1_10', 'robustv2_nn_k1_30', 'robustv2_nn_k1_50',
             ],
             'ord': ['inf'],
             'dataset': datasets,
@@ -228,8 +228,8 @@ class tst_scores(RobustExperiments):
         grid_params.append({
             'model': [
                 #'adv_nn_k1_10', 'adv_nn_k1_30', 'adv_nn_k1_50',
-                'knn3', 'robustv1_nn_k3_10', 'robustv1_nn_k3_30', 'robustv1_nn_k3_50',
-                #'advPruning_nn_k1_10', 'advPruning_nn_k1_30', 'advPruning_nn_k1_50',
+                'knn3', 'advPruning_nn_k3_10', 'advPruning_nn_k3_30', 'advPruning_nn_k3_50',
+                #'robustv2_nn_k1_10', 'robustv2_nn_k1_30', 'robustv2_nn_k1_50',
             ],
             'ord': ['inf'],
             'dataset': datasets,
@@ -239,7 +239,7 @@ class tst_scores(RobustExperiments):
         grid_params.append({
             'model': [
                 'decision_tree_d5',
-                'robustv1_decision_tree_d5_10', 'robustv1_decision_tree_d5_30', 'robustv1_decision_tree_d5_50',
+                'advPruning_decision_tree_d5_10', 'advPruning_decision_tree_d5_30', 'advPruning_decision_tree_d5_50',
             ],
             'ord': ['inf'],
             'dataset': tree_datasets,
@@ -249,7 +249,7 @@ class tst_scores(RobustExperiments):
         grid_params.append({
             'model': [
                 'random_forest_100_d5',
-                'robustv1_rf_100_10_d5', 'robustv1_rf_100_30_d5', 'robustv1_rf_100_50_d5',
+                'advPruning_rf_100_10_d5', 'advPruning_rf_100_30_d5', 'advPruning_rf_100_50_d5',
             ],
             'ord': ['inf'],
             'dataset': tree_datasets,
@@ -266,9 +266,9 @@ class nn_k1_robustness(RobustExperiments):
         grid_params.append({
             'model': [
                 'knn1',
-                'robustv1_nn_k1_10', 'robustv1_nn_k1_30', 'robustv1_nn_k1_50',
+                'advPruning_nn_k1_10', 'advPruning_nn_k1_30', 'advPruning_nn_k1_50',
                 #'adv_nn_k1_10', 'adv_nn_k1_30', 'adv_nn_k1_50',
-                #'advPruning_nn_k1_10', 'advPruning_nn_k1_30', 'advPruning_nn_k1_50',
+                #'robustv2_nn_k1_10', 'robustv2_nn_k1_30', 'robustv2_nn_k1_50',
             ],
             'ord': ['inf'],
             'dataset': datasets,
@@ -285,9 +285,9 @@ class nn_k3_robustness(RobustExperiments):
         grid_params.append({
             'model': [
                 'knn3',
-                'robustv1_nn_k3_10', 'robustv1_nn_k3_30', 'robustv1_nn_k3_50',
+                'advPruning_nn_k3_10', 'advPruning_nn_k3_30', 'advPruning_nn_k3_50',
                 #'adv_nn_k3_10', 'adv_nn_k3_30', 'adv_nn_k3_50',
-                #'advPruning_nn_k3_10', 'advPruning_nn_k3_30', 'robustv1_nn_k3_50',
+                #'robustv2_nn_k3_10', 'robustv2_nn_k3_30', 'advPruning_nn_k3_50',
             ],
             'ord': ['inf'],
             'dataset': datasets,
@@ -304,8 +304,8 @@ class rf_robustness(RobustExperiments):
             'random_forest_100_d5',
             #'adv_rf_100_10_d5', 'adv_rf_100_30_d5', 'adv_rf_100_50_d5',
             #'robust_rf_100_10_d5', 'robust_rf_100_30_d5', 'robust_rf_100_50_d5',
-            'robustv1_rf_100_10_d5', 'robustv1_rf_100_30_d5', 'robustv1_rf_100_50_d5',
-            #'advPruning_rf_100_10_d5', 'advPruning_rf_100_30_d5', 'advPruning_rf_100_50_d5',
+            'advPruning_rf_100_10_d5', 'advPruning_rf_100_30_d5', 'advPruning_rf_100_50_d5',
+            #'robustv2_rf_100_10_d5', 'robustv2_rf_100_30_d5', 'robustv2_rf_100_50_d5',
         ]
         attacks = ['rf_attack_rev_100']
 
@@ -326,8 +326,8 @@ class dt_robustness(RobustExperiments):
         models = [
             'decision_tree_d5',
             #'robust_decision_tree_d5_10', 'robust_decision_tree_d5_30', 'robust_decision_tree_d5_50',
-            'robustv1_decision_tree_d5_10', 'robustv1_decision_tree_d5_30', 'robustv1_decision_tree_d5_50',
-            #'advPruning_decision_tree_d5_10', 'advPruning_decision_tree_d5_30', 'robustv1_decision_tree_d5_50',
+            'advPruning_decision_tree_d5_10', 'advPruning_decision_tree_d5_30', 'advPruning_decision_tree_d5_50',
+            #'robustv2_decision_tree_d5_10', 'robustv2_decision_tree_d5_30', 'advPruning_decision_tree_d5_50',
         ]
         attacks = ['dt_attack_opt']
 
@@ -395,8 +395,8 @@ class rf_optimality(RobustExperiments):
         grid_params.append({
             'model': [
                 'robust_rf_3_20_d5', 'robust_rf_3_30_d5',
-                'robustv1_rf_3_20_d5', 'robustv1_rf_3_20_d5',
-                #'advPruning_rf_3_30_d5', 'advPruning_rf_3_30_d5',
+                'advPruning_rf_3_20_d5', 'advPruning_rf_3_20_d5',
+                #'robustv2_rf_3_30_d5', 'robustv2_rf_3_30_d5',
             ],
             'ord': ['inf'],
             'dataset': small_datasets,
@@ -421,8 +421,8 @@ class nn_optimality(RobustExperiments):
         })
         grid_params.append({
             'model': [
-                'robustv1_nn_k3_30', 'robustv1_nn_k3_20',
-                #'advPruning_nn_k3_20', 'advPruning_nn_k3_30',
+                'advPruning_nn_k3_30', 'advPruning_nn_k3_20',
+                #'robustv2_nn_k3_20', 'robustv2_nn_k3_30',
             ],
             'ord': ['inf'],
             'dataset': small_datasets,
@@ -503,7 +503,7 @@ class dt_robustness_figs(RobustExperiments):
         dt_models = [
             'decision_tree_d5',
             'robust_decision_tree_d5_30',
-            'robustv1_decision_tree_d5_30',
+            'advPruning_decision_tree_d5_30',
         ]
 
         cls.name = "dt_robustness_figs"
@@ -517,7 +517,7 @@ class dt_robustness_figs(RobustExperiments):
 class nn_k1_robustness_figs(RobustExperiments):
     def __new__(cls, *args, **kwargs):
         cls.name = "nn_k1_robustness_figs"
-        nn_k1_models = ['knn1', 'robustv1_nn_k1_30',]
+        nn_k1_models = ['knn1', 'advPruning_nn_k1_30',]
         grid_params = {
             'model': nn_k1_models, 'attack': ['nnopt_k1_all'],
             'dataset': datasets, 'ord': ['inf'], 'random_seed': random_seed,
@@ -528,7 +528,7 @@ class nn_k1_robustness_figs(RobustExperiments):
 class nn_k3_robustness_figs(RobustExperiments):
     def __new__(cls, *args, **kwargs):
         cls.name = "nn_k3_robustness_figs"
-        nn_k3_models = ['knn3', 'robustv1_nn_k3_30',]
+        nn_k3_models = ['knn3', 'advPruning_nn_k3_30',]
         grid_params = {
             'model': nn_k3_models, 'attack': ['rev_nnopt_k3_50_region'],
             'dataset': datasets, 'ord': ['inf'], 'random_seed': random_seed,
@@ -540,7 +540,7 @@ class rf_robustness_figs(RobustExperiments):
     def __new__(cls, *args, **kwargs):
         cls.name = "rf_robustness_figs"
         rf_models = ['random_forest_100_d5', 'robust_rf_100_30_d5',
-                'robustv1_rf_100_30_d5',]
+                'advPruning_rf_100_30_d5',]
         grid_params = {
             'model': rf_models, 'attack': ['rf_attack_rev_100'],
             'dataset': tree_datasets, 'ord': ['inf'], 'random_seed': random_seed,

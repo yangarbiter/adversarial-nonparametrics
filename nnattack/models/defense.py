@@ -70,8 +70,8 @@ def get_aug_data(model, X, y, eps):
     Arguments:
         model {Classifier} -- The original classifier model, model.train_type defines the way to augment the data.
             model.train_type == 'adv': adversarial training
-            model.train_type == 'advPruning': adversarial pruning
-            model.train_type == 'robustv1': Wang's defense for 1-NN
+            model.train_type == 'robustv2': adversarial pruning
+            model.train_type == 'advPruning': Wang's defense for 1-NN
             model.train_type is None: Do nothing returns the original data
         X {ndarray, dim=2} -- feature vectors
         y {ndarray, dim=1} -- labels
@@ -81,7 +81,7 @@ def get_aug_data(model, X, y, eps):
         augX {ndarray, dim=2} -- augmented feature vectors
         augy {ndarray, dim=1} -- augmented labels
     """
-    if model.train_type in ['adv', 'robustv1', 'robustv1min', 'advPruning']:
+    if model.train_type in ['adv', 'advPruning', 'advPruningmin', 'robustv2']:
         if eps is None and model.eps is None:
             raise ValueError("eps should not be None with train type %s" % model.train_type)
         elif eps is None:
@@ -119,7 +119,7 @@ def get_aug_data(model, X, y, eps):
             auto_var.set_intermidiate_variable("trny", y)
         augX, augy = X, y
 
-    elif model.train_type == 'robustv1min':
+    elif model.train_type == 'advPruningmin':
         if len(np.unique(y)) != 2:
             raise ValueError("Can only deal with number of classes = 2"
                              "got %d", len(np.unique(y)))
@@ -127,7 +127,7 @@ def get_aug_data(model, X, y, eps):
         augX, augy = find_eps_separated_set(X, eps/2, y, 'min_measure')
         augy = (augy+1)//2
 
-    elif model.train_type == 'robustv1':
+    elif model.train_type == 'advPruning':
         if len(np.unique(y)) != 2:
             raise ValueError("Can only deal with number of classes = 2"
                              "got %d", len(np.unique(y)))
@@ -135,7 +135,7 @@ def get_aug_data(model, X, y, eps):
         augX, augy = find_eps_separated_set(X, eps/2, y, ord=sep_measure)
         augy = (augy+1)//2
 
-    elif model.train_type == 'advPruning':
+    elif model.train_type == 'robustv2':
         if len(np.unique(y)) != 2:
             raise ValueError("Can only deal with number of classes = 2"
                              "got %d", len(np.unique(y)))

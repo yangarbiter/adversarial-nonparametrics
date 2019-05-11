@@ -145,7 +145,7 @@ def temp_fix(auto_var):
     random_state.shuffle(idxs)
 
     augX = None
-    if ('adv' in model_name) or ('robustv1' in model_name) or ('advPruning' in model_name):
+    if ('adv' in model_name) or ('advPruning' in model_name) or ('robustv2' in model_name):
         assert hasattr(model, 'augX')
         auto_var.set_intermidiate_variable("trnX", model.augX)
         auto_var.set_intermidiate_variable("trny", model.augy)
