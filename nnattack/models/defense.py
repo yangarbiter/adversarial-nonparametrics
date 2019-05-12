@@ -66,7 +66,7 @@ def get_aug_v2(X, Y, Delta, delta, eps, ord):
 
 def get_aug_data(model, X, y, eps):
     """Augment the data for defense, returns the augmented data
-    
+
     Arguments:
         model {Classifier} -- The original classifier model, model.train_type defines the way to augment the data.
             model.train_type == 'adv': adversarial training
@@ -76,7 +76,7 @@ def get_aug_data(model, X, y, eps):
         X {ndarray, dim=2} -- feature vectors
         y {ndarray, dim=1} -- labels
         eps {float} -- defense strength
-    
+
     Returns:
         augX {ndarray, dim=2} -- augmented feature vectors
         augy {ndarray, dim=1} -- augmented labels

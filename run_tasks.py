@@ -23,6 +23,8 @@ from params import (
 
     dt_robustness,
     rf_robustness,
+    mlp_robustness,
+    lr_robustness,
 
     rf_optimality_figs,
     nn_k1_optimality_figs,
@@ -48,6 +50,9 @@ def main():
 
         nn_k1_robustness(),
         tst_scores(),
+
+        mlp_robustness(),
+        lr_robustness(),
 
         #rf_optimality(),
         #nn_optimality(),
