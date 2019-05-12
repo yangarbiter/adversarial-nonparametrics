@@ -25,7 +25,6 @@ logger = logging.getLogger(__name__)
 #solvers.options['solver'] = 'glpk'
 #solvers.options['maxiters'] = 30
 solvers.options['show_progress'] = False
-#solvers.options['refinement'] = 0
 #solvers.options['feastol'] = 1e-7
 #solvers.options['abstol'] = 1e-7
 #solvers.options['reltol'] = 1e-7
@@ -79,51 +78,30 @@ def get_sol(target_x, tuple_x, faropp, kdtree, transformer,
     else:
         return False, None
 
-    #try:
-    #    c = matrix(np.zeros(target_x.shape[0]), tc='d')
-    #    if init_x is None:
-    #        lp_sol = solvers.lp(c=c, G=G, h=temph, solver='glpk')
-    #        if lp_sol['status'] == 'optimal':
-    #            init_x = lp_sol['x']
-    #        else:
-    #            init_x = None
-    #    if init_x is not None:
-    #        #sol2 = solve_qp(np.array(Q), np.array(q).flatten(), np.array(G).T,
-    #        #        np.array(temph).flatten())
-    #        sol = solvers.qp(P=Q, q=q, G=G, h=temph, initvals=init_x)
-    #        if sol['status'] == 'optimal':
-    #            ret = np.array(sol['x'], np.float64).reshape(-1)
-    #            if DEBUG:
-    #                # sanity check for the correctness of objective
-    #                print('1', sol['primal objective'] + np.dot(target_x, target_x))
-    #                print('2', np.linalg.norm(target_x - ret, ord=2)**2)
-    #                #print(sol['primal objective'], np.dot(target_x.dot(transformer.T), target_x.dot(transformer.T)))
-    #                #print(sol['primal objective'] + np.dot(target_x.dot(transformer.T), target_x.dot(transformer.T)))
-    #                #print(np.linalg.norm(target_x.dot(transformer.T) - ret.dot(transformer.T))**2)
-    #                #assert np.isclose(np.linalg.norm(target_x.dot(transformer.T) - ret.dot(transformer.T))**2,
-    #                #        sol['primal objective'] + np.dot(target_x.dot(transformer.T), target_x.dot(transformer.T)))
-    #                assert np.isclose(np.linalg.norm(target_x - ret, ord=2)**2, sol['primal objective'] + np.dot(target_x, target_x))
-    #                # check if constraints are all met
-    #                h = np.array(h).flatten()
-    #                G = np.array(G)
-    #                a = check_feasibility(G, h, ret, G.shape[0], G.shape[1])
-    #                assert a
-    #            return True, ret
-    #        return False, np.array(init_x, np.float64).reshape(-1)
-    #    else:
-    #        return False, None
-    #except ValueError:
-    #    #logger.warning("solver error")
-    #    return False, None
+    ## sanity check for the correctness of objective
+    #print('1', sol['primal objective'] + np.dot(target_x, target_x))
+    #print('2', np.linalg.norm(target_x - ret, ord=2)**2)
+    ##print(sol['primal objective'], np.dot(target_x.dot(transformer.T), target_x.dot(transformer.T)))
+    ##print(sol['primal objective'] + np.dot(target_x.dot(transformer.T), target_x.dot(transformer.T)))
+    ##print(np.linalg.norm(target_x.dot(transformer.T) - ret.dot(transformer.T))**2)
+    ##assert np.isclose(np.linalg.norm(target_x.dot(transformer.T) - ret.dot(transformer.T))**2,
+    ##        sol['primal objective'] + np.dot(target_x.dot(transformer.T), target_x.dot(transformer.T)))
+    #assert np.isclose(np.linalg.norm(target_x - ret, ord=2)**2, sol['primal objective'] + np.dot(target_x, target_x))
+    ## check if constraints are all met
+    #h = np.array(h).flatten()
+    #G = np.array(G)
+    #a = check_feasibility(G, h, ret, G.shape[0], G.shape[1])
+    #assert a
 
-def sol_sat_constraints(G, h):
+def sol_sat_constraints(G, h) -> bool:
+    """ Check if the constraint is satisfiable
+    """
     fet_dim = G.shape[1]
     c = matrix(np.zeros(fet_dim), tc='d')
     G = matrix(G, tc='d')
     temph = matrix(h - CONSTRAINTTOL, tc='d')
     sol = solvers.lp(c=c, G=G, h=temph, solver='glpk')
     return (sol['status'] == 'optimal')
-
 
 def get_sol_l1(target_x, tuple_x, faropp, kdtree, transformer, glob_trnX,
         glob_trny, init_x=None):
@@ -212,20 +190,8 @@ def get_sol_linf(target_x, tuple_x, faropp, kdtree, transformer,
         ret = np.array(sol).reshape(-1)
         return True, ret[:-1]
     else:
-        #print(status)
-        #status, sol = solve_lp(c=c, G=G, h=h, n=len(c))
-        #print(status)
-        #logger.warning("solver error")
         return False, None
 
-    #c, G, h = matrix(c, tc='d'), matrix(G, tc='d'), matrix(h, tc='d')
-    #if init_x is not None:
-    #    sol = solvers.lp(c=c, G=G, h=temph, solver='glpk',
-    #                     initvals=init_x)
-    #else:
-    #    sol = solvers.lp(c=c, G=G, h=temph, solver='glpk')
-    #if sol['status'] == 'optimal':
-    #    ret = np.array(sol['x']).reshape(-1)
     #    ### sanity check for the correctness of objective
     #    if DEBUG:
     #        # check if constraints are all met
@@ -241,12 +207,7 @@ def get_sol_linf(target_x, tuple_x, faropp, kdtree, transformer,
     #        #assert np.isclose(np.linalg.norm(target_x.dot(transformer.T) - (ret[:-1]).dot(transformer.T), ord=np.inf),
     #        #                  sol['primal objective'], rtol=CONSTRAINTTOL)
     #    return True, ret[:-1]
-    #else:
-    #    #logger.warning("solver error")
-    #    return False, None
 
-
-#@profile
 def get_adv(target_x, target_y, kdtree, n_searches, n_neighbors, faropp,
         transformer, lp_sols, ord=2, n_jobs=1):
     ind = kdtree.query(target_x.dot(transformer.T).reshape((1, -1)),
@@ -270,9 +231,6 @@ def get_adv(target_x, target_y, kdtree, n_searches, n_neighbors, faropp,
         # majority
         if target_y != np.argmax(np.bincount(glob_trny[ind[comb]])):
             combs.append(comb)
-
-    #knn = KNeighborsClassifier(n_neighbors=n_neighbors)
-    #knn.fit(glob_trnX.dot(transformer.T), glob_trny)
 
     if ord == 1:
         get_sol_fn = get_sol_l1
@@ -301,38 +259,6 @@ def get_adv(target_x, target_y, kdtree, n_searches, n_neighbors, faropp,
     sols = np.array(list(filter(lambda x: np.linalg.norm(x) != 0, sols)))
     eps = np.linalg.norm(sols - target_x, axis=1, ord=ord)
     temp = (sols[eps.argmin()], eps.min())
-
-    #for comb in combs:
-    #    comb_tup = tuple(ind[comb])
-
-    #    if comb_tup not in lp_sols:
-    #        ret, sol = get_sol_fn(target_x, ind[comb], faropp, kdtree,
-    #                              transformer, glob_trnX, glob_trny, )
-    #        lp_sols[comb_tup] = sol
-    #    elif lp_sols[comb_tup] is None:
-    #        ret = False
-    #    else:
-    #        ret, sol = get_sol_fn(target_x, ind[comb], faropp, kdtree,
-    #                              transformer,glob_trnX, glob_trny,  lp_sols[comb_tup])
-
-    #    if ret:
-    #        if knn.predict(sol.reshape(1, -1).dot(transformer.T))[0] == target_y:
-    #            print("shouldn't happend")
-    #            assert False
-    #        else:
-    #            eps = np.linalg.norm(sol - target_x, ord=ord)
-    #            if eps < temp[1]:
-    #                temp = (sol, eps)
-
-    #        if DEBUG:
-    #            a = knn.predict(np.dot(target_x.reshape(1, -1), transformer.T))[0]
-    #            b = knn.predict(np.dot(sol.reshape(1, -1), transformer.T))[0]
-    #            print(a, b, target_y)
-    #            if a == b and a == target_y:
-    #                print("shouldn't happend")
-    #                assert False
-    #            #get_sol(target_x, ind[comb], faropp, kdtree, transformer)
-
     return temp[0] - target_x
 
 def attack_with_eps_constraint(perts, ord, eps):
@@ -353,7 +279,8 @@ def attack_with_eps_constraint(perts, ord, eps):
 
 #@profile
 def rev_get_adv(target_x, target_y, kdtree, n_searches, n_neighbors, faropp,
-        transformer, lp_sols, ord=2, method='self', knn=None, n_jobs=1):
+        transformer, lp_sols, ord=2, method='self',
+        knn: KNeighborsClassifier = None, n_jobs=1):
     if n_searches == -1:
         n_searches = glob_trnX.shape[0]
     temp = (target_x, np.inf)
@@ -407,17 +334,6 @@ def rev_get_adv(target_x, target_y, kdtree, n_searches, n_neighbors, faropp,
                 eps = np.linalg.norm(sol - target_x, ord=ord)
                 if eps < temp[1]:
                     temp = (sol, eps)
-
-        #if inds not in lp_sols:
-        #    ret, sol = get_sol_fn(target_x, inds, faropp, kdtree, transformer)
-        #    lp_sols[inds] = sol
-        #elif lp_sols[inds] is None:
-        #    ret = False
-        #    #ret, sol = get_sol_fn(target_x, inds, faropp, kdtree,
-        #    #                        transformer)
-        #else:
-        #    ret, sol = get_sol_fn(target_x, inds, faropp, kdtree,
-        #                            transformer, lp_sols[inds])
 
     return temp[0] - target_x
 
@@ -474,11 +390,11 @@ class NNAttack(NNOptAttack):
 class KNNRegionBasedAttackExact(NNAttack):
     """
     Exact Region Based Attack (RBA-Exact) for K-NN
-    
+
     Arguments:
         trnX {ndarray, shape=(n_samples, n_features)} -- Training data
         trny {ndarray, shape=(n_samples)} -- Training label
-    
+
     Keyword Arguments:
         n_neighbors {int} -- Number of neighbors for the target k-NN classifier (default: {3})
         n_searches {int} -- Number of regions to search, -1 means all regions (default: {-1})
@@ -492,11 +408,11 @@ class KNNRegionBasedAttackExact(NNAttack):
 class RevNNAttack(NNOptAttack):
     """
     Approximated Region Based Attack (RBA-Approx)
-    
+
     Arguments:
         trnX {ndarray, shape=(n_samples, n_features)} -- Training data
         trny {ndarray, shape=(n_samples)} -- Training label
-    
+
     Keyword Arguments:
         n_neighbors {int} -- Number of neighbors for the target k-NN classifier (default: {3})
         n_searches {int} -- Number of regions to search (default: {-1})
@@ -545,11 +461,11 @@ class RevNNAttack(NNOptAttack):
 class KNNRegionBasedAttackApprox(RevNNAttack):
     """
     Approximated Region Based Attack (RBA-Approx) for K-NN
-    
+
     Arguments:
         trnX {ndarray, shape=(n_samples, n_features)} -- Training data
         trny {ndarray, shape=(n_samples)} -- Training label
-    
+
     Keyword Arguments:
         n_neighbors {int} -- Number of neighbors for the target k-NN classifier (default: {3})
         n_searches {int} -- Number of regions to search, -1 means all regions (default: {-1})
@@ -600,7 +516,6 @@ class HybridNNAttack(NNOptAttack):
                 ret.append(rev_pert)
             else:
                 ret.append(pert)
-
 
         self.perts = np.asarray(ret)
         return attack_with_eps_constraint(self.perts, self.ord, eps)
