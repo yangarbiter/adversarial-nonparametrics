@@ -8,12 +8,6 @@ from cleverhans.train import train
 from cleverhans.utils_tf import initialize_uninitialized_global_variables
 
 import tensorflow as tf
-#import tensorflow.keras as keras
-#from tensorflow.keras.models import Model
-#from tensorflow.keras.layers import Dense, Input
-#from tensorflow.keras.optimizers import Adam, Nadam
-#from tensorflow.keras.regularizers import l2
-#from tensorflow.keras.models import clone_model
 
 import keras
 from keras.models import Model, clone_model
@@ -23,14 +17,12 @@ from keras.regularizers import l2
 
 import numpy as np
 from sklearn.base import BaseEstimator
-#from sklearn.linear_model import LogisticRegression
 
 from .robust_nn.eps_separation import find_eps_separated_set
 
 def get_adversarial_acc_metric(model, fgsm, fgsm_params):
     def adv_acc(y, _):
         # Generate adversarial examples
-        #x_adv = fgsm.generate(model.input, **fgsm_params)
         x_adv = fgsm.generate(model.get_input_at(0), **fgsm_params)
         # Consider the attack to be constant
         x_adv = tf.stop_gradient(x_adv)
@@ -46,7 +38,6 @@ def get_adversarial_loss(model, fgsm, fgsm_params):
         cross_ent = keras.losses.categorical_crossentropy(y, preds)
 
         # Generate adversarial examples
-        #x_adv = fgsm.generate(model.input, **fgsm_params)
         x_adv = fgsm.generate(model.get_input_at(0), **fgsm_params)
         # Consider the attack to be constant
         x_adv = tf.stop_gradient(x_adv)
@@ -117,41 +108,6 @@ class KerasModel(BaseEstimator):
             pass
 
         if self.train_type == 'adv':
-            #self.model.compile(loss=self.loss, optimizer=self.optimizer, metrics=[])
-            #Y = self.lbl_enc.transform(y.reshape(-1, 1))
-            #initialize_uninitialized_global_variables(self.sess)
-            #input_generator = InputGenerator(X, Y, sample_weight,
-            #    attacker=self.attacker, shuffle=True, batch_size=self.batch_size,
-            #    random_state=self.random_state)
-            #self.model.fit_generator(
-            #    input_generator,
-            #    steps_per_epoch=((X.shape[0]*2 - 1) // self.batch_size) + 1,
-            #    epochs=self.epochs,
-            #    verbose=1,
-            #)
-            #######################################
-            #Y = self.lbl_enc.transform(y.reshape(-1, 1))
-            #train_params = {
-            #    'init_all': True,
-            #    'rng': self.random_state,
-            #    'nb_epochs': self.epochs,
-            #    'batch_size': self.batch_size,
-            #    'learning_rate': self.learning_rate,
-            #    'optimizor': tf.train.RMSPropOptimizer,
-            #}
-            #wrap = KerasModelWrapper(self.model)
-            #pgd = ProjectedGradientDescent(wrap, sess=self.sess, nb_iter=20)
-            #pgd_params = {'eps': self.eps}
-            ##attack = pgd.generate(x, y=y, **pgd_params)
-            #def attack(x):
-            #    return pgd.generate(x, **pgd_params)
-            #loss = CrossEntropy(wrap, smoothing=0.1, attack=attack)
-            #def evaluate():
-            #    #print("XDDD %f", self.sess.run(loss))
-            #    print('Test accuracy on legitimate examples: %0.4f' % self.score(X, y))
-            #train(self.sess, loss, X.astype(np.float32), Y.astype(np.float32),
-            #        args=train_params, evaluate=evaluate)
-            ######################################
             Y = self.lbl_enc.transform(y.reshape(-1, 1))
             wrap_2 = KerasModelWrapper(self.model)
             fgsm_2 = ProjectedGradientDescent(wrap_2, sess=self.sess)
@@ -162,7 +118,6 @@ class KerasModel(BaseEstimator):
             adv_loss_2 = get_adversarial_loss(self.model, fgsm_2, fgsm_params)
             adv_acc_metric_2 = get_adversarial_acc_metric(self.model, fgsm_2, fgsm_params)
             self.model.compile(
-                #optimizer=keras.optimizers.Adam(self.learning_rate),
                 optimizer=keras.optimizers.Nadam(),
                 loss=adv_loss_2,
                 metrics=['accuracy', adv_acc_metric_2]
@@ -173,7 +128,6 @@ class KerasModel(BaseEstimator):
                 verbose=2,
                 sample_weight=sample_weight,
             )
-            print((self.model.predict(X).argmax(1) == y).mean())
 
             self.augX, self.augy = None, None
 
@@ -216,7 +170,7 @@ class KerasModel(BaseEstimator):
         return (pred == y).mean()
 
     def _get_pert(self, X, Y, eps:float, model):
-        x = tf.placeholder(tf.float32, shape=([None] + list(self.n_features))) 
+        x = tf.placeholder(tf.float32, shape=([None] + list(self.n_features)))
         y = tf.placeholder(tf.float32, shape=(None, self.n_classes))
 
         wrap = KerasModelWrapper(model)

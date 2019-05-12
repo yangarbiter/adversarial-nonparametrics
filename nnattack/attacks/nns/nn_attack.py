@@ -22,12 +22,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-#solvers.options['solver'] = 'glpk'
-#solvers.options['maxiters'] = 30
 solvers.options['show_progress'] = False
-#solvers.options['feastol'] = 1e-7
-#solvers.options['abstol'] = 1e-7
-#solvers.options['reltol'] = 1e-7
 cvxopt.glpk.options["msg_lev"] = "GLP_MSG_OFF"
 
 CONSTRAINTTOL = 5e-6
@@ -45,27 +40,17 @@ glob_trny = None
 
 DEBUG = False
 
-#@profile
 def get_sol(target_x, tuple_x, faropp, kdtree, transformer,
         glob_trnX, glob_trny, init_x=None, n_jobs=1):
     tuple_x = np.asarray(tuple_x)
-    trnX = glob_trnX.dot(transformer.T)
-    emb_tar = target_x.dot(transformer.T)
+    trnX = glob_trnX
+    emb_tar = target_x
     G, h, _ = get_constraints(trnX, tuple_x, kdtree, faropp, emb_tar)
     G, h = matrix(G, tc='d'), matrix(h, tc='d')
 
-    #assert (transformer.shape[1] == glob_trnX.shape[1])
-    #n_emb = transformer.shape[0]
     n_fets = target_x.shape[0]
 
-    #Q = 2 * matrix(np.eye(n_emb), tc='d')
     Q = 2 * matrix(np.eye(n_fets), tc='d')
-    #Q = 2 * matrix(np.dot(np.dot(transformer.T, np.eye(n_emb)), transformer), tc='d')
-    T = matrix(transformer.astype(np.float64), tc='d')
-
-    G = G * T
-    #Q = T.trans() * Q * T
-    #q = matrix(-2*target_x.dot(transformer.T).dot(transformer), tc='d')
     q = matrix(-2*target_x, tc='d')
 
     temph = h - CONSTRAINTTOL # make sure all constraints are met
@@ -77,21 +62,6 @@ def get_sol(target_x, tuple_x, faropp, kdtree, transformer,
         return True, ret
     else:
         return False, None
-
-    ## sanity check for the correctness of objective
-    #print('1', sol['primal objective'] + np.dot(target_x, target_x))
-    #print('2', np.linalg.norm(target_x - ret, ord=2)**2)
-    ##print(sol['primal objective'], np.dot(target_x.dot(transformer.T), target_x.dot(transformer.T)))
-    ##print(sol['primal objective'] + np.dot(target_x.dot(transformer.T), target_x.dot(transformer.T)))
-    ##print(np.linalg.norm(target_x.dot(transformer.T) - ret.dot(transformer.T))**2)
-    ##assert np.isclose(np.linalg.norm(target_x.dot(transformer.T) - ret.dot(transformer.T))**2,
-    ##        sol['primal objective'] + np.dot(target_x.dot(transformer.T), target_x.dot(transformer.T)))
-    #assert np.isclose(np.linalg.norm(target_x - ret, ord=2)**2, sol['primal objective'] + np.dot(target_x, target_x))
-    ## check if constraints are all met
-    #h = np.array(h).flatten()
-    #G = np.array(G)
-    #a = check_feasibility(G, h, ret, G.shape[0], G.shape[1])
-    #assert a
 
 def sol_sat_constraints(G, h) -> bool:
     """ Check if the constraint is satisfiable
@@ -107,12 +77,10 @@ def get_sol_l1(target_x, tuple_x, faropp, kdtree, transformer, glob_trnX,
         glob_trny, init_x=None):
     tuple_x = np.asarray(tuple_x)
     fet_dim = target_x.shape[0]
-    #n_emb = transformer.shape[0]
 
-    emb_tar = target_x.dot(transformer.T)
-    trnX = glob_trnX.dot(transformer.T)
+    emb_tar = target_x
+    trnX = glob_trnX
     G, h, dist = get_constraints(trnX, tuple_x, kdtree, faropp, emb_tar)
-    G = np.dot(G, transformer)
 
     if init_x is None and not sol_sat_constraints(G, h):
         return False, None
@@ -120,12 +88,9 @@ def get_sol_l1(target_x, tuple_x, faropp, kdtree, transformer, glob_trnX,
     c = matrix(np.concatenate((np.zeros(fet_dim), np.ones(fet_dim))), tc='d')
 
     G = np.hstack((G, np.zeros((G.shape[0], fet_dim))))
-    #G = np.vstack((G, np.hstack((transformer, -np.eye(fet_dim)))))
-    #G = np.vstack((G, np.hstack((-transformer, -np.eye(fet_dim)))))
     G = np.vstack((G, np.hstack((np.eye(fet_dim), -np.eye(fet_dim)))))
     G = np.vstack((G, np.hstack((-np.eye(fet_dim), -np.eye(fet_dim)))))
 
-    #h = np.concatenate((h, emb_tar, -emb_tar))
     h = np.concatenate((h, target_x, -target_x))
 
     G, h = matrix(G, tc='d'), matrix(h, tc='d')
@@ -139,38 +104,18 @@ def get_sol_l1(target_x, tuple_x, faropp, kdtree, transformer, glob_trnX,
 
     if sol['status'] == 'optimal':
         ret = np.array(sol['x']).reshape(-1)
-        ### sanity check for the correctness of objective
-        if DEBUG:
-            # check if constraints are all met
-            h = np.array(h).flatten()
-            G = np.array(G)
-            a = check_feasibility(G, h, ret, G.shape[0], G.shape[1])
-            print(a)
-            print('1', sol['primal objective'])
-            print('2', np.linalg.norm(target_x - ret[:len(ret)//2], ord=1))
-            print('3', np.linalg.norm(target_x.dot(transformer.T) - (ret[:len(ret)//2]).dot(transformer.T), ord=1))
-            #print(target_x.dot(transformer.T))
-            #print(ret)
-            #assert np.isclose(np.linalg.norm(target_x.dot(transformer.T) - (ret[:len(ret)//2]).dot(transformer.T), ord=1),
-            #                  sol['primal objective'], rtol=CONSTRAINTTOL)
-            assert np.isclose(np.linalg.norm(target_x - ret[:len(ret)//2], ord=1),
-                              sol['primal objective'], rtol=CONSTRAINTTOL)
         return True, ret[:len(ret)//2]
     else:
-        #logger.warning("solver error")
         return False, None
 
-#@profile
 def get_sol_linf(target_x, tuple_x, faropp, kdtree, transformer,
         glob_trnX, glob_trny, init_x=None, n_jobs=1):
     tuple_x = np.asarray(tuple_x)
     fet_dim = target_x.shape[0]
-    #n_emb = transformer.shape[0]
 
-    emb_tar = target_x.dot(transformer.T)
-    trnX = glob_trnX.dot(transformer.T)
+    emb_tar = target_x
+    trnX = glob_trnX
     G, h, _ = get_constraints(trnX, tuple_x, kdtree, faropp, emb_tar)
-    G = np.dot(G, transformer)
 
     if init_x is None and not sol_sat_constraints(G, h):
         return False, None
@@ -192,25 +137,9 @@ def get_sol_linf(target_x, tuple_x, faropp, kdtree, transformer,
     else:
         return False, None
 
-    #    ### sanity check for the correctness of objective
-    #    if DEBUG:
-    #        # check if constraints are all met
-    #        h = np.array(h).flatten()
-    #        G = np.array(G)
-    #        a = check_feasibility(G, h, ret, G.shape[0], G.shape[1])
-    #        print(a)
-    #        print('1', sol['primal objective'])
-    #        print('2', np.linalg.norm(target_x - ret[:-1], ord=np.inf))
-    #        print('3', np.linalg.norm(target_x.dot(transformer.T) - (ret[:-1]).dot(transformer.T), ord=np.inf))
-    #        #print(target_x.dot(transformer.T))
-    #        #print(ret)
-    #        #assert np.isclose(np.linalg.norm(target_x.dot(transformer.T) - (ret[:-1]).dot(transformer.T), ord=np.inf),
-    #        #                  sol['primal objective'], rtol=CONSTRAINTTOL)
-    #    return True, ret[:-1]
-
 def get_adv(target_x, target_y, kdtree, n_searches, n_neighbors, faropp,
         transformer, lp_sols, ord=2, n_jobs=1):
-    ind = kdtree.query(target_x.dot(transformer.T).reshape((1, -1)),
+    ind = kdtree.query(target_x.reshape((1, -1)),
                        k=n_neighbors, return_distance=False)[0]
     if target_y != np.argmax(np.bincount(glob_trny[ind])):
         # already incorrectly predicted
@@ -221,7 +150,7 @@ def get_adv(target_x, target_y, kdtree, n_searches, n_neighbors, faropp,
         n_searches = glob_trnX.shape[0]
         ind = np.arange(glob_trnX.shape[0])
     else:
-        ind = kdtree.query(target_x.dot(transformer.T).reshape((1, -1)),
+        ind = kdtree.query(target_x.reshape((1, -1)),
                         k=n_searches, return_distance=False)
         ind = ind[0]
 
@@ -286,7 +215,7 @@ def rev_get_adv(target_x, target_y, kdtree, n_searches, n_neighbors, faropp,
     temp = (target_x, np.inf)
 
     # already predicted wrong
-    if knn.predict(target_x.dot(transformer.T).reshape((1, -1)))[0] != target_y:
+    if knn.predict(target_x.reshape((1, -1)))[0] != target_y:
         return temp[0] - target_x
 
     if ord == 1:
@@ -299,10 +228,10 @@ def rev_get_adv(target_x, target_y, kdtree, n_searches, n_neighbors, faropp,
         raise ValueError("Unsupported ord %d" % ord)
 
     knn = KNeighborsClassifier(n_neighbors=n_neighbors)
-    knn.fit(glob_trnX.dot(transformer.T), glob_trny)
-    pred_trny = knn.predict(glob_trnX.dot(transformer.T))
+    knn.fit(glob_trnX, glob_trny)
+    pred_trny = knn.predict(glob_trnX)
 
-    ind = kdtree.query(target_x.dot(transformer.T).reshape((1, -1)),
+    ind = kdtree.query(target_x.reshape((1, -1)),
                        k=len(glob_trnX), return_distance=False)[0]
     ind = list(filter(lambda x: pred_trny[x] != target_y, ind))[:n_searches]
 
@@ -310,7 +239,7 @@ def rev_get_adv(target_x, target_y, kdtree, n_searches, n_neighbors, faropp,
         if method == 'self':
             inds = [i]
         elif method == 'region':
-            procedX = glob_trnX[i].dot(transformer.T).reshape((1, -1))
+            procedX = glob_trnX[i].reshape((1, -1))
             inds = kdtree.query(procedX, k=n_neighbors, return_distance=False)[0]
         inds = tuple([_ for _ in inds])
 
@@ -320,16 +249,16 @@ def rev_get_adv(target_x, target_y, kdtree, n_searches, n_neighbors, faropp,
         if method == 'region':
             #assert ret
             if not ret:
-                proc = np.array([glob_trnX[i]]).dot(transformer.T)
+                proc = np.array([glob_trnX[i]])
                 sol = np.array(glob_trnX[i])
             else:
-                proc = np.array([sol]).dot(transformer.T)
+                proc = np.array([sol])
             assert knn.predict(proc)[0] != target_y
             eps = np.linalg.norm(sol - target_x, ord=ord)
             if eps < temp[1]:
                 temp = (sol, eps)
         elif ret: # method == 'self'
-            proc = np.array([sol]).dot(transformer.T)
+            proc = np.array([sol])
             if knn.predict(proc)[0] != target_y:
                 eps = np.linalg.norm(sol - target_x, ord=ord)
                 if eps < temp[1]:

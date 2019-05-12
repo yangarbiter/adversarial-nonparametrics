@@ -183,6 +183,7 @@ def eps_accuracy(auto_var):
         ret['aug_len'] = len(augX)
 
     print("Average perturbation:", ret['avg_pert']['avg'])
+    print("Testing accuracy:", ret['avg_pert']['tst_score'])
     return ret
 
 def main():
