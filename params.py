@@ -342,14 +342,11 @@ class dt_robustness(RobustExperiments):
         cls.grid_params = grid_params
         return RobustExperiments.__new__(cls, *args, **kwargs)
 
-class lr_robustness(RobustExperiments):
+class lr_ap_robustness(RobustExperiments):
     def __new__(cls, *args, **kwargs):
-        cls.name = "lr-robustness"
+        cls.name = "lr-ap-robustness"
         models = [
             'logistic_regression',
-            'adv_logistic_regression_10',
-            'adv_logistic_regression_30',
-            'adv_logistic_regression_50',
             'advPruning_logistic_regression_10',
             'advPruning_logistic_regression_30',
             'advPruning_logistic_regression_50',
@@ -367,13 +364,54 @@ class lr_robustness(RobustExperiments):
         cls.grid_params = grid_params
         return RobustExperiments.__new__(cls, *args, **kwargs)
 
-class mlp_robustness(RobustExperiments):
+class lr_at_robustness(RobustExperiments):
     def __new__(cls, *args, **kwargs):
-        cls.name = "mlp-robustness"
+        cls.name = "lr-at-robustness"
+        models = [
+            'logistic_regression',
+            'adv_logistic_regression_10',
+            'adv_logistic_regression_30',
+            'adv_logistic_regression_50',
+        ]
+        attacks = ['pgd']
+
+        grid_params = []
+        grid_params.append({
+            'model': models,
+            'ord': ['inf'],
+            'dataset': tree_datasets,
+            'attack': attacks,
+            'random_seed': random_seed,
+        })
+        cls.grid_params = grid_params
+        return RobustExperiments.__new__(cls, *args, **kwargs)
+
+class mlp_ap_robustness(RobustExperiments):
+    def __new__(cls, *args, **kwargs):
+        cls.name = "mlp-ap-robustness"
+        models = [
+            'mlp',
+            'advPruning_mlp_10', 'advPruning_mlp_30', 'advPruning_mlp_50',
+        ]
+        attacks = ['pgd']
+
+        grid_params = []
+        grid_params.append({
+            'model': models,
+            'ord': ['inf'],
+            'dataset': tree_datasets,
+            'attack': attacks,
+            'random_seed': random_seed,
+        })
+        cls.grid_params = grid_params
+        return RobustExperiments.__new__(cls, *args, **kwargs)
+
+class mlp_at_robustness(RobustExperiments):
+    def __new__(cls, *args, **kwargs):
+        cls.name = "mlp-at-robustness"
         models = [
             'mlp',
             'adv_mlp_10', 'adv_mlp_30', 'adv_mlp_50',
-            'advPruning_mlp_10', 'advPruning_mlp_30', 'advPruning_mlp_50',
         ]
         attacks = ['pgd']
 

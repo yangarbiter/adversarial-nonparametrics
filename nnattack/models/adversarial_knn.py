@@ -40,5 +40,4 @@ class AdversarialKnn(KNeighborsClassifier):
         self.augX, self.augy = get_aug_data(self, X, y, eps)
         print("number of augX", np.shape(self.augX), len(self.augy))
 
-
         return super().fit(self.augX, self.augy)

@@ -120,7 +120,13 @@ def eps_accuracy(auto_var):
     random_state.shuffle(idxs)
     tstX, tsty = tstX[idxs[:100]], tsty[idxs[:100]]
     if len(tsty) != 100:
-        raise ValueError("didn't got 100 testing examples")
+        print("didn't got 100 testing examples, abort.")
+        ret['avg_pert'] = {'avg': 0, 'missed_count': 100,}
+        ret['tst_score'] = (model.predict(ori_tstX) == ori_tsty).mean()
+        if ('adv' in model_name) or ('advPruning' in model_name) or ('robustv2' in model_name):
+            ret['aug_len'] = len(model.augX)
+        return ret
+        #raise ValueError("didn't got 100 testing examples")
 
     augX = None
     if ('adv' in model_name) or ('advPruning' in model_name) or ('robustv2' in model_name):
@@ -130,7 +136,8 @@ def eps_accuracy(auto_var):
         augX, augy = model.augX, model.augy
 
     if len(tsty) != 100 or \
-       len(np.unique(auto_var.get_intermidiate_variable('trny'))) == 1:
+       (np.unique(auto_var.get_intermidiate_variable('trny'))[0] != None and \
+       len(np.unique(auto_var.get_intermidiate_variable('trny'))) == 1):
         tst_perturbs = np.array([np.zeros_like(tstX) for _ in range(len(eps_list))])
         ret['single_label'] = True
         attack_model = None

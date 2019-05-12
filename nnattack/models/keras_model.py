@@ -96,9 +96,6 @@ class KerasModel(BaseEstimator):
         self.random_state = random_state
         self.train_type = train_type
 
-        #init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
-        #self.sess.run(init_op)
-
         input_shape = tuple(n_features)
         model, self.preprocess_fn = globals()[self.architecture](
             None, input_shape, n_classes, self.l2_weight)
@@ -113,14 +110,7 @@ class KerasModel(BaseEstimator):
         self.sess = sess
         self.eps = eps
         self.ord = ord
-        #self.x = tf.placeholder(tf.float32, shape=([None] + list(n_features))) 
-        #self.y = tf.placeholder(tf.float32, shape=(None, n_classes))
         ###############
-
-        #self.attacker = None
-        #if self.train_type == 'adv':
-        #    #self.attacker = attacker(model=self.model)
-        #    self.attacker = self
 
     def fit(self, X, y, sample_weight=None):
         if self.train_type is not None:
@@ -185,41 +175,6 @@ class KerasModel(BaseEstimator):
             print(self.model.predict(X))
             print((self.model.predict(X).argmax(1) == y).mean())
 
-            #pre_model = clone_model(self.model)
-            #pre_model.compile(loss=self.loss, optimizer=self.optimizer, metrics=[])
-            #Y = self.lbl_enc.transform(y.reshape(-1, 1))
-            #pre_model.fit(X, Y, batch_size=self.batch_size, verbose=1,
-            #            epochs=self.epochs, sample_weight=sample_weight)
-
-            #pert = self._get_pert(X, Y, eps=self.eps, model=pre_model)
-
-            #print(tf.global_variables())
-            #print(((pre_model.predict(X).argmax(1))==y).mean())
-            #print((pre_model.predict(X + pert).argmax(1)==y).mean())
-
-            ##self.augX = np.vstack((X, X+self.perturb(X, y, eps=self.eps)))
-            #self.optimizer = Adam(lr=self.learning_rate)
-            #self.model.compile(loss=self.loss, optimizer=self.optimizer, metrics=[])
-            #self.augX = np.vstack((X, X+pert))
-            #self.augy = np.concatenate((y, y))
-            ##self.augX = X + pert
-            ##self.augy = y
-            #Y = self.lbl_enc.transform(self.augy.reshape(-1, 1))
-
-            #self.model.fit(self.augX, Y, batch_size=self.batch_size, verbose=1,
-            #            epochs=self.epochs, sample_weight=sample_weight,
-            #            shuffle=True)
-            #print(((pre_model.predict(X).argmax(1))==y).mean())
-            #print((pre_model.predict(X + pert).argmax(1)==y).mean())
-            #print(((self.predict(X))==y).mean())
-            #print((self.predict(X + pert)==y).mean())
-            ##print((self.predict(self.augX + self._get_pert(self.augX, Y, eps=self.eps, model=self.model))==self.augy).mean())
-            #clf = LogisticRegression()
-            #clf.fit(self.augX, self.augy)
-
-            #Y = self.lbl_enc.transform(y.reshape(-1, 1))
-            #print('XD', (clf.predict(X + self._get_pert(X, Y, eps=self.eps, model=self.model))==y).mean())
-            #print('XD', (self.predict(X + self._get_pert(X, Y, eps=self.eps, model=self.model))==y).mean())
             self.augX, self.augy = None, None
 
         elif self.train_type == 'advPruning':
