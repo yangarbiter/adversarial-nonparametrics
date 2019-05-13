@@ -197,18 +197,6 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         n_neighbors = int(n_neighbors)
         return KNeighborsClassifier(n_neighbors=n_neighbors)
 
-    @register_var()
-    @staticmethod
-    def kernel_sub_tf(auto_var, var_value, inter_var):
-        from .kernel_sub_tf import KernelSubTFModel
-        clf = KernelSubTFModel(
-            c=0.1,
-            lbl_enc=inter_var['lbl_enc'],
-            sess=inter_var['sess'],
-            ord=auto_var.get_var("ord"),
-        )
-        return clf
-
     @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?logistic_regression(?P<eps>_\d+)?')
     @staticmethod
     def adv_logistic_regression(auto_var, var_value, inter_var, train, eps):
