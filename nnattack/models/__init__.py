@@ -161,6 +161,8 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var(argument=r'(?P<train>[a-zA-Z0-9]+)_kernel_sub_tf_c(?P<c>\d+)_(?P<eps>\d+)')
     @staticmethod
     def adv_kernel_sub_tf(auto_var, var_value, inter_var, train, eps, c):
+        """Kernel classifier
+        """
         from .kernel_sub_tf import KernelSubTFModel
         c = float(c) * 0.1
         eps = float(eps) * 0.1

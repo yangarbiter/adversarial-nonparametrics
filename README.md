@@ -57,7 +57,7 @@ python ./main.py --dataset mnist17_300_pca25 --model knn3 \
                  --attack RBA_Approx_KNN_k3_50 --random_seed 0 --ord inf
 ```
 
-2. Train random forest with adversarial pruned (AP) dataset (defense strength is 0.3).
+2. Train random forest with adversarial pruned (AP) dataset (separation parameter r=0.3).
    The forest has 100 trees and maximum depth of 5.
    The attack is RBA-Approx searching 100 regions.
 ```
@@ -65,14 +65,21 @@ python ./main.py --dataset mnist17_300_pca25 --model advPruning_rf_100_30_d5 \
                  --attack RBA_Approx_RF_100 --random_seed 0 --ord inf
 ```
 
-3 Train 1-NN with adversarial pruned (AP) dataset (defense strength is 0.3).
+3. Train 1-NN with adversarial pruned (AP) dataset (separation parameter r=0.3).
   The attack is RBA-Exact.
 ```
 python ./main.py --dataset australian --model advPruning_nn_k1_30 \
                  --attack RBA_Exact_KNN_k1 --random_seed 0 --ord inf
 ```
 
-4. Train undefended 1-NN.
+4. Train 1-NN with adversarial training (AT) dataset (attack strength r=0.3).
+  The attack is RBA-Exact.
+```
+python ./main.py --dataset australian --model adv_nn_k1_30 \
+                 --attack RBA_Exact_KNN_k1 --random_seed 0 --ord inf
+```
+
+5. Train undefended 1-NN.
   The attack is RBA-Exact.
 ```
 python ./main.py --dataset australian --model knn1 \
