@@ -1,6 +1,4 @@
 """
-https://github.com/EricYizhenWang/robust_nn_icml/blob/d2bc3f07dfe94ea88db0be903d54ddda508bc6b1/nn_attack_white_box.py
-https://github.com/EricYizhenWang/robust_nn_icml/blob/8535b2b22a263fbd28fbc761bbf6326dcc8dcb75/model_utils.py
 """
 import numpy as np
 from sklearn.tree import DecisionTreeClassifier

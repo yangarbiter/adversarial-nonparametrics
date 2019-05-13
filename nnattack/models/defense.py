@@ -1,5 +1,4 @@
 """
-Download from https://raw.githubusercontent.com/EricYizhenWang/robust_nn_icml/master/robust_1nn.py
 """
 from __future__ import division
 
