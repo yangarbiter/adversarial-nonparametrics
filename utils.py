@@ -67,11 +67,18 @@ def params_to_dataframe(grid_param, columns=None):
                     params[i][column] = np.nan
                 else:
                     if column == 'avg_pert':
-                        params[i][column] = results[i][column]['avg']
-                        if 'missed_count' in results[i]['avg_pert']:
-                            params[i]['missed_count'] = results[i]['avg_pert']['missed_count']
+                        if 'single_label' in results[i] and results[i]['single_label']:
+                            params[i][column] = np.nan
+                            if 'missed_count' in results[i]['avg_pert']:
+                                params[i]['missed_count'] = results[i]['avg_pert']['missed_count']
+                            else:
+                                params[i]['missed_count'] = 0
                         else:
-                            params[i]['missed_count'] = 0
+                            params[i][column] = results[i][column]['avg']
+                            if 'missed_count' in results[i]['avg_pert']:
+                                params[i]['missed_count'] = results[i]['avg_pert']['missed_count']
+                            else:
+                                params[i]['missed_count'] = 0
                     elif column == 'aug_len':
                         if column not in results[i]:
                             params[i][column] = results[i]['trnX_len']

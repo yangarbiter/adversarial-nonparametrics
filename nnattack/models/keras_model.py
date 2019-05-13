@@ -170,9 +170,9 @@ class KerasModel(BaseEstimator):
             self.model.fit(X, Y,
                 batch_size=self.batch_size,
                 epochs=self.epochs,
-                verbose=2
+                verbose=2,
+                sample_weight=sample_weight,
             )
-            print(self.model.predict(X))
             print((self.model.predict(X).argmax(1) == y).mean())
 
             self.augX, self.augy = None, None

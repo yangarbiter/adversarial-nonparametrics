@@ -77,7 +77,7 @@ def main():
         run_param['n_jobs'] = 1
         run_param['allow_failure'] = False
     else:
-        #run_param['n_jobs'] = 1
+        run_param['n_jobs'] = 7
         run_param['allow_failure'] = True
 
     auto_var.run_grid_params(exp_fn, grid_params, **run_param)
