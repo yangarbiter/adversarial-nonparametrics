@@ -97,9 +97,9 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var(argument=r"kernelsub_c(?P<c>\d+)_(?P<attack>[a-zA-Z0-9]+)")
     @staticmethod
     def kernelSubTf(auto_var, var_value, inter_var, c, attack):
-        """Kernel substitution model"""
+        """Kernel substitution attack"""
         from .kernel_sub_tf import KernelSubTf
-        c = float(c) * 0.001
+        c = float(c) * 0.0001
         attack_model = KernelSubTf(
             sess=inter_var['sess'],
             attack=attack,
@@ -125,6 +125,7 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @register_var()
     @staticmethod
     def kernel_sub_pgd(auto_var, var_value, inter_var):
+        """For kernel classifier"""
         return inter_var['model']
 
     @register_var()

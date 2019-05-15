@@ -87,14 +87,16 @@ class compare_attacks(RobustExperiments):
             'model': ['knn1'],
             'ord': ['inf'],
             'dataset': datasets,
-            'attack': ['direct_k1', 'blackbox', 'nnopt_k1_all', ],
+            'attack': ['direct_k1', 'blackbox',
+                       'kernelsub_c1000_pgd', 'nnopt_k1_all'],
             'random_seed': random_seed,
         })
         grid_params.append({
             'model': ['knn3'],
             'ord': ['inf'],
             'dataset': datasets,
-            'attack': ['direct_k3', 'blackbox', 'rev_nnopt_k3_50_region'],
+            'attack': ['direct_k3', 'blackbox',
+                       'kernelsub_c1000_pgd', 'rev_nnopt_k3_50_region'],
             'random_seed': random_seed,
         })
         grid_params.append({
@@ -196,17 +198,28 @@ class compare_defense(RobustExperiments):
             'attack': ['rf_attack_rev_100'],
             'random_seed': random_seed,
         })
-        #grid_params.append({
-        #    'model': [
-        #        'mlp',
-        #        'adv_mlp_30',
-        #        'advPruning_mlp_30',
-        #    ],
-        #    'ord': ['inf'],
-        #    'dataset': tree_datasets,
-        #    'attack': ['pgd'],
-        #    'random_seed': random_seed,
-        #})
+        grid_params.append({
+            'model': [
+                'logistic_regression',
+                'adv_logistic_regression_30',
+                'advPruning_logistic_regression_30',
+            ],
+            'ord': ['inf'],
+            'dataset': tree_datasets,
+            'attack': ['pgd'],
+            'random_seed': random_seed,
+        })
+        grid_params.append({
+            'model': [
+                'mlp',
+                'adv_mlp_30',
+                'advPruning_mlp_30',
+            ],
+            'ord': ['inf'],
+            'dataset': tree_datasets,
+            'attack': ['pgd'],
+            'random_seed': random_seed,
+        })
         cls.grid_params = grid_params
         return RobustExperiments.__new__(cls, *args, **kwargs)
 

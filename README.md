@@ -79,8 +79,7 @@ python ./main.py --dataset australian --model adv_nn_k1_30 \
                  --attack RBA_Exact_KNN_k1 --random_seed 0 --ord inf
 ```
 
-5. Train undefended 1-NN.
-  The attack is RBA-Exact.
+5. Train undefended 1-NN. The attack is RBA-Exact.
 ```
 python ./main.py --dataset australian --model knn1 \
                  --attack RBA_Exact_KNN_k1 --random_seed 0 --ord inf

@@ -1,3 +1,4 @@
+""""""
 from functools import partial
 
 import numpy as np
@@ -11,6 +12,7 @@ from cleverhans.utils_tf import clip_eta
 EPS = np.finfo(float).eps
 
 class KernelSubTf(object):
+    """Kernel substitution attack."""
     def __init__(self, sess, c=1.0, attack:str=None, ord=np.inf):
         self.sess = sess
         self.attack = attack
