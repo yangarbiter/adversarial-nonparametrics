@@ -8,7 +8,7 @@ class AdversarialDt(DecisionTreeClassifier):
     def __init__(self, ord=np.inf, sep_measure=None, attack_model=None,
                  train_type='adv', **kwargs):
         """Decision Tree Classifier with defense
-        
+
         Keyword Arguments:
             ord {float} -- adversarial example perturbation measure (default: {np.inf})
             sep_measure {float} -- The distance measure for data, if None, it will be the same as `ord` (default: {None})
@@ -17,9 +17,9 @@ class AdversarialDt(DecisionTreeClassifier):
 
         Other Arguments follows the original scikit-learn argument (sklearn.tree.DecisionTreeClassifier).
         """
-            
+
         self.ord = ord
-        self.sep_measure = sep_measure 
+        self.sep_measure = sep_measure
         self.attack_model = attack_model
         self.train_type = train_type
 
@@ -28,11 +28,6 @@ class AdversarialDt(DecisionTreeClassifier):
         elif self.train_type == 'robust':
             kwargs['splitter'] = 'robust'
             #kwargs['eps'] = self.eps
-        elif self.train_type[:7] == 'robust_':
-            # for hybrid
-            kwargs['splitter'] = 'robust'
-            #kwargs['eps'] = self.eps
-            self.train_type = self.train_type[7:]
 
         # The modified DecisionTreeClassifier eats the esp argument
         super().__init__(**kwargs)
@@ -47,7 +42,7 @@ class AdversarialRf(RandomForestClassifier):
     def __init__(self, ord=np.inf, sep_measure=None, attack_model=None,
                  train_type='adv', **kwargs):
         """Random Forest Classifier with defense
-        
+
         Keyword Arguments:
             ord {float} -- adversarial example perturbation measure (default: {np.inf})
             sep_measure {float} -- The distance measure for data, if None, it will be the same as `ord` (default: {None})
@@ -56,9 +51,9 @@ class AdversarialRf(RandomForestClassifier):
 
         Other Arguments follows the original scikit-learn argument (sklearn.tree.RandomForestClassifier).
         """
-            
+
         self.ord = ord
-        self.sep_measure = sep_measure 
+        self.sep_measure = sep_measure
         self.attack_model = attack_model
         self.train_type = train_type
 
@@ -66,10 +61,6 @@ class AdversarialRf(RandomForestClassifier):
             pass
         elif self.train_type == 'robust':
             kwargs['splitter'] = 'robust'
-        elif self.train_type[:7] == 'robust_':
-            # for hybrid
-            kwargs['splitter'] = 'robust'
-            self.train_type = self.train_type[7:]
 
         # The modified RandomForestClassifier eats the esp argument
         super().__init__(**kwargs)
