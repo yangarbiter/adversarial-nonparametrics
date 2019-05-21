@@ -49,11 +49,11 @@ git+https://github.com/nonparametric-adversarial/scikit-learn.git
   inf.
 
 1. Run 3-NN using RBA-Approx searching 50 regions on dataset mnist 1 versus 7.
-   The dataset has a total of 300 examples, 100 for training, from the 200
+   The dataset has a total of 2200 examples, 100 for training, from the 200
    leftout examples, select 100 corrected predicted data for purturbation.
    The feature dimension of the dataset is reduced to 25 using PCA.
 ```
-python ./main.py --dataset mnist17_300_pca25 --model knn3 \
+python ./main.py --dataset mnist17_2200_pca25 --model knn3 \
                  --attack RBA_Approx_KNN_k3_50 --random_seed 0 --ord inf
 ```
 
@@ -61,7 +61,7 @@ python ./main.py --dataset mnist17_300_pca25 --model knn3 \
    The forest has 100 trees and maximum depth of 5.
    The attack is RBA-Approx searching 100 regions.
 ```
-python ./main.py --dataset mnist17_300_pca25 --model advPruning_rf_100_30_d5 \
+python ./main.py --dataset mnist17_10200_pca25 --model advPruning_rf_100_30_d5 \
                  --attack RBA_Approx_RF_100 --random_seed 0 --ord inf
 ```
 

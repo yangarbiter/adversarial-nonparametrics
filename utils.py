@@ -94,6 +94,7 @@ def set_plot(fig, ax, ord=np.inf):
     fig.autofmt_xdate()
     ax.legend()
     ax.set_ylim(0, 1)
+    ax.set_xlim(left=0.)
     #ax.legend(bbox_to_anchor=(1.5, 0., 0.5, 0.5))
     ax.legend(prop={'size': 16}, loc='upper right', frameon=True)
     ax.xaxis.set_tick_params(labelsize=16)
