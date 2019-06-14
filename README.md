@@ -4,7 +4,7 @@ This repo contains the implementation of experiments in the paper
 
 [Adversarial Examples for Non-Parametric Methods: Attacks, Defenses and Large Sample Limits](https://arxiv.org/abs/1906.03310)
 
-Authors: Yao-Yuan Yang*, Cyrus Rashtchian*, Yizhen Wang, Kamalika Chaudhuri (*equal contribution)
+Authors: Yao-Yuan Yang*, Cyrus Rashtchian*, Yizhen Wang, Kamalika Chaudhuri (* equal contribution)
 
 #### Abstract
 
