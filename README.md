@@ -6,6 +6,10 @@ This repo contains the implementation of experiments in the paper
 
 Authors: Yao-Yuan Yang, Cyrus Rashtchian, Yizhen Wang, Kamalika Chaudhuri
 
+#### Abstract
+
+Adversarial examples have received a great deal of recent attention because of their potential to uncover security flaws in machine learning systems. However, most prior work on adversarial examples has been on parametric classifiers, for which generic attack and defense methods are known; non-parametric methods have been only considered on an ad-hoc or classifier-specific basis. In this work, we take a holistic look at adversarial examples for non-parametric methods. We first provide a general region-based attack that applies to a wide range of classifiers, including nearest neighbors, decision trees, and random forests. Motivated by the close connection between non-parametric methods and the Bayes Optimal classifier, we next exhibit a robust analogue to the Bayes Optimal, and we use it to motivate a novel and generic defense that we call adversarial pruning. We empirically show that the region-based attack and adversarial pruning defense are either better than or competitive with existing attacks and defenses for non-parametric methods, while being considerably more generally applicable.
+
 
 ## Installation
 
@@ -19,7 +23,7 @@ pip install --upgrade -r requirements.txt
 
 #### LP, QP Solvers
 
-- Install gruobi: https://www.cvxpy.org/install/index.html#install-with-gurobi-support
+- Install gurobi: https://www.cvxpy.org/install/index.html#install-with-gurobi-support
 - Install GLPK: https://www.cvxpy.org/install/index.html#install-with-cvxopt-and-glpk-support
 
 ### Install C-extensions
