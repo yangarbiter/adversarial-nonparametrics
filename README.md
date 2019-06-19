@@ -38,8 +38,7 @@ following commend. More installation detail please reference to
 https://github.com/scikit-learn/scikit-learn.
 
 ```
-pip install --upgrade
-git+https://github.com/nonparametric-adversarial/scikit-learn.git
+pip install --upgrade git+https://github.com/yangarbiter/scikit-learn.git@robustDT
 ```
 
 ## Implementations
