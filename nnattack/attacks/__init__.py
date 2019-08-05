@@ -20,10 +20,8 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
     @register_var(argument=r"RBA_Approx_KNN_k(?P<n_neighbors>\d+)_(?P<n_searches>\d+)",
                   shown_name="RBA-Approx")
-    @register_var(argument=r"rev_nnopt_k(?P<n_neighbors>\d+)_(?P<n_searches>\d+)_region",
-                  shown_name="RBA-Approx")
     @staticmethod
-    def rev_nnopt_region(auto_var, var_value, inter_var, n_neighbors, n_searches):
+    def rba_approx_knn(auto_var, var_value, inter_var, n_neighbors, n_searches):
         """RBA-Approx for Nearest Neighbor"""
         from .nns.nn_attack import KNNRegionBasedAttackApprox
         n_neighbors = int(n_neighbors)
@@ -78,10 +76,8 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
     @register_var(argument=r"RBA_Exact_KNN_k(?P<n_neighbors>\d+)",
                   shown_name="RBA-Exact")
-    @register_var(argument=r"nnopt_k(?P<n_neighbors>\d+)_all",
-                  shown_name="RBA-Exact")
     @staticmethod
-    def nnopt_all(auto_var, var_value, inter_var, n_neighbors):
+    def rba_exact_knn(auto_var, var_value, inter_var, n_neighbors):
         """RBA-Exact for nearest neighbor"""
         from .nns.nn_attack import NNAttack
         n_neighbors = int(n_neighbors)
@@ -159,9 +155,8 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
         return attack_model
 
     @register_var(argument=r"RBA_Exact_DT", shown_name="RBA-Exact")
-    @register_var(argument=r"dt_attack_opt", shown_name="RBA-Exact")
     @staticmethod
-    def dt_attack_opt(auto_var, var_value, inter_var):
+    def rba_exact_dt(auto_var, var_value, inter_var):
         """RBA-Exact for Decision Tree"""
         from .trees.dt_opt import DTOpt
         attack_model = DTOpt(
@@ -172,9 +167,8 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
         return attack_model
 
     @register_var(argument=r"RBA_Exact_RF", shown_name="RBA-Exact")
-    @register_var(argument=r"rf_attack_all", shown_name="RBA-Exact")
     @staticmethod
-    def rf_attack_all(auto_var, var_value, inter_var):
+    def rba_exact_rf(auto_var, var_value, inter_var):
         """RBA-Exact for Random Forest"""
         from .trees.rf_attack import RFAttack
 
@@ -191,10 +185,8 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
     @register_var(argument=r"RBA_Approx_RF(?P<n_searches>_\d+)?",
                   shown_name="RBA-Approx")
-    @register_var(argument=r"rf_attack_rev(?P<n_searches>_\d+)?",
-                  shown_name="RBA-Approx")
     @staticmethod
-    def rf_attack_rev(auto_var, var_value, inter_var, n_searches):
+    def rba_approx_rf(auto_var, var_value, inter_var, n_searches):
         """RBA-Approx for Random Forest"""
         from .trees.rf_attack import RFAttack
         n_searches = int(n_searches[1:]) if n_searches is not None else -1
