@@ -208,7 +208,7 @@ class tst_scores(RobustExperiments):
             ],
             'ord': [ATTACK_NORM],
             'dataset': datasets,
-            'attack': ['RBA_Apporx_KNN_k3_50'], #, 'blackbox'],
+            'attack': ['RBA_Approx_KNN_k3_50'], #, 'blackbox'],
             'random_seed': random_seed,
         })
         grid_params.append({
