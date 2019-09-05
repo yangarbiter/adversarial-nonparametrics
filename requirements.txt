@@ -14,3 +14,4 @@ numpy==1.16.1
 pandas==0.24.1
 scipy==1.2.1
 tqdm
+faiss==1.5.3
