@@ -215,16 +215,16 @@ class KerasModel(BaseEstimator):
         pred = self.predict(X)
         return (pred == y).mean()
 
-    def _get_pert(self, X, Y, eps:float, model):
-        x = tf.placeholder(tf.float32, shape=([None] + list(self.n_features))) 
+    def _get_pert(self, X, Y, eps:float, model, ord):
+        x = tf.placeholder(tf.float32, shape=([None] + list(self.n_features)))
         y = tf.placeholder(tf.float32, shape=(None, self.n_classes))
 
         wrap = KerasModelWrapper(model)
-        pgd = ProjectedGradientDescent(wrap, ord=self.ord, sess=self.sess)
+        pgd = ProjectedGradientDescent(wrap, sess=self.sess)
         if eps >= 0.05:
-            adv_x = pgd.generate(x, y=y, eps=eps)
+            adv_x = pgd.generate(x, y=y, eps=eps, ord=ord)
         else:
-            adv_x = pgd.generate(x, y=y, eps=eps, eps_iter=eps)
+            adv_x = pgd.generate(x, y=y, eps=eps, eps_iter=eps/5, ord=ord)
         adv_x = tf.stop_gradient(adv_x)
         ret = adv_x - x
         return ret.eval(feed_dict={x: X, y: Y}, session=self.sess)
@@ -238,10 +238,10 @@ class KerasModel(BaseEstimator):
         if isinstance(eps, list):
             rret = []
             for ep in eps:
-                rret.append(self._get_pert(X, Y, ep, self.model))
+                rret.append(self._get_pert(X, Y, ep, self.model, self.ord))
             return rret
         elif isinstance(eps, float):
-            ret = self._get_pert(X, Y, eps, self.model)
+            ret = self._get_pert(X, Y, eps, self.model, self.ord)
         else:
             raise ValueError
         return ret
