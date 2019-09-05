@@ -10,8 +10,6 @@ from params import (
     tst_scores,
     parametric_defense,
 
-    rf_optimality,
-    nn_optimality,
     compare_nns,
     nn_k1_robustness,
     nn_k3_robustness,
@@ -27,10 +25,6 @@ from params import (
     mlp_at_robustness,
     lr_ap_robustness,
     lr_at_robustness,
-
-    rf_optimality_figs,
-    nn_k1_optimality_figs,
-    nn_k3_optimality_figs,
 )
 from main import eps_accuracy
 
@@ -57,13 +51,6 @@ def main():
         mlp_at_robustness(),
         lr_ap_robustness(),
         lr_at_robustness(),
-
-        #rf_optimality(),
-        #nn_optimality(),
-
-        rf_optimality_figs(),
-        nn_k1_optimality_figs(),
-        nn_k3_optimality_figs(),
     ]
     grid_params = []
     for exp in experiments:
