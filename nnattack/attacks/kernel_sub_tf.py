@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python import debug as tf_debug
 from cleverhans.attacks import FastGradientMethod, ProjectedGradientDescent
-from cleverhans.attacks.fast_gradient_method import optimize_linear
+from cleverhans.attacks import optimize_linear
 from cleverhans import utils_tf
 from cleverhans.utils_tf import clip_eta
 
