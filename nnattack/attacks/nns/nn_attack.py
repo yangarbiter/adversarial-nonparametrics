@@ -43,8 +43,6 @@ def get_half_space(a, b):
 glob_trnX = None
 glob_trny = None
 
-DEBUG = False
-
 #@profile
 def get_sol(target_x, tuple_x, faropp, kdtree, transformer,
         glob_trnX, glob_trny, init_x=None, n_jobs=1):
