@@ -107,12 +107,13 @@ def attack_untargeted(predict_fn, train_dataset, x0, y0, ord, alpha=0.2,
 
         min_theta = theta
         min_g2 = g2
-    
+
         for _ in range(15):
             new_theta = theta - alpha * gradient
-            if np.linalg.norm(new_theta, ord=ord) == 0:
+            norm = np.linalg.norm(new_theta, ord=ord)
+            if np.isclose(norm, 0) or np.isclose(norm, np.inf):
                 break
-            new_theta = new_theta/np.linalg.norm(new_theta, ord=ord)
+            new_theta = new_theta / norm
             new_g2, count = fine_grained_binary_search_local(predict_fn, x0, y0, new_theta, initial_lbd = min_g2, tol=beta/500)
             opt_count += count
             alpha = alpha * 2
@@ -126,9 +127,10 @@ def attack_untargeted(predict_fn, train_dataset, x0, y0, ord, alpha=0.2,
             for _ in range(15):
                 alpha = alpha * 0.25
                 new_theta = theta - alpha * gradient
-                if np.linalg.norm(new_theta, ord=ord) == 0:
+                norm = np.linalg.norm(new_theta, ord=ord)
+                if np.isclose(norm, 0) or np.isclose(norm, np.inf):
                     break
-                new_theta = new_theta/np.linalg.norm(new_theta, ord=ord)
+                new_theta = new_theta/norm
                 new_g2, count = fine_grained_binary_search_local(predict_fn, x0, y0, new_theta, initial_lbd = min_g2, tol=beta/500)
                 opt_count += count
                 if new_g2 < g2:
@@ -160,7 +162,7 @@ def attack_untargeted(predict_fn, train_dataset, x0, y0, ord, alpha=0.2,
 def fine_grained_binary_search_local(predict_fn, x0, y0, theta, initial_lbd = 1.0, tol=1e-5):
     nquery = 0
     lbd = initial_lbd
-     
+
     if predict_fn([x0+lbd*theta]) == y0:
         lbd_lo = lbd
         lbd_hi = lbd*1.01
@@ -189,14 +191,14 @@ def fine_grained_binary_search_local(predict_fn, x0, y0, theta, initial_lbd = 1.
 
 def fine_grained_binary_search(predict_fn, x0, y0, theta, initial_lbd, current_best):
     nquery = 0
-    if initial_lbd > current_best: 
+    if initial_lbd > current_best:
         if predict_fn([x0+current_best*theta]) == y0:
             nquery += 1
             return float('inf'), nquery
         lbd = current_best
     else:
         lbd = initial_lbd
-    
+
     lbd_hi = lbd
     lbd_lo = 0.0
 
@@ -235,7 +237,7 @@ class BlackBoxAttack(AttackModel):
             self.model.model.save_weights(filen)
             predict_fn = ('keras', filen)
         elif 'faiss' in self.model.__module__:
-            _, filen = tempfile.mkstemp(prefix="/tmp2/arbiter/")
+            _, filen = tempfile.mkstemp(prefix="/tmp2/aptemp/")
             self.model.save(filen)
             temp_model = eval(self.model.__repr__())
             temp_model.trnX = self.model.trnX
