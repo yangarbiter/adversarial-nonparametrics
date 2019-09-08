@@ -137,7 +137,7 @@ class compare_defense(RobustExperiments):
             'model': ['knn3', 'adv_nn_k3_30', 'advPruning_nn_k3_30'],
             'ord': [ATTACK_NORM],
             'dataset': datasets,
-            'attack': ['RBA_Approx_KNN_k3_50_region'],
+            'attack': ['RBA_Approx_KNN_k3_50'],
             'random_seed': random_seed,
         })
         grid_params.append({
@@ -422,7 +422,7 @@ class nn_k1_robustness_figs(RobustExperiments):
         cls.name = "nn_k1_robustness_figs"
         nn_k1_models = ['knn1', 'advPruning_nn_k1_30',]
         grid_params = {
-            'model': nn_k1_models, 'attack': ['k1_all'],
+            'model': nn_k1_models, 'attack': ['RBA_Exact_KNN_k1'],
             'dataset': datasets, 'ord': ['inf'], 'random_seed': random_seed,
         }
         cls.grid_params = grid_params
