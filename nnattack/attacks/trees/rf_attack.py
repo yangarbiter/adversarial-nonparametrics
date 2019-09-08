@@ -91,6 +91,43 @@ def tree_instance_constraint(tree_clf, X):
     #return Gs, hs
     return np.asarray(ret)
 
+def rev_get_sol_l2(target_x, target_y: int, pred_trn_y, regions, clf,
+        trnX=None):
+    fet_dim = np.shape(target_x)[0]
+    candidates = []
+    regions = [constraint_list_to_matrix(r) for r in regions]
+    for i, (G, h) in enumerate(regions):
+        #c = np.concatenate((np.zeros(fet_dim), np.ones(1))).reshape((-1, 1))
+
+        Q = 2 * np.eye(fet_dim)
+        q = -2 * target_x
+        temph = (h - 1e-6).reshape((-1, 1))
+
+        if trnX is None:
+            status, sol = solve_qp(Q, q, G, temph, len(q))
+        else:
+            status, sol = solve_qp(Q, q, G, temph, len(q), init_x=trnX[i].reshape((-1, 1)))
+
+        if status == 'optimal':
+            ret = np.array(sol).reshape(-1)
+
+            if clf.predict([ret])[0] != target_y:
+                candidates.append(ret - target_x)
+            else:
+                # a dimension is too close to the boundary
+                # region too small
+                # just use the traning data as 
+                if trnX is not None:
+                    candidates.append(trnX[i] - target_x)
+                print("region too small %d" % i)
+        elif status == 'infeasible_inaccurate':
+            candidates.append(trnX[i] - target_x)
+        else:
+            print(status)
+
+    norms = np.linalg.norm(candidates, ord=np.inf, axis=1)
+    return candidates[norms.argmin()]
+
 def rev_get_sol_linf(target_x, target_y: int, pred_trn_y, regions, clf,
         trnX=None):
     fet_dim = np.shape(target_x)[0]
@@ -117,18 +154,6 @@ def rev_get_sol_linf(target_x, target_y: int, pred_trn_y, regions, clf,
 
         if status == 'optimal':
             ret = np.array(sol).reshape(-1)[:-1]
-            #print(clf.predict([ret])[0], target_y)
-            #print(np.dot(ori_G, target_x) <= ori_h)
-            #print(np.dot(ori_G, ret) <= ori_h)
-            #print(np.dot(ori_G, trnX[np.where(pred_trn_y != target_y)[0][i]]) <= ori_h)
-            #print([est.predict([ret]) for est in clf.estimators_])
-            #print([est.predict([trnX[np.where(pred_trn_y != target_y)[0][i]]]) for est in clf.estimators_])
-
-            #if not np.all(np.dot(G, sol.ravel()) <= h):
-            #    import ipdb; ipdb.set_trace()
-            #assert np.all(np.dot(G, sol.ravel()) <= h), i
-            #if clf.predict([ret])[0] == target_y:
-            #assert clf.predict([ret])[0] != target_y, i
 
             if clf.predict([ret])[0] != target_y:
                 candidates.append(ret - target_x)
@@ -140,14 +165,9 @@ def rev_get_sol_linf(target_x, target_y: int, pred_trn_y, regions, clf,
                     candidates.append(trnX[i] - target_x)
                 print("region too small %d" % i)
         elif status == 'infeasible_inaccurate':
-            #print(status)
             candidates.append(trnX[i] - target_x)
-            #ret = np.array(sol).reshape(-1)[:-1]
-            #if clf.predict([ret])[0] != target_y:
-            #    candidates.append(ret)
         else:
             print(status)
-            #raise ValueError()
 
     norms = np.linalg.norm(candidates, ord=np.inf, axis=1)
     return candidates[norms.argmin()]
