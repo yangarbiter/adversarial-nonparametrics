@@ -76,10 +76,19 @@ def eps_accuracy(auto_var):
     random_state = set_random_seed(auto_var)
     ord = auto_var.get_var("ord")
 
-    X, y, eps_list = auto_var.get_var("dataset")
-    idxs = np.arange(len(X))
-    random_state.shuffle(idxs)
-    trnX, tstX, trny, tsty = X[idxs[:-200]], X[idxs[-200:]], y[idxs[:-200]], y[idxs[-200:]]
+    dataset_name = auto_var.get_variable_name("dataset")
+    if dataset_name in ['mnist']:
+        X, y, x_test, y_test, eps_list = auto_var.get_var("dataset")
+        idxs = np.arange(len(x_test))
+        random_state.shuffle(idxs)
+        tstX, tsty = x_test[idxs[:200]], y_test[idxs[:200]]
+
+        X, tstX = X.reshape((len(X), -1)), tstX.reshape((len(tstX), -1))
+    else:
+        X, y, eps_list = auto_var.get_var("dataset")
+        idxs = np.arange(len(X))
+        random_state.shuffle(idxs)
+        trnX, tstX, trny, tsty = X[idxs[:-200]], X[idxs[-200:]], y[idxs[:-200]], y[idxs[-200:]]
 
     scaler = MinMaxScaler()
     trnX = scaler.fit_transform(trnX)
