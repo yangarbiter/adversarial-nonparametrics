@@ -59,7 +59,6 @@ def params_to_dataframe(grid_param, columns=None):
     for i, param in enumerate(params):
         if columns is None:
             for r in results[i]:
-                #params[i][f'eps_{r["eps"]:.2f}_trn'] = r['trn_acc']
                 params[i][f'eps_{r["eps"]:.2f}_tst'] = r['tst_acc']
         else:
             for column in columns:
@@ -124,16 +123,16 @@ def union_param_key(grid_param, key):
         return grid_param[key]
 
 
-def table_wrapper(table_df, table_name, caption=''):
+def table_wrapper(table_df, table_name, caption='', sep=2.5):
     t = """
 \\begin{table}[h!]
 \\tiny
 \\centering
-\\setlength{\\tabcolsep}{2.0pt}
+\\setlength{\\tabcolsep}{%.2fpt}
 """
     t += table_df.to_latex(escape=False)
     t += """\\caption{%s}
 \\label{table:%s}
 \\end{table}
-""" % (caption, table_name)
+""" % (sep, caption, table_name)
     return t
