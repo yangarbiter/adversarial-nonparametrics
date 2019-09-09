@@ -9,7 +9,8 @@ import random
 import os
 
 import tensorflow as tf
-from tensorflow.keras.models import model_from_json
+import keras
+from keras.models import model_from_json
 import numpy as np
 from joblib import Parallel, delayed
 from tqdm import tqdm
@@ -228,7 +229,7 @@ class BlackBoxAttack(AttackModel):
         ret: List[np.ndarray] = []
         dataset = list(zip(X, y))
 
-        if hasattr(self.model, 'model') and isinstance(self.model.model, tf.keras.models.Model):
+        if hasattr(self.model, 'model') and isinstance(self.model.model, keras.models.Model):
             filen = tempfile.mkdtemp(prefix="/tmp2/aptemp/")
             filen = os.path.join(filen, "model")
 
