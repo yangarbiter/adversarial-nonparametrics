@@ -77,13 +77,14 @@ def eps_accuracy(auto_var):
     ord = auto_var.get_var("ord")
 
     dataset_name = auto_var.get_variable_name("dataset")
-    if dataset_name in ['mnist']:
+    if dataset_name in ['fullmnist']:
         X, y, x_test, y_test, eps_list = auto_var.get_var("dataset")
         idxs = np.arange(len(x_test))
         random_state.shuffle(idxs)
         tstX, tsty = x_test[idxs[:200]], y_test[idxs[:200]]
 
-        X, tstX = X.reshape((len(X), -1)), tstX.reshape((len(tstX), -1))
+        trnX, tstX = X.reshape((len(X), -1)), tstX.reshape((len(tstX), -1))
+        trny = y
     else:
         X, y, eps_list = auto_var.get_var("dataset")
         idxs = np.arange(len(X))

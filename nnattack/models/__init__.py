@@ -57,9 +57,9 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
     The defense is implemented in this option."""
     var_name = "model"
 
-    @register_var(argument=r'faisslshknn_(?P<n_neighbors>\d+)_(?P<n_bits>\d+)')
+    @register_var(argument=r'(?P<train>[a-zA-Z0-9]+_)?faisslshknn_(?P<n_neighbors>\d+)_(?P<n_bits>\d+)')
     @staticmethod
-    def faisslshknn(auto_var, inter_var, n_neighbors, n_bits, trnX, trny):
+    def faisslshknn(auto_var, inter_var, n_neighbors, n_bits, train):
         """FAISS Nearest Neighbor classifier"""
         from .faiss_model import FaissLSHModel
         n_neighbors = int(n_neighbors)

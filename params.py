@@ -84,7 +84,8 @@ class compare_attacks(RobustExperiments):
             'random_seed': random_seed,
         })
         grid_params.append({
-            'model': ['random_forest_100_d5'],
+            #'model': ['random_forest_100_d5'],
+            'model': ['random_forest_200_d10'],
             'ord': [ATTACK_NORM],
             'dataset': tree_datasets,
             'attack': ['blackbox', 'RBA_Approx_RF_100'],
@@ -133,59 +134,59 @@ class compare_defense(RobustExperiments):
         #    'attack': ['RBA_Exact_KNN_k1'],
         #    'random_seed': random_seed,
         #})
+        grid_params.append({
+            'model': ['knn3', 'adv_nn_k3_30', 'advPruning_nn_k3_30'],
+            'ord': [ATTACK_NORM],
+            'dataset': datasets,
+            'attack': ['RBA_Approx_KNN_k3_50'],
+            'random_seed': random_seed,
+        })
         #grid_params.append({
-        #    'model': ['knn3', 'adv_nn_k3_30', 'advPruning_nn_k3_30'],
+        #    'model': [
+        #        'decision_tree_d5',
+        #        'adv_decision_tree_d5_30',
+        #        'robust_decision_tree_d5_30',
+        #        'advPruning_decision_tree_d5_30',
+        #    ],
         #    'ord': [ATTACK_NORM],
-        #    'dataset': datasets,
-        #    'attack': ['RBA_Approx_KNN_k3_50'],
+        #    'dataset': tree_datasets,
+        #    'attack': ['RBA_Exact_DT'],
         #    'random_seed': random_seed,
         #})
-        grid_params.append({
-            'model': [
-                'decision_tree_d5',
-                'adv_decision_tree_d5_30',
-                'robust_decision_tree_d5_30',
-                'advPruning_decision_tree_d5_30',
-            ],
-            'ord': [ATTACK_NORM],
-            'dataset': tree_datasets,
-            'attack': ['RBA_Exact_DT'],
-            'random_seed': random_seed,
-        })
-        grid_params.append({
-            'model': [
-                'random_forest_100_d5',
-                'adv_rf_100_30_d5',
-                'robust_rf_100_30_d5',
-                'advPruning_rf_100_30_d5',
-            ],
-            'ord': [ATTACK_NORM],
-            'dataset': tree_datasets,
-            'attack': ['RBA_Approx_RF_100'],
-            'random_seed': random_seed,
-        })
-        grid_params.append({
-            'model': [
-                'logistic_regression',
-                'adv_logistic_regression_30',
-                'advPruning_logistic_regression_30',
-            ],
-            'ord': [ATTACK_NORM],
-            'dataset': tree_datasets,
-            'attack': ['pgd'],
-            'random_seed': random_seed,
-        })
-        grid_params.append({
-            'model': [
-                'mlp',
-                'adv_mlp_30',
-                'advPruning_mlp_30',
-            ],
-            'ord': [ATTACK_NORM],
-            'dataset': tree_datasets,
-            'attack': ['pgd'],
-            'random_seed': random_seed,
-        })
+        #grid_params.append({
+        #    'model': [
+        #        'random_forest_100_d5',
+        #        'adv_rf_100_30_d5',
+        #        'robust_rf_100_30_d5',
+        #        'advPruning_rf_100_30_d5',
+        #    ],
+        #    'ord': [ATTACK_NORM],
+        #    'dataset': tree_datasets,
+        #    'attack': ['RBA_Approx_RF_100'],
+        #    'random_seed': random_seed,
+        #})
+        #grid_params.append({
+        #    'model': [
+        #        'logistic_regression',
+        #        'adv_logistic_regression_30',
+        #        'advPruning_logistic_regression_30',
+        #    ],
+        #    'ord': [ATTACK_NORM],
+        #    'dataset': tree_datasets,
+        #    'attack': ['pgd'],
+        #    'random_seed': random_seed,
+        #})
+        #grid_params.append({
+        #    'model': [
+        #        'mlp',
+        #        'adv_mlp_30',
+        #        'advPruning_mlp_30',
+        #    ],
+        #    'ord': [ATTACK_NORM],
+        #    'dataset': tree_datasets,
+        #    'attack': ['pgd'],
+        #    'random_seed': random_seed,
+        #})
         cls.grid_params = grid_params
         return RobustExperiments.__new__(cls, *args, **kwargs)
 

@@ -203,13 +203,10 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
         return X, y, LINF_EPS
 
-    @register_var(argument=r"fullmnist",
-                  shown_name="mnist")
+    @register_var(argument=r"fullmnist", shown_name="mnist")
     @staticmethod
     def mnist(auto_var, inter_var):
         from keras.datasets import mnist
-        n_samples = int(n_samples)
-        n_dims = int(n_dims[4:]) if n_dims else None
 
         (x_train, y_train), (x_test, y_test) = mnist.load_data()
         x_train, x_test = x_train.astype(np.float32) / 255, x_test.astype(np.float32) / 255
