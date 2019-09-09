@@ -57,15 +57,18 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
     The defense is implemented in this option."""
     var_name = "model"
 
-    @register_var(argument=r'(?P<train>[a-zA-Z0-9]+_)?faisslshknn_(?P<n_neighbors>\d+)_(?P<n_bits>\d+)')
+    @register_var(argument=r'(?P<train>[a-zA-Z0-9]+_)?faisslshknn_(?P<n_neighbors>\d+)_(?P<n_bits>\d+)(?P<eps>_\d+)?')
     @staticmethod
-    def faisslshknn(auto_var, inter_var, n_neighbors, n_bits, train):
+    def faisslshknn(auto_var, inter_var, n_neighbors, n_bits, train, eps):
         """FAISS Nearest Neighbor classifier"""
         from .faiss_model import FaissLSHModel
         n_neighbors = int(n_neighbors)
         n_bits = int(n_bits)
-        return FaissLSHModel(n_neighbors=n_neighbors, n_bits=n_bits,
-                             train_type=train)
+        eps = int(eps[1:]) * 0.01
+        return FaissLSHModel(
+                n_neighbors=n_neighbors, n_bits=n_bits,
+                train_type=train[:-1], eps=eps,
+                ord=auto_var.get_var("ord"))
 
     @register_var(argument=r"random_forest_(?P<n_trees>\d+)(?P<depth>_d\d+)?")
     @staticmethod

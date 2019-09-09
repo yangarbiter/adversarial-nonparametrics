@@ -65,7 +65,7 @@ def get_aug_v2(X, Y, Delta, delta, eps, ord):
         Y_train = Y
     return X_train, Y_train
 
-def get_aug_data(model, X, y, eps):
+def get_aug_data(model, X, y, eps, sep_measure=None):
     """Augment the data for defense, returns the augmented data
 
     Arguments:
@@ -88,7 +88,8 @@ def get_aug_data(model, X, y, eps):
         elif eps is None:
             eps = model.eps
 
-    sep_measure = model.sep_measure if model.sep_measure else model.ord
+    if sep_measure is None:
+        sep_measure = model.sep_measure if model.sep_measure else model.ord
 
     if model.train_type == 'adv':
         advX = model.attack_model.perturb(X, y=y, eps=eps)
@@ -129,9 +130,6 @@ def get_aug_data(model, X, y, eps):
         augy = (augy+1)//2
 
     elif model.train_type == 'approxAP':
-        if len(np.unique(y)) != 2:
-            raise ValueError("Can only deal with number of classes = 2"
-                             "got %d", len(np.unique(y)))
         augX, augy = approx_ap(X, y, eps, sep_measure)
 
     elif model.train_type == 'advPruning':
