@@ -9,6 +9,7 @@ from scipy.spatial.distance import cdist
 
 from .robust_nn.eps_separation import find_eps_separated_set
 from ..variables import auto_var
+from .approx_ap import approx_ap
 
 def find_confident_label(X, Y, k, Delta):
     thres = 2*Delta
@@ -126,6 +127,12 @@ def get_aug_data(model, X, y, eps):
         y = y.astype(int)*2-1
         augX, augy = find_eps_separated_set(X, eps/2, y, 'min_measure')
         augy = (augy+1)//2
+
+    elif model.train_type == 'approxAP':
+        if len(np.unique(y)) != 2:
+            raise ValueError("Can only deal with number of classes = 2"
+                             "got %d", len(np.unique(y)))
+        augX, augy = approx_ap(X, y, eps, sep_measure)
 
     elif model.train_type == 'advPruning':
         if len(np.unique(y)) != 2:

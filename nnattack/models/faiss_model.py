@@ -3,28 +3,37 @@ import numpy as np
 import faiss
 from sklearn.base import BaseEstimator
 from scipy import stats
+from .approx_ap
+from .defense import get_aug_data
 
 
 class FaissLSHModel(BaseEstimator):
 
-    def __init__(self, n_neighbors, n_bits):
+    def __init__(self, n_neighbors, n_bits, train_type: str = None):
+        """
+            train_type {str} -- None for undefended classifier, 'advPruning' for adversarial pruning, 'adv' for adversarial training (default: None)
+        """
         self.n_neighbors = n_neighbors
         self.n_bits = n_bits
+        self.train_type = train_type
 
     def fit(self, X, y):
-        d = X.shape[1]
+		self.augX, self.augy = get_aug_data(self, X, y, eps)
+        augX, augy = self.augX, self.augy
+
+        d = augX.shape[1]
         #self.index = faiss.IndexFlatL2(d)
 
-        self.index = faiss.IndexLSH(d, 200)
+        self.index = faiss.IndexLSH(d, self.n_bits)
 
         #quantizer = faiss.IndexFlatL2(d)
         #self.index = faiss.IndexIVFFlat(quantizer, d, 1000)
         #self.index.train(X)
 
-        self.index.add(X)
+        self.index.add(augX)
 
-        self.trnX, self.trny = X, y
-    
+        self.trnX, self.trny = augX, augy
+
     def predict(self, X):
         X = np.asarray(X, np.float32)
         _, I = self.index.search(X, self.n_neighbors)
