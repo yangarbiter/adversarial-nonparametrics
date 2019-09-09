@@ -21,7 +21,9 @@ def set_random_seed(auto_var):
     tf.set_random_seed(random_seed)
     np.random.seed(random_seed)
 
-    sess = tf.Session()
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    sess = tf.Session(config=config)
     keras.backend.set_session(sess)
     keras.layers.core.K.set_learning_phase(0)
     #tensorflow.keras.backend.set_session(sess)
@@ -139,7 +141,7 @@ def eps_accuracy(auto_var):
         #raise ValueError("didn't got 100 testing examples")
 
     augX = None
-    if ('adv' in model_name) or ('advPruning' in model_name) or ('robustv2' in model_name):
+    if ('approxAP' in model_name) or ('adv' in model_name) or ('advPruning' in model_name) or ('robustv2' in model_name):
         assert hasattr(model, 'augX')
         auto_var.set_intermidiate_variable("trnX", model.augX)
         auto_var.set_intermidiate_variable("trny", model.augy)
