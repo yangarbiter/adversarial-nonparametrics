@@ -132,7 +132,7 @@ class compare_defense(RobustExperiments):
             #'model': ['knn1', 'adv_nn_k1_30', 'robustv2_nn_k1_30', 'advPruning_nn_k1_30'],
             'model': [
                 'knn1',
-                #f'adv_nn_k1_{def_strength}',
+                f'adv_nn_k1_{def_strength}',
                 f'robustv2_nn_k1_{def_strength}',
                 f'advPruning_nn_k1_{def_strength}'
             ],
@@ -144,7 +144,7 @@ class compare_defense(RobustExperiments):
         grid_params.append({
             'model': [
                 'knn3',
-                #f'adv_nn_k3_{def_strength}',
+                f'adv_nn_k3_{def_strength}',
                 f'advPruning_nn_k3_{def_strength}'
             ],
             'ord': [ATTACK_NORM],
@@ -155,7 +155,7 @@ class compare_defense(RobustExperiments):
         grid_params.append({
             'model': [
                 'decision_tree_d5',
-                #f'adv_decision_tree_d5_{def_strength}',
+                f'adv_decision_tree_d5_{def_strength}',
                 f'robust_decision_tree_d5_{def_strength}',
                 f'advPruning_decision_tree_d5_{def_strength}',
             ],
@@ -167,7 +167,7 @@ class compare_defense(RobustExperiments):
         grid_params.append({
             'model': [
                 'random_forest_100_d5',
-                #f'adv_rf_100_{def_strength}_d5',
+                f'adv_rf_100_{def_strength}_d5',
                 f'robust_rf_100_{def_strength}_d5',
                 f'advPruning_rf_100_{def_strength}_d5',
             ],
