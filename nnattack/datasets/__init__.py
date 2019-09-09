@@ -217,6 +217,20 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
         return x_train, y_train, x_test, y_test, eps
 
+    @register_var(argument=r"fullfashion", shown_name="fashion")
+    @staticmethod
+    def fashion(auto_var, inter_var):
+        from keras.datasets import fashion_mnist
+
+        (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
+        x_train, x_test = x_train.astype(np.float32) / 255, x_test.astype(np.float32) / 255
+        if auto_var.get_var("ord") == 2:
+            eps = [0.1 * i for i in range(0, 41, 1)]
+        else:
+            eps = LINF_EPS
+
+        return x_train, y_train, x_test, y_test, eps
+
     @register_var(argument=r"mnist17_(?P<n_samples>\d+)(?P<n_dims>_pca\d+)?",
                   shown_name="mnist17")
     @staticmethod

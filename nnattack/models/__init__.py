@@ -64,10 +64,14 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         from .faiss_model import FaissLSHModel
         n_neighbors = int(n_neighbors)
         n_bits = int(n_bits)
-        eps = int(eps[1:]) * 0.01
+        eps = int(eps[1:]) * 0.01 if eps is not None else None
+        if train is not None:
+            train_type = train[:-1]
+        else:
+            train_type = None
         return FaissLSHModel(
                 n_neighbors=n_neighbors, n_bits=n_bits,
-                train_type=train[:-1], eps=eps,
+                train_type=train_type, eps=eps,
                 ord=auto_var.get_var("ord"))
 
     @register_var(argument=r"random_forest_(?P<n_trees>\d+)(?P<depth>_d\d+)?")

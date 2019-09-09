@@ -77,7 +77,7 @@ def eps_accuracy(auto_var):
     ord = auto_var.get_var("ord")
 
     dataset_name = auto_var.get_variable_name("dataset")
-    if dataset_name in ['fullmnist']:
+    if dataset_name in ['fullmnist', 'fullfashion']:
         X, y, x_test, y_test, eps_list = auto_var.get_var("dataset")
         idxs = np.arange(len(x_test))
         random_state.shuffle(idxs)
