@@ -23,6 +23,7 @@ class FaissLSHModel(BaseEstimator):
     def fit(self, X, y):
         self.augX, self.augy = get_aug_data(self, X, y, self.eps, self.ord)
         augX, augy = self.augX, self.augy
+        print("XDDDDDDDDDDDDDDDDDDDDDDDDDDD", augX.shape, augy.shape)
 
         d = augX.shape[1]
         #self.index = faiss.IndexFlatL2(d)
