@@ -227,7 +227,7 @@ class tst_scores(RobustExperiments):
         grid_params.append({
             'model': [
                 'decision_tree_d5',
-                'advPruning_decision_tree_d5_10', 'advPruning_decision_tree_d5_30', 'advPruning_decision_tree_d5_50',
+                'advPruning_decision_tree_d5_25', 'advPruning_decision_tree_d5_50', 'advPruning_decision_tree_d5_75',
             ],
             'ord': [ATTACK_NORM],
             'dataset': tree_datasets,
@@ -237,7 +237,7 @@ class tst_scores(RobustExperiments):
         grid_params.append({
             'model': [
                 'random_forest_100_d5',
-                'advPruning_rf_100_10_d5', 'advPruning_rf_100_30_d5', 'advPruning_rf_100_50_d5',
+                'advPruning_rf_100_25_d5', 'advPruning_rf_100_50_d5', 'advPruning_rf_100_75_d5',
             ],
             'ord': [ATTACK_NORM],
             'dataset': tree_datasets,
