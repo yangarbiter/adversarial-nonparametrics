@@ -129,10 +129,10 @@ def table_wrapper(table_df, table_name, caption='', sep=2.5):
 \\tiny
 \\centering
 \\setlength{\\tabcolsep}{%.2fpt}
-"""
+""" % (sep)
     t += table_df.to_latex(escape=False)
     t += """\\caption{%s}
 \\label{table:%s}
 \\end{table}
-""" % (sep, caption, table_name)
+""" % (caption, table_name)
     return t
