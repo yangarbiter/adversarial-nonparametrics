@@ -247,6 +247,24 @@ class tst_scores(RobustExperiments):
         cls.grid_params = grid_params
         return RobustExperiments.__new__(cls, *args, **kwargs)
 
+class fullds(RobustExperiments):
+    def __new__(cls, *args, **kwargs):
+        cls.name = "fullds"
+        grid_params = []
+        grid_params.append({
+            'model': [
+                'faisslshknn_3_200', 'approxAP_faisslshknn_3_200_500',
+                'random_forest_100_d10', 'approxAP_rf_100_500_d10',
+                'mlp', 'adv_mlp_500',
+            ],
+            'ord': [ATTACK_NORM],
+            'dataset': ['fullmnist', 'fullfashion'],
+            'attack': ['blackbox'],
+            'random_seed': random_seed,
+        })
+        cls.grid_params = grid_params
+        return RobustExperiments.__new__(cls, *args, **kwargs)
+
 class nn_k1_robustness(RobustExperiments):
     def __new__(cls, *args, **kwargs):
         cls.name = "1nn_robustness"
@@ -254,7 +272,7 @@ class nn_k1_robustness(RobustExperiments):
         grid_params.append({
             'model': [
                 'knn1',
-                'advPruning_nn_k1_10', 'advPruning_nn_k1_30', 'advPruning_nn_k1_50',
+                'advPruning_nn_k1_25', 'advPruning_nn_k1_50', 'advPruning_nn_k1_75',
                 #'adv_nn_k1_10', 'adv_nn_k1_30', 'adv_nn_k1_50',
                 #'robustv2_nn_k1_10', 'robustv2_nn_k1_30', 'robustv2_nn_k1_50',
             ],
@@ -273,7 +291,7 @@ class nn_k3_robustness(RobustExperiments):
         grid_params.append({
             'model': [
                 'knn3',
-                'advPruning_nn_k3_10', 'advPruning_nn_k3_30', 'advPruning_nn_k3_50',
+                'advPruning_nn_k3_25', 'advPruning_nn_k3_50', 'advPruning_nn_k3_75',
                 #'adv_nn_k3_10', 'adv_nn_k3_30', 'adv_nn_k3_50',
                 #'robustv2_nn_k3_10', 'robustv2_nn_k3_30', 'advPruning_nn_k3_50',
             ],
@@ -292,7 +310,7 @@ class rf_robustness(RobustExperiments):
             'random_forest_100_d5',
             #'adv_rf_100_10_d5', 'adv_rf_100_30_d5', 'adv_rf_100_50_d5',
             #'robust_rf_100_10_d5', 'robust_rf_100_30_d5', 'robust_rf_100_50_d5',
-            'advPruning_rf_100_10_d5', 'advPruning_rf_100_30_d5', 'advPruning_rf_100_50_d5',
+            'advPruning_rf_100_25_d5', 'advPruning_rf_100_50_d5', 'advPruning_rf_100_75_d5',
             #'robustv2_rf_100_10_d5', 'robustv2_rf_100_30_d5', 'robustv2_rf_100_50_d5',
         ]
         attacks = ['RBA_Approx_RF_100']
@@ -314,7 +332,7 @@ class dt_robustness(RobustExperiments):
         models = [
             'decision_tree_d5',
             #'robust_decision_tree_d5_10', 'robust_decision_tree_d5_30', 'robust_decision_tree_d5_50',
-            'advPruning_decision_tree_d5_10', 'advPruning_decision_tree_d5_30', 'advPruning_decision_tree_d5_50',
+            'advPruning_decision_tree_d5_25', 'advPruning_decision_tree_d5_50', 'advPruning_decision_tree_d5_75',
             #'robustv2_decision_tree_d5_10', 'robustv2_decision_tree_d5_30', 'advPruning_decision_tree_d5_50',
         ]
         attacks = ['RBA_Exact_DT']
@@ -335,9 +353,9 @@ class lr_ap_robustness(RobustExperiments):
         cls.name = "lr-ap-robustness"
         models = [
             'logistic_regression',
-            'advPruning_logistic_regression_10',
-            'advPruning_logistic_regression_30',
+            'advPruning_logistic_regression_25',
             'advPruning_logistic_regression_50',
+            'advPruning_logistic_regression_75',
         ]
         attacks = ['pgd']
 
@@ -357,9 +375,9 @@ class lr_at_robustness(RobustExperiments):
         cls.name = "lr-at-robustness"
         models = [
             'logistic_regression',
-            'adv_logistic_regression_10',
-            'adv_logistic_regression_30',
+            'adv_logistic_regression_25',
             'adv_logistic_regression_50',
+            'adv_logistic_regression_75',
         ]
         attacks = ['pgd']
 
@@ -379,7 +397,7 @@ class mlp_ap_robustness(RobustExperiments):
         cls.name = "mlp-ap-robustness"
         models = [
             'mlp',
-            'advPruning_mlp_10', 'advPruning_mlp_30', 'advPruning_mlp_50',
+            'advPruning_mlp_25', 'advPruning_mlp_50', 'advPruning_mlp_75',
         ]
         attacks = ['pgd']
 
@@ -399,7 +417,7 @@ class mlp_at_robustness(RobustExperiments):
         cls.name = "mlp-at-robustness"
         models = [
             'mlp',
-            'adv_mlp_10', 'adv_mlp_30', 'adv_mlp_50',
+            'adv_mlp_25', 'adv_mlp_50', 'adv_mlp_75',
         ]
         attacks = ['pgd']
 
