@@ -1,4 +1,5 @@
 
+from nnattack.variables import auto_var
 from utils import RobustExperiments
 
 random_seed = list(range(1))
@@ -27,10 +28,6 @@ ds_eps = {
     'f-mnist06': 75,
     'mnist17': 75,
 }
-
-invert_ds_eps = {}
-for k, v in ds_eps.items():
-    invert_ds_eps.setdefault(v, []).append(k)
 
 tree_datasets = [
     'australian',
@@ -501,8 +498,14 @@ class nn1_def(RobustExperiments):
         cls.name = "rf-robustness"
         attacks = ['RBA_Exact_KNN_k1']
 
+        invert_ds_eps = {}
+        for k, v in ds_eps.items():
+            invert_ds_eps.setdefault(v,
+                []).append(auto_var.get_var_shown_name("dataset", k))
+
         grid_params = []
-        for k, v in invert_ds_eps.items():
+        for ds in datasets:
+            v, k = [ds], ds_eps[auto_var.get_var_shown_name("dataset", ds)]
             models = [
                 'decision_tree_d5',
                 f'adv_nn_k1_{k}',
@@ -525,8 +528,14 @@ class nn3_def(RobustExperiments):
         cls.name = "rf-robustness"
         attacks = ['RBA_Approx_KNN_k3_50']
 
+        invert_ds_eps = {}
+        for k, v in ds_eps.items():
+            invert_ds_eps.setdefault(v,
+                []).append(auto_var.get_var_shown_name("dataset", k))
+
         grid_params = []
-        for k, v in invert_ds_eps.items():
+        for ds in datasets:
+            v, k = [ds], ds_eps[auto_var.get_var_shown_name("dataset", ds)]
             models = [
                 'decision_tree_d5',
                 f'adv_nn_k3_{k}',
@@ -549,8 +558,14 @@ class dt_def(RobustExperiments):
         cls.name = "dt-robustness"
         attacks = ['RBA_Exact_DT']
 
+        invert_ds_eps = {}
+        for k, v in ds_eps.items():
+            invert_ds_eps.setdefault(v,
+                []).append(auto_var.get_var_shown_name("dataset", k))
+
         grid_params = []
-        for k, v in invert_ds_eps.items():
+        for ds in tree_datasets:
+            v, k = [ds], ds_eps[auto_var.get_var_shown_name("dataset", ds)]
             models = [
                 'decision_tree_d5',
                 f'adv_decision_tree_d5_{k}',
@@ -573,8 +588,14 @@ class rf_def(RobustExperiments):
         cls.name = "rf-robustness"
         attacks = ['RBA_Approx_RF_100']
 
+        invert_ds_eps = {}
+        for k, v in ds_eps.items():
+            invert_ds_eps.setdefault(v,
+                []).append(auto_var.get_var_shown_name("dataset", k))
+
         grid_params = []
-        for k, v in invert_ds_eps.items():
+        for ds in tree_datasets:
+            v, k = [ds], ds_eps[auto_var.get_var_shown_name("dataset", ds)]
             models = [
                 'decision_tree_d5',
                 f'adv_rf_100_{k}_d5',
@@ -595,11 +616,17 @@ class rf_def(RobustExperiments):
 class lr_def(RobustExperiments):
     def __new__(cls, *args, **kwargs):
         cls.name = "dt-robustness"
-        attacks = ['adv']
+        attacks = ['pgd']
+
+        invert_ds_eps = {}
+        for k, v in ds_eps.items():
+            invert_ds_eps.setdefault(v,
+                []).append(auto_var.get_var_shown_name("dataset", k))
 
         grid_params = []
-        for k, v in invert_ds_eps.items():
-            models = ['logistic_regression', f'adv_logistic_regression_{}',]
+        for ds in tree_datasets:
+            v, k = [ds], ds_eps[auto_var.get_var_shown_name("dataset", ds)]
+            models = ['logistic_regression', f'adv_logistic_regression_{k}',]
 
             grid_params.append({
                 'model': models,
@@ -614,10 +641,11 @@ class lr_def(RobustExperiments):
 class mlp_def(RobustExperiments):
     def __new__(cls, *args, **kwargs):
         cls.name = "dt-robustness"
-        attacks = ['RBA_Exact_DT']
+        attacks = ['pgd']
 
         grid_params = []
-        for k, v in invert_ds_eps.items():
+        for ds in tree_datasets:
+            v, k = [ds], ds_eps[auto_var.get_var_shown_name("dataset", ds)]
             models = ['mlp', f'adv_mlp_{k}',]
 
             grid_params.append({
