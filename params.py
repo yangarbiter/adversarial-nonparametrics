@@ -16,6 +16,22 @@ datasets = [
     'mnist17_2200_pca25',
 ]
 
+ds_eps = {
+    'australian': 50,
+    'fourclass': 25,
+    'diabetes': 50,
+    'cancer': 50,
+    'halfmoon': 25,
+    'covtype': 50,
+    'f-mnist35': 75,
+    'f-mnist06': 75,
+    'mnist17': 75,
+}
+
+invert_ds_eps = {}
+for k, v in ds_eps.items():
+    invert_ds_eps.setdefault(v, []).append(k)
+
 tree_datasets = [
     'australian',
     'fourclass',
@@ -84,8 +100,8 @@ class compare_attacks(RobustExperiments):
             'random_seed': random_seed,
         })
         grid_params.append({
-            'model': ['random_forest_100_d5'],
-            #'model': ['random_forest_200_d10'],
+            #'model': ['random_forest_100_d5'],
+            'model': ['random_forest_300_d5'],
             'ord': [ATTACK_NORM],
             'dataset': tree_datasets,
             'attack': ['blackbox', 'RBA_Approx_RF_100'],
@@ -101,8 +117,8 @@ class parametric_defense(RobustExperiments):
         grid_params.append({
             'model': [
                 'logistic_regression',
-                'adv_logistic_regression_30',
-                'advPruning_logistic_regression_30',
+                'adv_logistic_regression_50',
+                'advPruning_logistic_regression_50',
             ],
             'ord': [ATTACK_NORM],
             'dataset': tree_datasets,
@@ -112,8 +128,8 @@ class parametric_defense(RobustExperiments):
         grid_params.append({
             'model': [
                 'mlp',
-                'adv_mlp_30',
-                'advPruning_mlp_30',
+                'adv_mlp_50',
+                'advPruning_mlp_50',
             ],
             'ord': [ATTACK_NORM],
             'dataset': tree_datasets,
@@ -129,7 +145,6 @@ class compare_defense(RobustExperiments):
         def_strength = 50
         grid_params = []
         grid_params.append({
-            #'model': ['knn1', 'adv_nn_k1_30', 'robustv2_nn_k1_30', 'advPruning_nn_k1_30'],
             'model': [
                 'knn1',
                 f'adv_nn_k1_{def_strength}',
@@ -333,7 +348,6 @@ class dt_robustness(RobustExperiments):
             'decision_tree_d5',
             #'robust_decision_tree_d5_10', 'robust_decision_tree_d5_30', 'robust_decision_tree_d5_50',
             'advPruning_decision_tree_d5_25', 'advPruning_decision_tree_d5_50', 'advPruning_decision_tree_d5_75',
-            #'robustv2_decision_tree_d5_10', 'robustv2_decision_tree_d5_30', 'advPruning_decision_tree_d5_50',
         ]
         attacks = ['RBA_Exact_DT']
 
@@ -479,5 +493,139 @@ class rf_robustness_figs(RobustExperiments):
             'model': rf_models, 'attack': ['RBA_Approx_RF_100'],
             'dataset': tree_datasets, 'ord': [ATTACK_NORM], 'random_seed': random_seed,
         }
+        cls.grid_params = grid_params
+        return RobustExperiments.__new__(cls, *args, **kwargs)
+
+class nn1_def(RobustExperiments):
+    def __new__(cls, *args, **kwargs):
+        cls.name = "rf-robustness"
+        attacks = ['RBA_Exact_KNN_k1']
+
+        grid_params = []
+        for k, v in invert_ds_eps.items():
+            models = [
+                'decision_tree_d5',
+                f'adv_nn_k1_{k}',
+                f'robustv2_nn_k1_{k}',
+                f'advPruning_nn_k1_{k}',
+            ]
+
+            grid_params.append({
+                'model': models,
+                'ord': [ATTACK_NORM],
+                'dataset': v,
+                'attack': attacks,
+                'random_seed': random_seed,
+            })
+        cls.grid_params = grid_params
+        return RobustExperiments.__new__(cls, *args, **kwargs)
+
+class nn3_def(RobustExperiments):
+    def __new__(cls, *args, **kwargs):
+        cls.name = "rf-robustness"
+        attacks = ['RBA_Approx_KNN_k3_50']
+
+        grid_params = []
+        for k, v in invert_ds_eps.items():
+            models = [
+                'decision_tree_d5',
+                f'adv_nn_k3_{k}',
+                f'robustv2_nn_k3_{k}',
+                f'advPruning_nn_k3_{k}',
+            ]
+
+            grid_params.append({
+                'model': models,
+                'ord': [ATTACK_NORM],
+                'dataset': v,
+                'attack': attacks,
+                'random_seed': random_seed,
+            })
+        cls.grid_params = grid_params
+        return RobustExperiments.__new__(cls, *args, **kwargs)
+
+class dt_def(RobustExperiments):
+    def __new__(cls, *args, **kwargs):
+        cls.name = "dt-robustness"
+        attacks = ['RBA_Exact_DT']
+
+        grid_params = []
+        for k, v in invert_ds_eps.items():
+            models = [
+                'decision_tree_d5',
+                f'adv_decision_tree_d5_{k}',
+                f'robust_decision_tree_d5_{k}',
+                f'advPruning_decision_tree_d5_{k}',
+            ]
+
+            grid_params.append({
+                'model': models,
+                'ord': [ATTACK_NORM],
+                'dataset': v,
+                'attack': attacks,
+                'random_seed': random_seed,
+            })
+        cls.grid_params = grid_params
+        return RobustExperiments.__new__(cls, *args, **kwargs)
+
+class rf_def(RobustExperiments):
+    def __new__(cls, *args, **kwargs):
+        cls.name = "rf-robustness"
+        attacks = ['RBA_Approx_RF_100']
+
+        grid_params = []
+        for k, v in invert_ds_eps.items():
+            models = [
+                'decision_tree_d5',
+                f'adv_rf_100_{k}_d5',
+                f'robust_rf_100_{k}_d5',
+                f'advPruning_rf_100_{k}_d5',
+            ]
+
+            grid_params.append({
+                'model': models,
+                'ord': [ATTACK_NORM],
+                'dataset': v,
+                'attack': attacks,
+                'random_seed': random_seed,
+            })
+        cls.grid_params = grid_params
+        return RobustExperiments.__new__(cls, *args, **kwargs)
+
+class lr_def(RobustExperiments):
+    def __new__(cls, *args, **kwargs):
+        cls.name = "dt-robustness"
+        attacks = ['adv']
+
+        grid_params = []
+        for k, v in invert_ds_eps.items():
+            models = ['logistic_regression', f'adv_logistic_regression_{}',]
+
+            grid_params.append({
+                'model': models,
+                'ord': [ATTACK_NORM],
+                'dataset': v,
+                'attack': attacks,
+                'random_seed': random_seed,
+            })
+        cls.grid_params = grid_params
+        return RobustExperiments.__new__(cls, *args, **kwargs)
+
+class mlp_def(RobustExperiments):
+    def __new__(cls, *args, **kwargs):
+        cls.name = "dt-robustness"
+        attacks = ['RBA_Exact_DT']
+
+        grid_params = []
+        for k, v in invert_ds_eps.items():
+            models = ['mlp', f'adv_mlp_{k}',]
+
+            grid_params.append({
+                'model': models,
+                'ord': [ATTACK_NORM],
+                'dataset': v,
+                'attack': attacks,
+                'random_seed': random_seed,
+            })
         cls.grid_params = grid_params
         return RobustExperiments.__new__(cls, *args, **kwargs)

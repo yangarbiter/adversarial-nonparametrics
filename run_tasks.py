@@ -6,9 +6,6 @@ from nnattack.variables import auto_var, get_file_name
 
 from params import (
     compare_attacks,
-    compare_defense,
-    tst_scores,
-    parametric_defense,
 
     compare_nns,
     nn_k1_robustness,
@@ -25,6 +22,13 @@ from params import (
     mlp_at_robustness,
     lr_ap_robustness,
     lr_at_robustness,
+
+    nn1_def,
+    nn3_def,
+    dt_def,
+    rf_def,
+    lr_def,
+    mlp_def,
 )
 from main import eps_accuracy
 
@@ -34,23 +38,28 @@ DEBUG = True if os.environ.get('DEBUG', False) else False
 
 def main():
     experiments = [
-        compare_nns(),
-        compare_attacks(),
-        compare_defense(),
-        parametric_defense(),
+        #compare_nns(),
+        #compare_attacks(),
 
-        nn_k1_robustness_figs(),
-        nn_k3_robustness_figs(),
-        rf_robustness_figs(),
-        dt_robustness_figs(),
+        #nn_k1_robustness_figs(),
+        #nn_k3_robustness_figs(),
+        #rf_robustness_figs(),
+        #dt_robustness_figs(),
 
-        nn_k1_robustness(),
-        tst_scores(),
+        #nn_k1_robustness(),
+        #dt_robustness(),
+        #rf_robustness(),
+        #mlp_ap_robustness(),
+        #mlp_at_robustness(),
+        #lr_ap_robustness(),
+        #lr_at_robustness(),
 
-        mlp_ap_robustness(),
-        mlp_at_robustness(),
-        lr_ap_robustness(),
-        lr_at_robustness(),
+        nn1_def(),
+        nn3_def(),
+        dt_def(),
+        rf_def(),
+        lr_def(),
+        mlp_def(),
     ]
     grid_params = []
     for exp in experiments:
@@ -64,7 +73,7 @@ def main():
         run_param['n_jobs'] = 1
         run_param['allow_failure'] = False
     else:
-        run_param['n_jobs'] = 7
+        run_param['n_jobs'] = 4
         run_param['allow_failure'] = True
 
     auto_var.run_grid_params(exp_fn, grid_params, **run_param)
