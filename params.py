@@ -20,7 +20,7 @@ datasets = [
 ds_eps = {
     'australian': 50,
     'fourclass': 25,
-    'diabetes': 50,
+    'diabetes': 25,
     'cancer': 50,
     'halfmoon': 25,
     'covtype': 50,
