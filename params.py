@@ -626,7 +626,11 @@ class lr_def(RobustExperiments):
         grid_params = []
         for ds in tree_datasets:
             v, k = [ds], ds_eps[auto_var.get_var_shown_name("dataset", ds)]
-            models = ['logistic_regression', f'adv_logistic_regression_{k}',]
+            models = [
+                'logistic_regression',
+                f'adv_logistic_regression_{k}',
+                f'advPruning_logistic_regression_{k}',
+            ]
 
             grid_params.append({
                 'model': models,
@@ -646,7 +650,7 @@ class mlp_def(RobustExperiments):
         grid_params = []
         for ds in tree_datasets:
             v, k = [ds], ds_eps[auto_var.get_var_shown_name("dataset", ds)]
-            models = ['mlp', f'adv_mlp_{k}',]
+            models = ['mlp', f'adv_mlp_{k}', f'advPruning_mlp_{k}']
 
             grid_params.append({
                 'model': models,
