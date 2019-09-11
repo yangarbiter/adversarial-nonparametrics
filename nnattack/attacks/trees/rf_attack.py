@@ -91,8 +91,7 @@ def tree_instance_constraint(tree_clf, X):
     #return Gs, hs
     return np.asarray(ret)
 
-def rev_get_sol_l2(target_x, target_y: int, pred_trn_y, regions, clf,
-        trnX=None):
+def rev_get_sol_l2(target_x, target_y: int, regions, clf, trnX=None):
     fet_dim = np.shape(target_x)[0]
     candidates = []
     regions = [constraint_list_to_matrix(r) for r in regions]
@@ -114,21 +113,22 @@ def rev_get_sol_l2(target_x, target_y: int, pred_trn_y, regions, clf,
             if clf.predict([ret])[0] != target_y:
                 candidates.append(ret - target_x)
             else:
-                # a dimension is too close to the boundary
-                # region too small
-                # just use the traning data as 
-                if trnX is not None:
-                    candidates.append(trnX[i] - target_x)
-                print("region too small %d" % i)
+                raise ValueError("Shouldn't happend, unsucessful attack")
+                # a dimension is too close to the boundary region too small
+                # just use the traning data as
+                #if trnX is not None:
+                #    candidates.append(trnX[i] - target_x)
+                #print("region too small %d" % i)
         elif status == 'infeasible_inaccurate':
+            print(status)
             candidates.append(trnX[i] - target_x)
         else:
             print(status)
 
-    norms = np.linalg.norm(candidates, ord=np.inf, axis=1)
+    norms = np.linalg.norm(candidates, ord=2, axis=1)
     return candidates[norms.argmin()]
 
-def rev_get_sol_linf(target_x, target_y: int, pred_trn_y, regions, clf,
+def rev_get_sol_linf(target_x, target_y: int, regions, clf,
         trnX=None):
     fet_dim = np.shape(target_x)[0]
     candidates = []
@@ -173,19 +173,35 @@ def rev_get_sol_linf(target_x, target_y: int, pred_trn_y, regions, clf,
     return candidates[norms.argmin()]
 
 
+def binary_search(x, y, x0, predict_fn, ord):
+    if predict_fn([x]) != y:
+        return np.zeros_like(x)
+    assert predict_fn([x0]) != y
+    y = predict_fn([x])[0]
+    l = x - x0
+    r = np.zeros_like(l)
+    while np.linalg.norm(l, ord=ord) > np.linalg.norm(r, ord=ord) + 1e-5:
+        now = (l + r) / 2
+        if predict_fn([x0 + now]) != y:
+            r = now
+        else:
+            l = now
+    assert predict_fn([x + now]) != y
+    print(np.linalg.norm(now, ord=ord))
+    return now
 
 class RFAttack(AttackModel):
     def __init__(self, trnX: np.ndarray, trny: np.ndarray, clf: RandomForestClassifier,
                 ord, method: str, n_searches:int = -1, random_state=None):
         """Attack on Random forest classifier
-        
+
         Arguments:
             trnX {ndarray, shape=(n_samples, n_features)} -- Training data
             trny {ndarray, shape=(n_samples)} -- Training label
             clf {RandomForestClassifier} -- The Random Forest classifier
             ord {int} -- Order of the norm for perturbation distance, see numpy.linalg.norm for more information
             method {str} -- 'all' means optimal attack (RBA-Exact), 'rev' means RBA-Approx
-        
+
         Keyword Arguments:
             n_searches {int} -- number of regions to search, only used when method=='rev' (default: {-1})
             random_state {[type]} -- random seed (default: {None})
@@ -269,6 +285,9 @@ class RFAttack(AttackModel):
                 assert np.all(np.dot(G, trnX[i]) <= (h + 1e-8))
                 #assert np.all(np.dot(np.vstack(Gss[i]), trnX[i]) <= np.concatenate(hss[i])), i
                 #assert np.all(np.dot(G, trnX[i]) <= h), i
+
+        elif self.method == 'binrev':
+            pass
         else:
             raise ValueError("Not supported method: %s", self.method)
 
@@ -281,8 +300,9 @@ class RFAttack(AttackModel):
         else:
             raise ValueError("ord %s not supported", self.ord)
 
-        pred_y = self.clf.predict(X)
-        pred_trn_y = self.clf.predict(self.trnX)
+        clf = self.clf
+        pred_y = clf.predict(X)
+        pred_trn_y = clf.predict(self.trnX)
 
         if self.method == 'all':
             def _helper(target_x, target_y, pred_yi):
@@ -315,15 +335,51 @@ class RFAttack(AttackModel):
                 else:
                     ind = list(filter(lambda x: pred_trn_y[x] != target_y, np.arange(len(self.trnX))))
                 temp_regions = [self.regions[i] for i in ind]
-                pert_x = get_sol_fn(target_x, y[sample_id],
-                                    pred_trn_y, temp_regions,
-                                    self.clf, self.trnX[ind])
+                pert_x = get_sol_fn(target_x, y[sample_id], temp_regions, self.clf, self.trnX[ind])
 
                 if np.linalg.norm(pert_x) != 0:
                     assert self.clf.predict([X[sample_id] + pert_x])[0] != y[sample_id]
                     pert_X[sample_id, :] = pert_x
                 else:
                     raise ValueError("shouldn't happen")
+        elif self.method == 'binrev':
+            def predict_fn(x):
+                return clf.predict(x)
+
+            pert_X = np.zeros_like(X)
+            for sample_id in tqdm(range(len(X)), ascii=True, desc="Perturb"):
+                if pred_y[sample_id] != y[sample_id]:
+                    continue
+                target_x, target_y = X[sample_id], y[sample_id]
+
+                if self.n_searches != -1:
+                    ind = self.kd_tree.query(
+                            target_x.reshape((1, -1)),
+                            k=len(self.trnX),
+                            return_distance=False)[0]
+                    ind = list(filter(lambda x: pred_trn_y[x] != target_y, ind))[:self.n_searches]
+                else:
+                    ind = list(filter(lambda x: pred_trn_y[x] != target_y, np.arange(len(self.trnX))))
+
+                canX = np.asarray([
+                    binary_search(target_x, target_y, self.trnX[i], predict_fn, self.ord) for i in ind])
+
+                r = tree_instance_constraint(clf.estimators_[0], canX)
+                for tree_clf in clf.estimators_[1:]:
+                    t = tree_instance_constraint(tree_clf, canX)
+                    r = np.min(np.concatenate(
+                        (r[np.newaxis, :], t[np.newaxis, :])), axis=0)
+                temp_regions = r
+
+                pert_x = get_sol_fn(
+                        target_x, target_y, temp_regions, clf, trnX=canX)
+
+                if np.linalg.norm(pert_x) != 0:
+                    assert self.clf.predict([X[sample_id] + pert_x])[0] != y[sample_id]
+                    pert_X[sample_id, :] = pert_x
+                else:
+                    raise ValueError("shouldn't happen")
+
         else:
             raise ValueError("Not supported method %s", self.method)
 
