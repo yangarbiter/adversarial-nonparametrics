@@ -97,8 +97,8 @@ class compare_attacks(RobustExperiments):
             'random_seed': random_seed,
         })
         grid_params.append({
-            #'model': ['random_forest_100_d5'],
-            'model': ['random_forest_300_d5'],
+            'model': ['random_forest_100_d5'],
+            #'model': ['random_forest_300_d5'],
             'ord': [ATTACK_NORM],
             'dataset': tree_datasets,
             'attack': ['blackbox', 'RBA_Approx_RF_100'],
