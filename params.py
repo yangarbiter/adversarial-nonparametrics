@@ -597,7 +597,7 @@ class rf_def(RobustExperiments):
         for ds in tree_datasets:
             v, k = [ds], ds_eps[auto_var.get_var_shown_name("dataset", ds)]
             models = [
-                'decision_tree_d5',
+                'random_forest_100_d5',
                 f'adv_rf_100_{k}_d5',
                 f'robust_rf_100_{k}_d5',
                 f'advPruning_rf_100_{k}_d5',
