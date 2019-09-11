@@ -147,6 +147,10 @@ def eps_accuracy(auto_var):
         auto_var.set_intermidiate_variable("trny", model.augy)
         augX, augy = model.augX, model.augy
 
+    ret['trnX_len'] = len(trnX)
+    if augX is not None:
+        ret['aug_len'] = len(augX)
+
     if len(tsty) != 100 or \
        (np.unique(auto_var.get_intermidiate_variable('trny'))[0] != None and \
        len(np.unique(auto_var.get_intermidiate_variable('trny'))) == 1):
@@ -189,10 +193,6 @@ def eps_accuracy(auto_var):
     baseline_results = estimate_model_roubstness(
         model, tstX, tsty, tst_perturbs, eps_list, ord, with_baseline=True, trnX=trnX)
     ret['baseline_results'] = baseline_results
-
-    ret['trnX_len'] = len(trnX)
-    if augX is not None:
-        ret['aug_len'] = len(augX)
 
     print(json.dumps(auto_var.var_value))
     print(json.dumps(ret))
