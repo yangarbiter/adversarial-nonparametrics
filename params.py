@@ -507,7 +507,7 @@ class nn1_def(RobustExperiments):
         for ds in datasets:
             v, k = [ds], ds_eps[auto_var.get_var_shown_name("dataset", ds)]
             models = [
-                'decision_tree_d5',
+                'knn1',
                 f'adv_nn_k1_{k}',
                 f'robustv2_nn_k1_{k}',
                 f'advPruning_nn_k1_{k}',
@@ -537,7 +537,7 @@ class nn3_def(RobustExperiments):
         for ds in datasets:
             v, k = [ds], ds_eps[auto_var.get_var_shown_name("dataset", ds)]
             models = [
-                'decision_tree_d5',
+                'knn3',
                 f'adv_nn_k3_{k}',
                 f'robustv2_nn_k3_{k}',
                 f'advPruning_nn_k3_{k}',
