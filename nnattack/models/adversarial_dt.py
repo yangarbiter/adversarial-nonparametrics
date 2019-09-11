@@ -8,7 +8,7 @@ class AdversarialDt(DecisionTreeClassifier):
     def __init__(self, ord=np.inf, sep_measure=None, attack_model=None,
                  train_type='adv', **kwargs):
         """Decision Tree Classifier with defense
-        
+
         Keyword Arguments:
             ord {float} -- adversarial example perturbation measure (default: {np.inf})
             sep_measure {float} -- The distance measure for data, if None, it will be the same as `ord` (default: {None})
@@ -17,9 +17,9 @@ class AdversarialDt(DecisionTreeClassifier):
 
         Other Arguments follows the original scikit-learn argument (sklearn.tree.DecisionTreeClassifier).
         """
-            
+
         self.ord = ord
-        self.sep_measure = sep_measure 
+        self.sep_measure = sep_measure
         self.attack_model = attack_model
         self.train_type = train_type
 
@@ -47,7 +47,7 @@ class AdversarialRf(RandomForestClassifier):
     def __init__(self, ord=np.inf, sep_measure=None, attack_model=None,
                  train_type='adv', **kwargs):
         """Random Forest Classifier with defense
-        
+
         Keyword Arguments:
             ord {float} -- adversarial example perturbation measure (default: {np.inf})
             sep_measure {float} -- The distance measure for data, if None, it will be the same as `ord` (default: {None})

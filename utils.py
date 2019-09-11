@@ -53,7 +53,10 @@ def params_to_dataframe(grid_param, columns=None):
     else:
         results = loaded_results
 
-    params, results = zip(*[(params[i], results[i]) for i in range(len(params)) if results[i]])
+    try:
+        params, results = zip(*[(params[i], results[i]) for i in range(len(params)) if results[i]])
+    except ValueError:
+        print("no result yet for: ", grid_param)
     params, results = list(params), list(results)
     accs = []
     for i, param in enumerate(params):
