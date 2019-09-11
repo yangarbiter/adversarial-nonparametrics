@@ -125,6 +125,7 @@ def eps_accuracy(auto_var):
     model = auto_var.get_var("model")
     auto_var.set_intermidiate_variable("model", model)
     model.fit(trnX, trny)
+    ret['trnX_len'] = len(trnX)
 
     pred = model.predict(tstX)
     ori_tstX, ori_tsty = tstX, tsty # len = 200
@@ -147,7 +148,6 @@ def eps_accuracy(auto_var):
         auto_var.set_intermidiate_variable("trny", model.augy)
         augX, augy = model.augX, model.augy
 
-    ret['trnX_len'] = len(trnX)
     if augX is not None:
         ret['aug_len'] = len(augX)
 
