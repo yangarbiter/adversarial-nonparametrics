@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_svmlight_file
+from sklearn.decomposition import PCA
 
 from autovar.base import RegisteringChoiceType, register_var, VariableClass
 
@@ -192,7 +193,6 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
     @staticmethod
     def digits(auto_var, var_value, inter_var, n_dims):
         from sklearn.datasets import load_digits
-        from sklearn.decomposition import PCA
         X, y = load_digits(return_X_y=True)
 
         n_dims = int(n_dims[4:]) if n_dims else None
@@ -203,9 +203,9 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
         return X, y, LINF_EPS
 
-    @register_var(argument=r"fullmnist", shown_name="mnist")
+    @register_var(argument=r"fullmnist(?P<n_dims>_pca\d+)?", shown_name="mnist")
     @staticmethod
-    def mnist(auto_var, inter_var):
+    def mnist(auto_var, inter_var, n_dims):
         from keras.datasets import mnist
 
         (x_train, y_train), (x_test, y_test) = mnist.load_data()
@@ -215,11 +215,21 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         else:
             eps = LINF_EPS
 
+        n_dims = int(n_dims[4:]) if n_dims else None
+        if n_dims:
+            x_train = x_train.reshape((len(x_train), -1))
+            x_test = x_test.reshape((len(x_test), -1))
+            pca = PCA(n_components=n_dims,
+                    random_state=auto_var.get_var("random_seed"))
+            X = np.vstack((x_train, x_test))
+            X = pca.fit_transform(X)
+            x_train, x_test = X[:len(x_train)], X[len(x_train):]
+
         return x_train, y_train, x_test, y_test, eps
 
-    @register_var(argument=r"fullfashion", shown_name="fashion")
+    @register_var(argument=r"fullfashion(?P<n_dims>_pca\d+)?", shown_name="fashion")
     @staticmethod
-    def fashion(auto_var, inter_var):
+    def fashion(auto_var, inter_var, n_dims):
         from keras.datasets import fashion_mnist
 
         (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
@@ -228,6 +238,16 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
             eps = [0.1 * i for i in range(0, 41, 1)]
         else:
             eps = LINF_EPS
+
+        n_dims = int(n_dims[4:]) if n_dims else None
+        if n_dims:
+            x_train = x_train.reshape((len(x_train), -1))
+            x_test = x_test.reshape((len(x_test), -1))
+            pca = PCA(n_components=n_dims,
+                    random_state=auto_var.get_var("random_seed"))
+            X = np.vstack((x_train, x_test))
+            X = pca.fit_transform(X)
+            x_train, x_test = X[:len(x_train)], X[len(x_train):]
 
         return x_train, y_train, x_test, y_test, eps
 
