@@ -240,6 +240,7 @@ class BlackBoxAttack(AttackModel):
         elif 'faiss' in self.model.__module__:
             _, filen = tempfile.mkstemp(prefix="/tmp2/aptemp/")
             self.model.save(filen)
+            inf = np.inf
             temp_model = eval(self.model.__repr__())
             temp_model.trnX = self.model.trnX
             temp_model.trny = self.model.trny
