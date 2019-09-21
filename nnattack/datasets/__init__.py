@@ -4,6 +4,7 @@ from sklearn.datasets import load_svmlight_file
 from sklearn.decomposition import PCA
 
 from autovar.base import RegisteringChoiceType, register_var, VariableClass
+from .cnn_feature import extract_feature
 
 LINF_EPS = [0.01 * i for i in range(0, 81, 1)]
 
@@ -374,3 +375,33 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
             eps = LINF_EPS
 
         return X, y, eps
+
+    @register_var(argument=r"cifar-resnet50(?P<n_dims>_pca\d+)?",
+                  shown_name="cifar-resnet50")
+    @staticmethod
+    def cifar_resnet50(auto_var, var_value, inter_var, n_dims):
+        from keras.datasets import cifar10
+        from sklearn.decomposition import PCA
+
+        n_dims = int(n_dims[4:]) if n_dims else None
+
+        (x_train, y_train), (x_test, y_test) = cifar10.load_data()
+        #x_train, x_test = x_train.astype(np.float32) / 255, x_test.astype(np.float32) / 255
+        x_train = extract_feature(x_train, cnn_arch='resnet50')
+        x_test = extract_feature(x_test, cnn_arch='resnet50')
+
+        if n_dims:
+            x_train = x_train.reshape((len(x_train), -1))
+            x_test = x_test.reshape((len(x_test), -1))
+            pca = PCA(n_components=n_dims,
+                      random_state=auto_var.get_var("random_seed"))
+            X = np.vstack((x_train, x_test))
+            X = pca.fit_transform(X)
+            x_train, x_test = X[:len(x_train)], X[len(x_train):]
+
+        if auto_var.get_var("ord") == 2:
+            eps = [0.1 * i for i in range(0, 41, 1)]
+        else:
+            eps = LINF_EPS
+
+        return x_train, y_train, x_test, y_test, eps
