@@ -14,7 +14,7 @@ from .datasets import DatasetVarClass
 from .models import ModelVarClass
 from .attacks import AttackVarClass
 
-def get_file_name(auto_var, name_only=False):
+def get_file_name(auto_var):
     dataset = auto_var.get_variable_name('dataset')
     model_name = auto_var.get_variable_name('model')
     attack_name = auto_var.get_variable_name('attack')
@@ -29,9 +29,6 @@ def get_file_name(auto_var, name_only=False):
         name += "-l2"
     elif ord == 'inf':
         name += "-linf"
-    if name_only is False:
-        base_dir = auto_var.settings['result_file_dir']
-        name = os.path.join(base_dir, name)
     name = name.replace("_", "-")
     return name
 
