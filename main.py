@@ -129,7 +129,7 @@ def eps_accuracy(auto_var):
     ret['trnX_len'] = len(trnX)
 
     pred = model.predict(tstX)
-    print("Ori tst accuracy: {(pred == tsty).mean()}")
+    print(f"Ori tst accuracy: {(pred == tsty).mean()}")
     ori_tstX, ori_tsty = tstX, tsty # len = 200
     idxs = np.where(pred == tsty)[0]
     random_state.shuffle(idxs)

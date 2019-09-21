@@ -404,4 +404,4 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         else:
             eps = LINF_EPS
 
-        return x_train, y_train, x_test, y_test, eps
+        return x_train, y_train.ravel(), x_test, y_test.ravel(), eps
