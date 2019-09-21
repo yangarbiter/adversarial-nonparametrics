@@ -82,11 +82,12 @@ def get_aug_data(model, X, y, eps, sep_measure=None):
         augX {ndarray, dim=2} -- augmented feature vectors
         augy {ndarray, dim=1} -- augmented labels
     """
-    if model.train_type in ['adv', 'advPruning', 'advPruningmin', 'robustv2']:
+    if model.train_type in ['adv', 'advPruning', 'advPruningmin', 'robustv2', 'approxAP']:
         if eps is None and model.eps is None:
             raise ValueError("eps should not be None with train type %s" % model.train_type)
         elif eps is None:
             eps = model.eps
+    print(f"augmenting data with eps: {eps}")
 
     if sep_measure is None:
         sep_measure = model.sep_measure if model.sep_measure else model.ord

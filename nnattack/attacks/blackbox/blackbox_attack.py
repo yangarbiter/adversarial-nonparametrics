@@ -251,11 +251,11 @@ class BlackBoxAttack(AttackModel):
                 return self.model.predict(np.reshape(x, [len(x)] + list(ori_shape[1:])))
 
         if self.ord == np.inf:
-            attacker = OPT_attack_lf(self.model)
-            ret = Parallel(n_jobs=1, verbose=5)(delayed(attacker)(
-                xi, yi, TARGETED=False) for (xi, yi) in dataset)
+            attacker = OPT_attack_lf()
+            ret = Parallel(n_jobs=20, verbose=10)(delayed(attacker)(
+                predict_fn, xi, yi, TARGETED=False) for (xi, yi) in dataset)
         else:
-            ret = Parallel(n_jobs=10, verbose=10)(delayed(attack_untargeted)(
+            ret = Parallel(n_jobs=20, verbose=10)(delayed(attack_untargeted)(
                 predict_fn, dataset, xi, yi, self.ord, alpha=self.alpha, beta=self.beta,
                 iterations=1000, ori_shape=ori_shape) for (xi, yi) in dataset)
 

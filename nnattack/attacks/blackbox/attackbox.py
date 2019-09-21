@@ -23,18 +23,33 @@ def mulvt(v,t):
 
 
 class OPT_attack_lf(object):
-    def __init__(self,model):
-        self.model = model
+    def __init__(self):
+        pass
 
-    def attack_untargeted(self, x0, y0, alpha = 0.2, beta = 0.01, iterations = 1000):
+    def attack_untargeted(self, predict_fn, x0, y0, alpha = 0.2, beta = 0.01, iterations = 1000):
         """ Attack the original image and return adversarial example
-            model: (pytorch model)
             train_dataset: set of training data
             (x0, y0): original image
         """
-        model = self.model
+        if isinstance(predict_fn, tuple):
+            if predict_fn[0] == 'keras':
+                with tf.device('/CPU:0'):
+                    with open(predict_fn[1] + ".json") as fp:
+                        model = model_from_json(json.dumps(json.load(fp)))
+                    model.load_weights(predict_fn[1])
+                def predict_fn(x):
+                    with tf.device('/CPU:0'):
+                        ret = model.predict(np.reshape(x, [len(x)] + list(ori_shape[1:]))).argmax(1)
+                    return ret
+            elif predict_fn[0] == 'faiss':
+                file_path = predict_fn[1]
+                model = predict_fn[2]
+                model.load(file_path)
+                def predict_fn(x):
+                    return model.predict(np.reshape(x, [len(x), -1]))
+
         #y0 = y0[0]
-        if (model.predict([x0]) != y0):
+        if (predict_fn([x0]) != y0):
             #print("Fail to classify the image. No need to attack.")
             #return x0,0,0
             return x0
@@ -47,11 +62,11 @@ class OPT_attack_lf(object):
         for i in range(num_directions):
             query_count += 1
             theta = np.random.randn(*x0.shape)
-            if model.predict([x0+theta])!=y0:
+            if predict_fn([x0+theta])!=y0:
                 #l2norm = LA.norm(theta)
                 initial_lbd = LA.norm(theta.flatten(),np.inf)
                 theta /= initial_lbd     # might have problem on the defination of direction
-                lbd, count = self.fine_grained_binary_search(model, x0, y0, theta, initial_lbd, g_theta)
+                lbd, count = self.fine_grained_binary_search(predict_fn, x0, y0, theta, initial_lbd, g_theta)
                 query_count += count
                 if lbd < g_theta:
                     best_theta, g_theta = theta, lbd
@@ -78,7 +93,7 @@ class OPT_attack_lf(object):
                 u /= LA.norm(u.flatten(),np.inf)
                 ttt = theta+beta * u
                 ttt /= LA.norm(ttt.flatten(),np.inf)
-                g1, count = self.fine_grained_binary_search_local(model, x0, y0, ttt, initial_lbd = g2, tol=beta/500)
+                g1, count = self.fine_grained_binary_search_local(predict_fn, x0, y0, ttt, initial_lbd = g2, tol=beta/500)
                 opt_count += count
                 gradient += (g1-g2)/beta * u
                 if g1 < min_g1:
@@ -99,7 +114,7 @@ class OPT_attack_lf(object):
             for _ in range(15):
                 new_theta = theta - alpha * gradient
                 new_theta /= LA.norm(new_theta.flatten(),np.inf)
-                new_g2, count = self.fine_grained_binary_search_local(model, x0, y0, new_theta, initial_lbd = min_g2, tol=beta/500)
+                new_g2, count = self.fine_grained_binary_search_local(predict_fn, x0, y0, new_theta, initial_lbd = min_g2, tol=beta/500)
                 opt_count += count
                 alpha = alpha * 2
                 if new_g2 < min_g2:
@@ -113,7 +128,7 @@ class OPT_attack_lf(object):
                     alpha = alpha * 0.25
                     new_theta = theta - alpha * gradient
                     new_theta /= LA.norm(new_theta.flatten(),np.inf)
-                    new_g2, count = self.fine_grained_binary_search_local(model, x0, y0, new_theta, initial_lbd = min_g2, tol=beta/500)
+                    new_g2, count = self.fine_grained_binary_search_local(predict_fn, x0, y0, new_theta, initial_lbd = min_g2, tol=beta/500)
                     opt_count += count
                     if new_g2 < g2:
                         min_theta = new_theta 
@@ -136,21 +151,21 @@ class OPT_attack_lf(object):
                 if (beta < 0.00005):
                     break
 
-        #target = model.predict([x0 + g_theta*best_theta])
+        #target = predict_fn([x0 + g_theta*best_theta])
         timeend = time.time()
         #print("\nAdversarial Example Found Successfully: distortion %.4f target %d queries %d \nTime: %.4f seconds" % (g_theta, target, query_count + opt_count, timeend-timestart))
         #return x0 + g_theta*best_theta, g_theta, query_count + opt_count
         return x0 + g_theta*best_theta
 
-    def fine_grained_binary_search_local(self, model, x0, y0, theta, initial_lbd = 1.0, tol=1e-5):
+    def fine_grained_binary_search_local(self, predict_fn, x0, y0, theta, initial_lbd = 1.0, tol=1e-5):
         nquery = 0
         lbd = initial_lbd
 
-        if model.predict([x0+lbd*theta]) == y0:
+        if predict_fn([x0+lbd*theta]) == y0:
             lbd_lo = lbd
             lbd_hi = lbd*1.01
             nquery += 1
-            while model.predict([x0+lbd_hi*theta]) == y0:
+            while predict_fn([x0+lbd_hi*theta]) == y0:
                 lbd_hi = lbd_hi*1.01
                 nquery += 1
                 if lbd_hi > 20:
@@ -159,23 +174,23 @@ class OPT_attack_lf(object):
             lbd_hi = lbd
             lbd_lo = lbd*0.99
             nquery += 1
-            while model.predict([x0+lbd_lo*theta]) != y0 :
+            while predict_fn([x0+lbd_lo*theta]) != y0 :
                 lbd_lo = lbd_lo*0.99
                 nquery += 1
 
         while (lbd_hi - lbd_lo) > tol:
             lbd_mid = (lbd_lo + lbd_hi)/2.0
             nquery += 1
-            if model.predict([x0 + lbd_mid*theta]) != y0:
+            if predict_fn([x0 + lbd_mid*theta]) != y0:
                 lbd_hi = lbd_mid
             else:
                 lbd_lo = lbd_mid
         return lbd_hi, nquery
 
-    def fine_grained_binary_search(self, model, x0, y0, theta, initial_lbd, current_best):
+    def fine_grained_binary_search(self, predict_fn, x0, y0, theta, initial_lbd, current_best):
         nquery = 0
         if initial_lbd > current_best: 
-            if model.predict([x0+current_best*theta]) == y0:
+            if predict_fn([x0+current_best*theta]) == y0:
                 nquery += 1
                 return float('inf'), nquery
             lbd = current_best
@@ -188,22 +203,21 @@ class OPT_attack_lf(object):
         while (lbd_hi - lbd_lo) > 1e-5:
             lbd_mid = (lbd_lo + lbd_hi)/2.0
             nquery += 1
-            if model.predict([x0 + lbd_mid*theta]) != y0:
+            if predict_fn([x0 + lbd_mid*theta]) != y0:
                 lbd_hi = lbd_mid
             else:
                 lbd_lo = lbd_mid
         return lbd_hi, nquery
 
-    def attack_targeted(self, initial_xi, x0, y0, target, alpha = 0.2, beta = 0.001, iterations = 5000):
+    def attack_targeted(self, predict_fn, initial_xi, x0, y0, target, alpha = 0.2, beta = 0.001, iterations = 5000):
         """ Attack the original image and return adversarial example
             model: (pytorch model)
             train_dataset: set of training data
             (x0, y0): original image
         """
-        model = self.model
         #print(y0)
         #y0 = y0[0]
-        if (model.predict([x0])[0] != y0):
+        if (predict_fn([x0])[0] != y0):
             #print("Fail to classify the image. No need to attack.")
             return x0,0,0
 
@@ -221,7 +235,7 @@ class OPT_attack_lf(object):
         #    if yi != target:
         #        continue
         #    query_count += 1
-        #    if model.predict(xi) == target:
+        #    if predict_fn(xi) == target:
         #       theta = xi - x0
                 #l2norm = LA.norm(theta)
         #        initial_lbd = LA.norm(theta.flatten(),np.inf)
@@ -334,7 +348,7 @@ class OPT_attack_lf(object):
                     break
         g_theta, _ = self.fine_grained_binary_search_local_targeted_original(model, x0, y0, target, best_theta, initial_lbd = 1.0, tol=beta/500)
         dis = LA.norm((g_theta*best_theta).flatten(),np.inf)
-        #target = model.predict([x0 + g_theta*best_theta])
+        #target = predict_fn([x0 + g_theta*best_theta])
         timeend = time.time()
         #print("\nAdversarial Example Found Successfully: distortion %.4f target %d queries %d \nTime: %.4f seconds" % (dis, target, query_count + opt_count, timeend-timestart))
         return x0 + g_theta*best_theta
@@ -425,9 +439,9 @@ class OPT_attack_lf(object):
                 lbd_lo = lbd_mid
         return lbd_hi, nquery
 
-    def __call__(self, input_xi, label_or_target, initial_xi=None, target=None, TARGETED=False):
+    def __call__(self, predict_fn, input_xi, label_or_target, initial_xi=None, target=None, TARGETED=False):
         if TARGETED:
-            adv = self.attack_targeted(initial_xi, input_xi, label_or_target, target)
+            adv = self.attack_targeted(predict_fn, initial_xi, input_xi, label_or_target, target)
         else:
-            adv = self.attack_untargeted(input_xi, label_or_target)
+            adv = self.attack_untargeted(predict_fn, input_xi, label_or_target)
         return adv
