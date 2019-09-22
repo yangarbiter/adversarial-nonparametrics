@@ -3,7 +3,7 @@ from nnattack.variables import auto_var
 from utils import RobustExperiments
 
 random_seed = list(range(1))
-ATTACK_NORM = 'inf'
+ATTACK_NORM = '2'
 
 datasets = [
     'australian',
@@ -16,6 +16,18 @@ datasets = [
     'fashion_mnist06_2200_pca25',
     'mnist17_2200_pca25',
 ]
+
+ds_eps = {
+    'australian': 50,
+    'fourclass': 25,
+    'diabetes': 25,
+    'cancer': 50,
+    'halfmoon': 25,
+    'covtype': 50,
+    'f-mnist35': 75,
+    'f-mnist06': 75,
+    'mnist17': 75,
+}
 
 tree_datasets = [
     'australian',
@@ -31,7 +43,7 @@ tree_datasets = [
 
 class compare_attacks(RobustExperiments):
     def __new__(cls, *args, **kwargs):
-        cls.name = "compare_attacks"
+        cls.name = "compare_attacks_l2"
         grid_params = []
         grid_params.append({
             'model': ['knn1'],
@@ -69,7 +81,7 @@ class compare_attacks(RobustExperiments):
 
 class parametric_defense(RobustExperiments):
     def __new__(cls, *args, **kwargs):
-        cls.name = "parametric_defense"
+        cls.name = "parametric_defense_l2"
         grid_params = []
         grid_params.append({
             'model': [
@@ -98,8 +110,8 @@ class parametric_defense(RobustExperiments):
 
 class compare_defense(RobustExperiments):
     def __new__(cls, *args, **kwargs):
-        cls.name = "compare_defense"
-        def_strength = 30
+        cls.name = "compare_defense_l2"
+        def_strength = 50
         grid_params = []
         grid_params.append({
             'model': [
@@ -175,11 +187,12 @@ class compare_defense(RobustExperiments):
 
 class tst_scores(RobustExperiments):
     def __new__(cls, *args, **kwargs):
-        cls.name = "tst_scores"
+        cls.name = "tst_scores_l2"
         grid_params = []
         grid_params.append({
             'model': [
-                'knn1', 'advPruning_nn_k1_10', 'advPruning_nn_k1_30', 'advPruning_nn_k1_50',
+                #'knn1', 'advPruning_nn_k1_10', 'advPruning_nn_k1_30', 'advPruning_nn_k1_50',
+                'knn1', 'advPruning_nn_k1_25', 'advPruning_nn_k1_50', 'advPruning_nn_k1_75',
             ],
             'ord': [ATTACK_NORM],
             'dataset': datasets,
@@ -188,7 +201,7 @@ class tst_scores(RobustExperiments):
         })
         grid_params.append({
             'model': [
-                'knn3', 'advPruning_nn_k3_10', 'advPruning_nn_k3_30', 'advPruning_nn_k3_50',
+                'knn3', 'advPruning_nn_k3_25', 'advPruning_nn_k3_50', 'advPruning_nn_k3_75',
             ],
             'ord': [ATTACK_NORM],
             'dataset': datasets,
@@ -198,9 +211,7 @@ class tst_scores(RobustExperiments):
         grid_params.append({
             'model': [
                 'decision_tree_d5',
-                'advPruning_decision_tree_d5_10',
-                'advPruning_decision_tree_d5_30',
-                'advPruning_decision_tree_d5_50',
+                'advPruning_decision_tree_d5_25', 'advPruning_decision_tree_d5_50', 'advPruning_decision_tree_d5_75',
             ],
             'ord': [ATTACK_NORM],
             'dataset': tree_datasets,
@@ -210,9 +221,7 @@ class tst_scores(RobustExperiments):
         grid_params.append({
             'model': [
                 'random_forest_100_d5',
-                'advPruning_rf_100_10_d5',
-                'advPruning_rf_100_30_d5',
-                'advPruning_rf_100_50_d5',
+                'advPruning_rf_100_25_d5', 'advPruning_rf_100_50_d5', 'advPruning_rf_100_75_d5',
             ],
             'ord': [ATTACK_NORM],
             'dataset': tree_datasets,
@@ -224,16 +233,16 @@ class tst_scores(RobustExperiments):
 
 class fullds(RobustExperiments):
     def __new__(cls, *args, **kwargs):
-        cls.name = "fullds"
+        cls.name = "fullds_l2"
         grid_params = []
         grid_params.append({
             'model': [
-                'random_forest_300_d10', 'approxAP_rf_300_20_d10',
-                "knn1", "approxAP_nn_k1_20",
-                "knn3", "approxAP_nn_k3_20",
+                'random_forest_300_d10', 'approxAP_rf_300_500_d10',
+                "knn1", "approxAP_nn_k1_500",
+                "knn3", "approxAP_nn_k3_500",
             ],
             'ord': [ATTACK_NORM],
-            'dataset': ['fullmnist_pca100', 'fullfashion_pca100'],
+            'dataset': ['fullmnist', 'fullfashion'],
             'attack': ['blackbox'],
             'random_seed': random_seed,
         })
@@ -242,14 +251,14 @@ class fullds(RobustExperiments):
 
 class nn_k1_robustness(RobustExperiments):
     def __new__(cls, *args, **kwargs):
-        cls.name = "1nn_robustness"
+        cls.name = "1nn_robustness_l2"
         grid_params = []
         grid_params.append({
             'model': [
                 'knn1',
-                'advPruning_nn_k1_10',
-                'advPruning_nn_k1_30',
-                'advPruning_nn_k1_50',
+                'advPruning_nn_k1_25', 'advPruning_nn_k1_50', 'advPruning_nn_k1_75',
+                #'adv_nn_k1_10', 'adv_nn_k1_30', 'adv_nn_k1_50',
+                #'robustv2_nn_k1_10', 'robustv2_nn_k1_30', 'robustv2_nn_k1_50',
             ],
             'ord': [ATTACK_NORM],
             'dataset': datasets,
@@ -261,14 +270,14 @@ class nn_k1_robustness(RobustExperiments):
 
 class nn_k3_robustness(RobustExperiments):
     def __new__(cls, *args, **kwargs):
-        cls.name = "3nn_robustness"
+        cls.name = "3nn_robustness_l2"
         grid_params = []
         grid_params.append({
             'model': [
                 'knn3',
-                'advPruning_nn_k3_10',
-                'advPruning_nn_k3_30',
-                'advPruning_nn_k3_50',
+                'advPruning_nn_k3_25', 'advPruning_nn_k3_50', 'advPruning_nn_k3_75',
+                #'adv_nn_k3_10', 'adv_nn_k3_30', 'adv_nn_k3_50',
+                #'robustv2_nn_k3_10', 'robustv2_nn_k3_30', 'advPruning_nn_k3_50',
             ],
             'ord': [ATTACK_NORM],
             'dataset': datasets,
@@ -280,12 +289,12 @@ class nn_k3_robustness(RobustExperiments):
 
 class rf_robustness(RobustExperiments):
     def __new__(cls, *args, **kwargs):
-        cls.name = "rf-robustness"
+        cls.name = "rf-robustness_l2"
         models = [
             'random_forest_100_d5',
             #'adv_rf_100_10_d5', 'adv_rf_100_30_d5', 'adv_rf_100_50_d5',
             #'robust_rf_100_10_d5', 'robust_rf_100_30_d5', 'robust_rf_100_50_d5',
-            'advPruning_rf_100_10_d5', 'advPruning_rf_100_30_d5', 'advPruning_rf_100_50_d5',
+            'advPruning_rf_100_25_d5', 'advPruning_rf_100_50_d5', 'advPruning_rf_100_75_d5',
             #'robustv2_rf_100_10_d5', 'robustv2_rf_100_30_d5', 'robustv2_rf_100_50_d5',
         ]
         attacks = ['RBA_Approx_RF_100']
@@ -303,12 +312,11 @@ class rf_robustness(RobustExperiments):
 
 class dt_robustness(RobustExperiments):
     def __new__(cls, *args, **kwargs):
-        cls.name = "dt-robustness"
+        cls.name = "dt-robustness_l2"
         models = [
             'decision_tree_d5',
             #'robust_decision_tree_d5_10', 'robust_decision_tree_d5_30', 'robust_decision_tree_d5_50',
-            'advPruning_decision_tree_d5_10', 'advPruning_decision_tree_d5_30',
-            'advPruning_decision_tree_d5_50',
+            'advPruning_decision_tree_d5_25', 'advPruning_decision_tree_d5_50', 'advPruning_decision_tree_d5_75',
         ]
         attacks = ['RBA_Exact_DT']
 
@@ -325,12 +333,12 @@ class dt_robustness(RobustExperiments):
 
 class lr_ap_robustness(RobustExperiments):
     def __new__(cls, *args, **kwargs):
-        cls.name = "lr-ap-robustness"
+        cls.name = "lr-ap-robustness_l2"
         models = [
             'logistic_regression',
-            'advPruning_logistic_regression_10',
-            'advPruning_logistic_regression_30',
+            'advPruning_logistic_regression_25',
             'advPruning_logistic_regression_50',
+            'advPruning_logistic_regression_75',
         ]
         attacks = ['pgd']
 
@@ -347,12 +355,12 @@ class lr_ap_robustness(RobustExperiments):
 
 class lr_at_robustness(RobustExperiments):
     def __new__(cls, *args, **kwargs):
-        cls.name = "lr-at-robustness"
+        cls.name = "lr-at-robustness_l2"
         models = [
             'logistic_regression',
-            'adv_logistic_regression_10',
-            'adv_logistic_regression_30',
+            'adv_logistic_regression_25',
             'adv_logistic_regression_50',
+            'adv_logistic_regression_75',
         ]
         attacks = ['pgd']
 
@@ -369,9 +377,9 @@ class lr_at_robustness(RobustExperiments):
 
 class mlp_ap_robustness(RobustExperiments):
     def __new__(cls, *args, **kwargs):
-        cls.name = "mlp-ap-robustness"
+        cls.name = "mlp-ap-robustness_l2"
         models = [
-            'mlp', 'advPruning_mlp_10', 'advPruning_mlp_30', 'advPruning_mlp_50',
+            'mlp', 'advPruning_mlp_25', 'advPruning_mlp_50', 'advPruning_mlp_75',
         ]
         attacks = ['pgd']
 
@@ -388,8 +396,11 @@ class mlp_ap_robustness(RobustExperiments):
 
 class mlp_at_robustness(RobustExperiments):
     def __new__(cls, *args, **kwargs):
-        cls.name = "mlp-at-robustness"
-        models = ['mlp', 'adv_mlp_10', 'adv_mlp_30', 'adv_mlp_50',]
+        cls.name = "mlp-at-robustness_l2"
+        models = [
+            'mlp',
+            'adv_mlp_25', 'adv_mlp_50', 'adv_mlp_75',
+        ]
         attacks = ['pgd']
 
         grid_params = []
@@ -403,64 +414,15 @@ class mlp_at_robustness(RobustExperiments):
         cls.grid_params = grid_params
         return RobustExperiments.__new__(cls, *args, **kwargs)
 
-class dt_robustness_figs(RobustExperiments):
-    def __new__(cls, *args, **kwargs):
-        dt_models = [
-            'decision_tree_d5',
-            'robust_decision_tree_d5_30',
-            'advPruning_decision_tree_d5_30',
-        ]
-
-        cls.name = "dt_robustness_figs"
-        grid_params = {
-            'model': dt_models, 'attack': ['RBA_Exact_DT'],
-            'dataset': tree_datasets, 'ord': [ATTACK_NORM], 'random_seed': random_seed,
-        }
-        cls.grid_params = grid_params
-        return RobustExperiments.__new__(cls, *args, **kwargs)
-
-class nn_k1_robustness_figs(RobustExperiments):
-    def __new__(cls, *args, **kwargs):
-        cls.name = "nn_k1_robustness_figs"
-        nn_k1_models = ['knn1', 'advPruning_nn_k1_30',]
-        grid_params = {
-            'model': nn_k1_models, 'attack': ['RBA_Exact_KNN_k1'],
-            'dataset': datasets, 'ord': [ATTACK_NORM], 'random_seed': random_seed,
-        }
-        cls.grid_params = grid_params
-        return RobustExperiments.__new__(cls, *args, **kwargs)
-
-class nn_k3_robustness_figs(RobustExperiments):
-    def __new__(cls, *args, **kwargs):
-        cls.name = "nn_k3_robustness_figs"
-        nn_k3_models = ['knn3', 'advPruning_nn_k3_30',]
-        grid_params = {
-            'model': nn_k3_models, 'attack': ['RBA_Approx_KNN_k3_50'],
-            'dataset': datasets, 'ord': [ATTACK_NORM], 'random_seed': random_seed,
-        }
-        cls.grid_params = grid_params
-        return RobustExperiments.__new__(cls, *args, **kwargs)
-
-class rf_robustness_figs(RobustExperiments):
-    def __new__(cls, *args, **kwargs):
-        cls.name = "rf_robustness_figs"
-        rf_models = ['random_forest_100_d5', 'robust_rf_100_30_d5',
-                'advPruning_rf_100_30_d5',]
-        grid_params = {
-            'model': rf_models, 'attack': ['RBA_Approx_RF_100'],
-            'dataset': tree_datasets, 'ord': [ATTACK_NORM], 'random_seed': random_seed,
-        }
-        cls.grid_params = grid_params
-        return RobustExperiments.__new__(cls, *args, **kwargs)
 
 class nn1_def(RobustExperiments):
     def __new__(cls, *args, **kwargs):
-        cls.name = "rf-robustness"
+        cls.name = "rf-robustness_l2"
         attacks = ['RBA_Exact_KNN_k1']
 
         grid_params = []
         for ds in datasets:
-            k = 30
+            v, k = [ds], ds_eps[auto_var.get_var_shown_name("dataset", ds)]
             models = [
                 'knn1',
                 f'adv_nn_k1_{k}',
@@ -471,7 +433,7 @@ class nn1_def(RobustExperiments):
             grid_params.append({
                 'model': models,
                 'ord': [ATTACK_NORM],
-                'dataset': [ds],
+                'dataset': v,
                 'attack': attacks,
                 'random_seed': random_seed,
             })
@@ -480,12 +442,12 @@ class nn1_def(RobustExperiments):
 
 class nn3_def(RobustExperiments):
     def __new__(cls, *args, **kwargs):
-        cls.name = "rf-robustness"
+        cls.name = "rf-robustness_l2"
         attacks = ['RBA_Approx_KNN_k3_50']
 
         grid_params = []
         for ds in datasets:
-            k = 30
+            v, k = [ds], ds_eps[auto_var.get_var_shown_name("dataset", ds)]
             models = [
                 'knn3',
                 f'adv_nn_k3_{k}',
@@ -496,7 +458,7 @@ class nn3_def(RobustExperiments):
             grid_params.append({
                 'model': models,
                 'ord': [ATTACK_NORM],
-                'dataset': [ds],
+                'dataset': v,
                 'attack': attacks,
                 'random_seed': random_seed,
             })
@@ -505,12 +467,12 @@ class nn3_def(RobustExperiments):
 
 class dt_def(RobustExperiments):
     def __new__(cls, *args, **kwargs):
-        cls.name = "dt-robustness"
+        cls.name = "dt-robustness_l2"
         attacks = ['RBA_Exact_DT']
 
         grid_params = []
         for ds in tree_datasets:
-            k = 30
+            v, k = [ds], ds_eps[auto_var.get_var_shown_name("dataset", ds)]
             models = [
                 'decision_tree_d5',
                 f'adv_decision_tree_d5_{k}',
@@ -521,7 +483,7 @@ class dt_def(RobustExperiments):
             grid_params.append({
                 'model': models,
                 'ord': [ATTACK_NORM],
-                'dataset': [ds],
+                'dataset': v,
                 'attack': attacks,
                 'random_seed': random_seed,
             })
@@ -530,12 +492,12 @@ class dt_def(RobustExperiments):
 
 class rf_def(RobustExperiments):
     def __new__(cls, *args, **kwargs):
-        cls.name = "rf-robustness"
+        cls.name = "rf-robustness_l2"
         attacks = ['RBA_Approx_RF_100']
 
         grid_params = []
         for ds in tree_datasets:
-            k = 30
+            v, k = [ds], ds_eps[auto_var.get_var_shown_name("dataset", ds)]
             models = [
                 'random_forest_100_d5',
                 f'adv_rf_100_{k}_d5',
@@ -546,7 +508,7 @@ class rf_def(RobustExperiments):
             grid_params.append({
                 'model': models,
                 'ord': [ATTACK_NORM],
-                'dataset': [ds],
+                'dataset': v,
                 'attack': attacks,
                 'random_seed': random_seed,
             })
@@ -555,12 +517,12 @@ class rf_def(RobustExperiments):
 
 class lr_def(RobustExperiments):
     def __new__(cls, *args, **kwargs):
-        cls.name = "dt-robustness"
+        cls.name = "dt-robustness_l2"
         attacks = ['pgd']
 
         grid_params = []
         for ds in tree_datasets:
-            k = 30
+            v, k = [ds], ds_eps[auto_var.get_var_shown_name("dataset", ds)]
             models = [
                 'logistic_regression',
                 f'adv_logistic_regression_{k}',
@@ -570,7 +532,7 @@ class lr_def(RobustExperiments):
             grid_params.append({
                 'model': models,
                 'ord': [ATTACK_NORM],
-                'dataset': [ds],
+                'dataset': v,
                 'attack': attacks,
                 'random_seed': random_seed,
             })
@@ -579,18 +541,18 @@ class lr_def(RobustExperiments):
 
 class mlp_def(RobustExperiments):
     def __new__(cls, *args, **kwargs):
-        cls.name = "dt-robustness"
+        cls.name = "dt-robustness_l2"
         attacks = ['pgd']
 
         grid_params = []
         for ds in tree_datasets:
-            k = 30
+            v, k = [ds], ds_eps[auto_var.get_var_shown_name("dataset", ds)]
             models = ['mlp', f'adv_mlp_{k}', f'advPruning_mlp_{k}']
 
             grid_params.append({
                 'model': models,
                 'ord': [ATTACK_NORM],
-                'dataset': [ds],
+                'dataset': v,
                 'attack': attacks,
                 'random_seed': random_seed,
             })

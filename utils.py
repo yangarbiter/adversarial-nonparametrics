@@ -33,9 +33,10 @@ class RobustExperiments(Experiments):
         return Experiments.__new__(cls, *args, **kwargs)
 
 def get_result(auto_var):
-    file_name = get_file_name(auto_var, name_only=True).replace("_", "-")
+    file_name = get_file_name(auto_var).replace("_", "-")
     file_path = f"./results/{file_name}.json"
     if not os.path.exists(file_path):
+        print(f"{file_path} doesn't exist")
         return None
     try:
         with open(file_path, "r") as f:
@@ -47,7 +48,7 @@ def get_result(auto_var):
 
 def params_to_dataframe(grid_param, columns=None):
     params, loaded_results = auto_var.run_grid_params(
-            get_result, grid_param, with_hook=False, verbose=0, n_jobs=1)
+            get_result, grid_param, with_hook=False, verbose=0, n_jobs=1, allow_failure=False)
     if columns is None:
         results = [r['results'] if isinstance(r, dict) else r for r in loaded_results]
     else:
@@ -83,7 +84,12 @@ def params_to_dataframe(grid_param, columns=None):
                                 params[i]['missed_count'] = 0
                     elif column == 'aug_len':
                         if column not in results[i]:
-                            params[i][column] = results[i]['trnX_len']
+                            try:
+                                params[i][column] = results[i]['trnX_len']
+                            except:
+                                print(param)
+                                print(results[i])
+                                raise ValueError
                         else:
                             params[i][column] = results[i][column]
                     else:
