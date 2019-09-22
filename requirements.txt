@@ -1,5 +1,7 @@
 tensorflow==1.14.0
 keras
+bistiming
+scikit-image
 autovar==0.0.1a3
 cleverhans==3.0.1
 cvxopt==1.2.3

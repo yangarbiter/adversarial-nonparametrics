@@ -376,10 +376,10 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
         return X, y, eps
 
-    @register_var(argument=r"cifar-resnet50(?P<n_dims>_pca\d+)?",
-                  shown_name="cifar-resnet50")
+    @register_var(argument=r"cifar-(?P<arch>[a-zA-Z0-9]+)(?P<n_dims>_pca\d+)?",
+                  shown_name="cifar")
     @staticmethod
-    def cifar_resnet50(auto_var, var_value, inter_var, n_dims):
+    def cifar_resnet50(auto_var, var_value, inter_var, n_dims, arch):
         from keras.datasets import cifar10
         from sklearn.decomposition import PCA
 
@@ -387,8 +387,9 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
         (x_train, y_train), (x_test, y_test) = cifar10.load_data()
         #x_train, x_test = x_train.astype(np.float32) / 255, x_test.astype(np.float32) / 255
-        x_train = extract_feature(x_train, cnn_arch='resnet50')
-        x_test = extract_feature(x_test, cnn_arch='resnet50')
+        x_train, x_test = x_train.astype(np.float32), x_test.astype(np.float32)
+        x_train = extract_feature(x_train, cnn_arch=arch)
+        x_test = extract_feature(x_test, cnn_arch=arch)
 
         if n_dims:
             x_train = x_train.reshape((len(x_train), -1))

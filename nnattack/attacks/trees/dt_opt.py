@@ -37,6 +37,7 @@ def get_sol_l2(target_x, target_y, paths, tree, constraints):
             try:
                 sol = solvers.qp(P=Q, q=q, G=G, h=temph)
             except ValueError as e:
+                print(e)
                 print("Rare error from solver")
                 # usually not able to sat constraint (domain error)
 

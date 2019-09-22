@@ -104,8 +104,6 @@ def get_sol_l2(target_x, G, h):
     fet_dim = target_x.shape[0]
     temph = h - 1e-4
 
-    c = matrix(np.concatenate((np.zeros(fet_dim), np.ones(1))), tc='d')
-
     Q = 2 * matrix(np.eye(fet_dim), tc='d')
 
     q = matrix(-2*target_x, tc='d')
