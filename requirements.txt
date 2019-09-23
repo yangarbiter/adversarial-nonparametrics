@@ -2,7 +2,7 @@ tensorflow==1.14.0
 keras
 bistiming
 scikit-image
-autovar==0.0.1a3
+autovar==0.0.1a4
 cleverhans==3.0.1
 cvxopt==1.2.3
 cvxpy==1.0.21
@@ -18,3 +18,4 @@ scipy==1.2.1
 tqdm
 faiss==1.5.3
 networkx
+xgboost
