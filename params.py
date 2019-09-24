@@ -228,12 +228,23 @@ class fullds(RobustExperiments):
         grid_params = []
         grid_params.append({
             'model': [
+                'random_forest_300_d10', 'approxAP_rf_300_30_d10',
+                "knn1", "approxAP_nn_k1_30",
+                "knn3", "approxAP_nn_k3_30",
+            ],
+            'ord': [ATTACK_NORM],
+            'dataset': ['fullmnist_pca100'],
+            'attack': ['blackbox'],
+            'random_seed': random_seed,
+        })
+        grid_params.append({
+            'model': [
                 'random_forest_300_d10', 'approxAP_rf_300_20_d10',
                 "knn1", "approxAP_nn_k1_20",
                 "knn3", "approxAP_nn_k3_20",
             ],
             'ord': [ATTACK_NORM],
-            'dataset': ['fullmnist_pca100', 'fullfashion_pca100'],
+            'dataset': ['fullfashion_pca100'],
             'attack': ['blackbox'],
             'random_seed': random_seed,
         })
