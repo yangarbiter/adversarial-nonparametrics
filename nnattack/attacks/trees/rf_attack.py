@@ -120,7 +120,7 @@ def rev_get_sol_l2(target_x, target_y: int, regions, clf, trnX=None):
             if clf.predict([ret])[0] != target_y:
                 candidates.append(ret - target_x)
             else:
-                raise ValueError("Shouldn't happend, unsucessful attack")
+                raise ValueError("Shouldn't happend, unsuccessful attack")
                 # a dimension is too close to the boundary region too small
                 # just use the traning data as
                 #if trnX is not None:

@@ -31,7 +31,6 @@ from params import (
     lr_def,
     mlp_def,
 )
-import params_l2
 from main import eps_accuracy
 
 logging.basicConfig(level=logging.DEBUG)
@@ -41,7 +40,6 @@ DEBUG = True if os.environ.get('DEBUG', False) else False
 def main():
     experiments = [
         compare_attacks(),
-        params_l2.compare_attacks(),
         compare_defense(),
 
         #nn_k1_robustness_figs(),
@@ -57,19 +55,12 @@ def main():
         #lr_ap_robustness(),
         #lr_at_robustness(),
 
-        nn1_def(),
-        nn3_def(),
-        dt_def(),
-        rf_def(),
-        lr_def(),
-        mlp_def(),
-
-        params_l2.nn1_def(),
-        params_l2.nn3_def(),
-        params_l2.dt_def(),
-        params_l2.rf_def(),
-        params_l2.lr_def(),
-        params_l2.mlp_def(),
+        #nn1_def(),
+        #nn3_def(),
+        #dt_def(),
+        #rf_def(),
+        #lr_def(),
+        #mlp_def(),
     ]
     grid_params = []
     for exp in experiments:
@@ -83,7 +74,7 @@ def main():
         run_param['n_jobs'] = 1
         run_param['allow_failure'] = False
     else:
-        run_param['n_jobs'] = 2
+        run_param['n_jobs'] = 4
         run_param['allow_failure'] = True
 
     auto_var.run_grid_params(exp_fn, grid_params, **run_param)

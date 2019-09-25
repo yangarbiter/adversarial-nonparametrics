@@ -252,6 +252,115 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
         return x_train, y_train, x_test, y_test, eps
 
+    @register_var(argument=r"mnist17f(?P<n_dims>_pca\d+)?", shown_name="mnist17f")
+    @staticmethod
+    def mnist17f(auto_var, var_value, inter_var, n_dims):
+        from keras.datasets import mnist
+        from sklearn.decomposition import PCA
+        n_dims = int(n_dims[4:]) if n_dims else None
+
+        (X, y), (tX, ty) = mnist.load_data()
+
+        def process(X, y):
+            X = X.reshape(len(X), -1).astype(np.float) / 255.
+            y = np.copy(y)
+            y.setflags(write=1)
+            idx1 = np.where(y==1)[0]
+            idx2 = np.where(y==7)[0]
+            y[idx1] = 0
+            y[idx2] = 1
+            X = np.vstack((X[idx1], X[idx2])).astype(np.float) / 255.
+            y = np.concatenate((y[idx1], y[idx2]))
+            return X, y
+        X, y = process(X, y)
+        tX, ty = process(tX, ty)
+
+        if n_dims:
+            pca = PCA(n_components=n_dims,
+                    random_state=auto_var.get_var("random_seed"))
+            ttX = pca.fit_transform(np.vstack((X, tX)))
+            X, tX = ttX[:len(X)], ttX[len(X):]
+
+        if auto_var.get_var("ord") == 2:
+            eps = [0.1 * i for i in range(0, 41, 1)]
+        else:
+            eps = LINF_EPS
+
+        return X, y, tX, ty, eps
+
+    @register_var(argument=r"fashion_mnist35f(?P<n_dims>_pca\d+)?", shown_name="mnist17f")
+    @staticmethod
+    def fashion_mnist35f(auto_var, var_value, inter_var, n_dims):
+        from keras.datasets import fashion_mnist
+        from sklearn.decomposition import PCA
+        n_dims = int(n_dims[4:]) if n_dims else None
+
+        (X, y), (tX, ty) = fashion_mnist.load_data()
+
+        def process(X, y):
+            X = X.reshape(len(X), -1).astype(np.float) / 255.
+            y = np.copy(y)
+            y.setflags(write=1)
+            idx1 = np.where(y==3)[0]
+            idx2 = np.where(y==5)[0]
+            y[idx1] = 0
+            y[idx2] = 1
+            X = np.vstack((X[idx1], X[idx2])).astype(np.float) / 255.
+            y = np.concatenate((y[idx1], y[idx2]))
+            return X, y
+        X, y = process(X, y)
+        tX, ty = process(tX, ty)
+        
+
+        if n_dims:
+            pca = PCA(n_components=n_dims,
+                    random_state=auto_var.get_var("random_seed"))
+            ttX = pca.fit_transform(np.vstack((X, tX)))
+            X, tX = ttX[:len(X)], ttX[len(X):]
+
+        if auto_var.get_var("ord") == 2:
+            eps = [0.1 * i for i in range(0, 41, 1)]
+        else:
+            eps = LINF_EPS
+
+        return X, y, tX, ty, eps
+
+    @register_var(argument=r"fashion_mnist06f(?P<n_dims>_pca\d+)?", shown_name="mnist17f")
+    @staticmethod
+    def fashion_mnist06f(auto_var, var_value, inter_var, n_dims):
+        from keras.datasets import fashion_mnist
+        from sklearn.decomposition import PCA
+        n_dims = int(n_dims[4:]) if n_dims else None
+
+        (X, y), (tX, ty) = fashion_mnist.load_data()
+
+        def process(X, y):
+            X = X.reshape(len(X), -1).astype(np.float) / 255.
+            y = np.copy(y)
+            y.setflags(write=1)
+            idx1 = np.where(y==0)[0]
+            idx2 = np.where(y==6)[0]
+            y[idx1] = 0
+            y[idx2] = 1
+            X = np.vstack((X[idx1], X[idx2])).astype(np.float) / 255.
+            y = np.concatenate((y[idx1], y[idx2]))
+            return X, y
+        X, y = process(X, y)
+        tX, ty = process(tX, ty)
+
+        if n_dims:
+            pca = PCA(n_components=n_dims,
+                    random_state=auto_var.get_var("random_seed"))
+            ttX = pca.fit_transform(np.vstack((X, tX)))
+            X, tX = ttX[:len(X)], ttX[len(X):]
+
+        if auto_var.get_var("ord") == 2:
+            eps = [0.1 * i for i in range(0, 41, 1)]
+        else:
+            eps = LINF_EPS
+
+        return X, y, tX, ty, eps
+
     @register_var(argument=r"mnist17_(?P<n_samples>\d+)(?P<n_dims>_pca\d+)?",
                   shown_name="mnist17")
     @staticmethod

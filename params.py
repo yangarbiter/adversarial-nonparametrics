@@ -12,9 +12,12 @@ datasets = [
     'cancer',
     'halfmoon_2200',
     'covtypebin_1200',
-    'fashion_mnist35_2200_pca25',
-    'fashion_mnist06_2200_pca25',
-    'mnist17_2200_pca25',
+    #'fashion_mnist35_2200_pca25',
+    #'fashion_mnist06_2200_pca25',
+    #'mnist17_2200_pca25',
+    'fashion_mnist35f_pca100',
+    'fashion_mnist06f_pca100',
+    'mnist17f_pca100',
 ]
 
 tree_datasets = [
@@ -24,9 +27,12 @@ tree_datasets = [
     'cancer',
     'halfmoon_2200',
     'covtypebin_10200',
-    'fashion_mnist35_10200_pca25',
-    'fashion_mnist06_10200_pca25',
-    'mnist17_10200_pca25',
+    #'fashion_mnist35_10200_pca25',
+    #'fashion_mnist06_10200_pca25',
+    #'mnist17_10200_pca25',
+    'fashion_mnist35f_pca100',
+    'fashion_mnist06f_pca100',
+    'mnist17f_pca100',
 ]
 
 class compare_attacks(RobustExperiments):
@@ -228,9 +234,13 @@ class fullds(RobustExperiments):
         grid_params = []
         grid_params.append({
             'model': [
-                'random_forest_300_d10', 'approxAP_rf_300_30_d10',
-                "knn1", "approxAP_nn_k1_30",
-                "knn3", "approxAP_nn_k3_30",
+                'random_forest_500_d10', 'approxAP_rf_500_20_d10',
+                'xgb_xgb_models/prune_fullmnist_pca100_20_rf_linf.0200.model',
+                "knn1", "approxAP_nn_k1_20",
+                "knn3", "approxAP_nn_k3_20",
+                'xgb_xgb_models/prune_fullmnist_pca100_20_linf.unrob.0200.model',
+                'xgb_xgb_models/fullmnist_pca100.unrob.0200.model',
+                'xgb_xgb_models/fullmnist_pca100.0200.model',
             ],
             'ord': [ATTACK_NORM],
             'dataset': ['fullmnist_pca100'],
@@ -239,9 +249,13 @@ class fullds(RobustExperiments):
         })
         grid_params.append({
             'model': [
-                'random_forest_300_d10', 'approxAP_rf_300_20_d10',
+                'random_forest_500_d10', 'approxAP_rf_500_20_d10',
+                'xgb_xgb_models/prune_fullfashion_pca100_20_rf_linf.0200.model',
                 "knn1", "approxAP_nn_k1_20",
                 "knn3", "approxAP_nn_k3_20",
+                'xgb_xgb_models/prune_fullfashion_pca100_20_linf.unrob.0200.model',
+                'xgb_xgb_models/fullfashion_pca100.unrob.0200.model',
+                'xgb_xgb_models/fullfashion_pca100.0200.model',
             ],
             'ord': [ATTACK_NORM],
             'dataset': ['fullfashion_pca100'],
