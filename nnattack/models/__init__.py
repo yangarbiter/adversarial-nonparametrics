@@ -377,27 +377,13 @@ class ModelVarClass(VariableClass, metaclass=RegisteringChoiceType):
         )
         return model
 
-    @register_var(argument='(?P<train>[a-zA-Z0-9]+_)?decision_tree_xvalid_(?P<eps>\d+)')
+    @register_var(argument=r'xgb_(?P<model_path>[a-zA-Z0-9\/_\.]+)')
     @staticmethod
-    def adv_dt_xvalid(auto_var, var_value, inter_var, train, eps):
-        grid = {
-            'model': [
-                'decision_tree_1',
-                'decision_tree_5',
-                'decision_tree_10',
-                'decision_tree_15',
-                'decision_tree_20',
-            ]
-        }
-        valid_eps = float(eps) * 0.1
-        if train is not None:
-            for i in range(len(grid['model'])):
-                grid['model'][i] = train + grid['model'][i]
-        model_name = cross_validation(auto_var, grid, valid_eps)['model']
-        #auto_var.set_variable_value('model', 'model_name')
-        model = auto_var.get_var_with_argument('model', model_name)
-        auto_var.set_intermidiate_variable("tree_clf", model)
-        return model
+    def xgb(auto_var, inter_var, model_path,):
+        from .xgb_model import XGBModel
+
+        clf = XGBModel(model_path=model_path)
+        return clf
 
     #@register_var(argument=r"adv_advPruningnn_k(?P<n_neighbors>\d+)_xvalid")
     #@staticmethod
