@@ -14,19 +14,40 @@ from ..utils import solve_lp, solve_qp
 
 def constraint_list_to_matrix(r):
     rG, rh = [], []
+    rC, rd = [], []
     n_dim = len(r) // 2
-    #print(r)
-    for i in range(len(r)):
-        if r[i] < np.inf:
-            temp = np.zeros(n_dim)
-            if i < n_dim:
-                temp[i] = 1
-            else:
-                temp[i-n_dim] = -1
+
+    for i in range(n_dim):
+        temp = np.zeros(n_dim)
+        temp[i] = 1
+        if np.isclose(r[i], -r[i+n_dim]):
+            rC.append(temp)
+            rd.append(r[i])
+        else:
+            temp2 = np.zeros(n_dim)
+            temp2[i] = -1
             rG.append(temp)
             rh.append(r[i])
+            rG.append(temp2)
+            rh.append(r[i+n_dim])
 
-    return np.array(rG), np.array(rh)
+    rG, rh = np.array(rG).astype(np.float32), np.array(rh).astype(np.float32)
+    if len(rC) == 0 or len(rd) == 0:
+        rC, rd = None, None
+    else:
+        rC, rd = np.array(rC).astype(np.float32), np.array(rd).astype(np.float32)
+    return rG, rh, rC, rd
+
+    #for i in range(len(r)):
+    #    if r[i] < np.inf:
+    #        temp = np.zeros(n_dim)
+    #        if i < n_dim:
+    #            temp[i] = 1
+    #        else:
+    #            temp[i-n_dim] = -1
+    #        rG.append(temp)
+    #        rh.append(r[i])
+    #return np.array(rG).astype(np.float32), np.array(rh).astype(np.float32)
 
 def union_constraints(G, h):
     assert np.all(np.abs(G).sum(1) == np.ones(len(G)))
@@ -54,48 +75,34 @@ def tree_instance_constraint(tree_clf, X):
     n_dims = X.shape[1]
 
     ret = []
-    #Gs, hs = [], []
     for sample_id in range(len(X)):
         node_index = node_indicator.indices[node_indicator.indptr[sample_id]:
                                             node_indicator.indptr[sample_id + 1]]
         r = [np.inf for i in range(n_dims*2)]
-        #G, h = [], []
         for node_id in node_index:
             if leave_id[sample_id] == node_id:
                 break
 
-            #G.append(np.zeros(n_dims))
-            if (X[sample_id, feature[node_id]] <= threshold[node_id]):
+            # scikit-learn uses float32 internally
+            if (X[sample_id, feature[node_id]].astype(np.float32) <= threshold[node_id]).astype(np.float32):
                 #threshold_sign = "<="
                 idx = feature[node_id]
                 hi = threshold[node_id]
-                #G[-1][idx] = 1
-                #h.append(hi)
                 r[idx] = hi if r[idx] is None else min(r[idx], hi)
             else:
                 #threshold_sign = ">"
                 idx = feature[node_id] + n_dims
-                hi = -threshold[node_id] - 1e-9
-                #G[-1][feature[node_id]] = -1
-                #h.append(-threshold[node_id] - 1e-9) # excluding equality
+                hi = -threshold[node_id]
                 r[idx] = hi if r[idx] is None else min(r[idx], hi)
         ret.append(r)
 
-        #Gs.append(np.array(G))
-        #hs.append(np.array(h))
-        #Gs.append(np.array(G) if len(G) > 0 else np.empty((0, n_dims)))
-        #hs.append(np.array(h) if len(h) > 0 else np.empty((0)))
-        #if len(G) > 0:
-        #    assert np.all(np.dot(G, X[sample_id]) <= h), sample_id
-
-    #return Gs, hs
-    return np.asarray(ret)
+    return np.asarray(ret).astype(np.float32)
 
 def rev_get_sol_l2(target_x, target_y: int, regions, clf, trnX=None):
     fet_dim = np.shape(target_x)[0]
     candidates = []
     regions = [constraint_list_to_matrix(r) for r in regions]
-    for i, (G, h) in enumerate(regions):
+    for i, (G, h, C, d) in enumerate(regions):
         #c = np.concatenate((np.zeros(fet_dim), np.ones(1))).reshape((-1, 1))
 
         Q = 2 * np.eye(fet_dim)
@@ -103,9 +110,9 @@ def rev_get_sol_l2(target_x, target_y: int, regions, clf, trnX=None):
         temph = (h - 1e-6).reshape((-1, 1))
 
         if trnX is None:
-            status, sol = solve_qp(Q, q, G, temph, len(q))
+            status, sol = solve_qp(Q, q, G, temph, len(q), C=C, d=d)
         else:
-            status, sol = solve_qp(Q, q, G, temph, len(q), init_x=trnX[i].reshape((-1, 1)))
+            status, sol = solve_qp(Q, q, G, temph, len(q), C=C, d=d, init_x=trnX[i].reshape((-1, 1)))
 
         if status == 'optimal':
             ret = np.array(sol).reshape(-1)
@@ -133,7 +140,7 @@ def rev_get_sol_linf(target_x, target_y: int, regions, clf,
     fet_dim = np.shape(target_x)[0]
     candidates = []
     regions = [constraint_list_to_matrix(r) for r in regions]
-    for i, (G, h) in enumerate(regions):
+    for i, (G, h, C, d) in enumerate(regions):
         c = np.concatenate((np.zeros(fet_dim), np.ones(1))).reshape((-1, 1))
 
         G2 = np.hstack((np.eye(fet_dim), -np.ones((fet_dim, 1))))
@@ -144,13 +151,16 @@ def rev_get_sol_linf(target_x, target_y: int, regions, clf,
 
         temph = (h - 1e-6).reshape((-1, 1))
 
+        if C is not None:
+            C = np.hstack((C, np.zeros((C.shape[0], 1))))
+
         if trnX is None:
-            status, sol = solve_lp(c, G, temph, len(c))
+            status, sol = solve_lp(c, G, temph, len(c), C=C, d=d)
         else:
             init_x = np.concatenate((
                 trnX[i],
                 [np.linalg.norm(trnX[i]-target_x, ord=np.inf)])).reshape((-1, 1))
-            status, sol = solve_lp(c, G, temph, len(c), init_x=init_x)
+            status, sol = solve_lp(c, G, temph, len(c), C=C, d=d, init_x=init_x)
 
         if status == 'optimal':
             ret = np.array(sol).reshape(-1)[:-1]
@@ -160,7 +170,7 @@ def rev_get_sol_linf(target_x, target_y: int, regions, clf,
             else:
                 # a dimension is too close to the boundary
                 # region too small
-                # just use the traning data as 
+                # just use the traning data as
                 if trnX is not None:
                     candidates.append(trnX[i] - target_x)
                 print("region too small %d" % i)
@@ -211,6 +221,7 @@ class RFAttack(AttackModel):
         self.clf = clf
         self.method = method
         self.n_searches = n_searches
+        trnX = trnX.astype(np.float32)
         self.trnX = trnX
         self.trny = trny
         self.random_state = random_state
@@ -248,8 +259,11 @@ class RFAttack(AttackModel):
                             np.vstack([j[0] for j in pro]),
                             np.concatenate([j[1] for j in pro]),
                         )
-                    G, h = constraint_list_to_matrix(r)
-                    status, _ = solve_lp(np.zeros((len(G[0]))), G, h.reshape(-1, 1), len(G[0]))
+                    G, h, C, d= constraint_list_to_matrix(r)
+                    status, _ = solve_lp(
+                                np.zeros((len(G[0]))), G, h.reshape(-1, 1),
+                                len(G[0]), C=C, d=d,
+                            )
                     if status == 'optimal':
                         self.region_preds.append(np.argmax(np.bincount(res)))
                         #self.regions.append((G, h))
@@ -281,8 +295,15 @@ class RFAttack(AttackModel):
             self.regions = r
 
             for i in range(len(trnX)):
-                G, h = constraint_list_to_matrix(self.regions[i])
-                assert np.all(np.dot(G, trnX[i]) <= (h + 1e-8))
+                G, h, C, d = constraint_list_to_matrix(self.regions[i])
+                if C is not None and d is not None:
+                    assert np.all(
+                            np.logical_and(
+                                np.dot(G, trnX[i]) <= (h + 1e-8),
+                                np.isclose(np.dot(C, trnX[i]), d),
+                            )), i
+                else:
+                    assert np.all(np.dot(G, trnX[i]) <= (h + 1e-8)), i
                 #assert np.all(np.dot(np.vstack(Gss[i]), trnX[i]) <= np.concatenate(hss[i])), i
                 #assert np.all(np.dot(G, trnX[i]) <= h), i
 
