@@ -144,7 +144,7 @@ class AttackVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
     @register_var()
     @staticmethod
-    def dt_papernot(auto_var, var_value, inter_var):
+    def dt_papernots(auto_var, var_value, inter_var):
         """Papernot's attack on decision tree"""
         from .trees.papernots import Papernots
         attack_model = Papernots(
