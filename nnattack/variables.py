@@ -17,6 +17,7 @@ from .attacks import AttackVarClass
 def get_file_name(auto_var):
     dataset = auto_var.get_variable_name('dataset')
     model_name = auto_var.get_variable_name('model')
+    model_name = model_name.replace("/", "-")
     attack_name = auto_var.get_variable_name('attack')
     ord = auto_var.get_variable_name('ord')
     random_seed = auto_var.get_variable_name('random_seed')
