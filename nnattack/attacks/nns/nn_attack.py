@@ -189,7 +189,7 @@ def get_adv(target_x, target_y, kdtree, n_searches, n_neighbors, faropp,
         return ret, sol
     not_vacum = lambda x: tuple(ind[x]) not in lp_sols or lp_sols[tuple(ind[x])]
     combs = list(filter(not_vacum, combs))
-    sols = Parallel(n_jobs=7, verbose=0)(
+    sols = Parallel(n_jobs=-1, verbose=1)(
             delayed(_helper)(comb, transformer, glob_trnX, glob_trny) for comb in combs)
     status, sols = zip(*sols)
     for i, s in enumerate(status):
@@ -384,16 +384,30 @@ class RevNNAttack(NNOptAttack):
 
         knn = KNeighborsClassifier(n_neighbors=self.K)
         knn.fit(glob_trnX.dot(transformer.T), glob_trny)
+        X = X.astype(np.float64)
 
-        ret = []
-        for i, (target_x, target_y) in tqdm(enumerate(zip(X, y)), ascii=True, desc="Perturb"):
-            ret.append(
-                rev_get_adv(target_x.astype(np.float64), target_y,
-                    self.tree, self.n_searches, self.K, self.faropp,
-                    transformer, self.lp_sols, ord=self.ord,
-                    method=self.method, knn=knn, n_jobs=self.n_jobs
+        n_jobs = 1
+        if n_jobs == 1:
+            ret = []
+            for i, (target_x, target_y) in tqdm(enumerate(zip(X, y)), ascii=True, desc="Perturb"):
+                ret.append(
+                    rev_get_adv(target_x.astype(np.float64), target_y,
+                        self.tree, self.n_searches, self.K, self.faropp,
+                        transformer, self.lp_sols, ord=self.ord,
+                        method=self.method, knn=knn, n_jobs=self.n_jobs
+                    )
                 )
-            )
+        else:
+
+            def _helper(transformer, target_x, target_y):
+                return rev_get_adv(target_x, target_y,
+                    self.tree, self.n_searches, self.K, self.faropp,
+                    transformer, dict(), ord=self.ord,
+                    method=self.method, knn=knn, n_jobs=1
+                )
+            sols = Parallel(n_jobs=n_jobs, verbose=1)(
+                    delayed(_helper)(transformer, tar_x, tar_y)
+                        for (tar_x, tar_y) in zip(X, y))
 
         self.perts = np.asarray(ret)
         return attack_with_eps_constraint(self.perts, self.ord, eps)
