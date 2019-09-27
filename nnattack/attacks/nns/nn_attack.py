@@ -407,7 +407,7 @@ class RevNNAttack(NNOptAttack):
                     method=self.method, knn=knn, n_jobs=1,
                     glob_trnX=glob_trnX, glob_trny=glob_trny,
                 )
-            sols = Parallel(n_jobs=n_jobs, verbose=1)(
+            ret = Parallel(n_jobs=n_jobs, verbose=1)(
                     delayed(_helper)(transformer, tar_x, tar_y)
                         for (tar_x, tar_y) in zip(X, y))
 
