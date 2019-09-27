@@ -219,7 +219,7 @@ def attack_with_eps_constraint(perts, ord, eps):
         return perts
 
 def rev_get_adv(target_x, target_y, kdtree, n_searches, n_neighbors, faropp,
-        transformer, lp_sols, ord=2, method='self',
+        transformer, lp_sols, glob_trnX, glob_trny, ord=2, method='self',
         knn: KNeighborsClassifier = None, n_jobs=1):
     if n_searches == -1:
         n_searches = glob_trnX.shape[0]
@@ -377,8 +377,8 @@ class RevNNAttack(NNOptAttack):
         else:
             transformer = np.eye(self.trnX.shape[1])
 
-        global glob_trnX
-        global glob_trny
+        #global glob_trnX
+        #global glob_trny
         glob_trnX = self.trnX
         glob_trny = self.trny
 
@@ -386,15 +386,16 @@ class RevNNAttack(NNOptAttack):
         knn.fit(glob_trnX.dot(transformer.T), glob_trny)
         X = X.astype(np.float64)
 
-        n_jobs = 1
+        n_jobs = 4
         if n_jobs == 1:
             ret = []
-            for i, (target_x, target_y) in tqdm(enumerate(zip(X, y)), ascii=True, desc="Perturb"):
+            for _, (target_x, target_y) in tqdm(enumerate(zip(X, y)), ascii=True, desc="Perturb"):
                 ret.append(
                     rev_get_adv(target_x.astype(np.float64), target_y,
                         self.tree, self.n_searches, self.K, self.faropp,
                         transformer, self.lp_sols, ord=self.ord,
-                        method=self.method, knn=knn, n_jobs=self.n_jobs
+                        method=self.method, knn=knn, n_jobs=self.n_jobs,
+                        glob_trnX=glob_trnX, glob_trny=glob_trny,
                     )
                 )
         else:
@@ -403,7 +404,8 @@ class RevNNAttack(NNOptAttack):
                 return rev_get_adv(target_x, target_y,
                     self.tree, self.n_searches, self.K, self.faropp,
                     transformer, dict(), ord=self.ord,
-                    method=self.method, knn=knn, n_jobs=1
+                    method=self.method, knn=knn, n_jobs=1,
+                    glob_trnX=glob_trnX, glob_trny=glob_trny,
                 )
             sols = Parallel(n_jobs=n_jobs, verbose=1)(
                     delayed(_helper)(transformer, tar_x, tar_y)
