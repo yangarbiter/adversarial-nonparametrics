@@ -98,7 +98,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
         y = y.astype(int)
         return X, y, LINF_EPS
 
-    @register_var()
+    @register_var(shown_name="austr.")
     @staticmethod
     def australian(auto_var, var_value, inter_var):
         # https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary/australian
@@ -252,7 +252,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
         return x_train, y_train, x_test, y_test, eps
 
-    @register_var(argument=r"mnist17f(?P<n_dims>_pca\d+)?", shown_name="mnist17f")
+    @register_var(argument=r"mnist17f(?P<n_dims>_pca\d+)?", shown_name="mnist17")
     @staticmethod
     def mnist17f(auto_var, var_value, inter_var, n_dims):
         from keras.datasets import mnist
@@ -288,7 +288,8 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
         return X, y, tX, ty, eps
 
-    @register_var(argument=r"fashion_mnist35f(?P<n_dims>_pca\d+)?", shown_name="mnist17f")
+    @register_var(argument=r"fashion_mnist35f(?P<n_dims>_pca\d+)?",
+                  shown_name="f-mnist35")
     @staticmethod
     def fashion_mnist35f(auto_var, var_value, inter_var, n_dims):
         from keras.datasets import fashion_mnist
@@ -325,7 +326,8 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
 
         return X, y, tX, ty, eps
 
-    @register_var(argument=r"fashion_mnist06f(?P<n_dims>_pca\d+)?", shown_name="mnist17f")
+    @register_var(argument=r"fashion_mnist06f(?P<n_dims>_pca\d+)?",
+                  shown_name="f-mnist06")
     @staticmethod
     def fashion_mnist06f(auto_var, var_value, inter_var, n_dims):
         from keras.datasets import fashion_mnist

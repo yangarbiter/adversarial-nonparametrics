@@ -15,9 +15,9 @@ datasets = [
     #'fashion_mnist35_2200_pca25',
     #'fashion_mnist06_2200_pca25',
     #'mnist17_2200_pca25',
-    'fashion_mnist35f_pca100',
-    'fashion_mnist06f_pca100',
-    'mnist17f_pca100',
+    'fashion_mnist35f_pca25',
+    'fashion_mnist06f_pca25',
+    'mnist17f_pca25',
 ]
 
 tree_datasets = [
@@ -30,9 +30,9 @@ tree_datasets = [
     #'fashion_mnist35_10200_pca25',
     #'fashion_mnist06_10200_pca25',
     #'mnist17_10200_pca25',
-    'fashion_mnist35f_pca100',
-    'fashion_mnist06f_pca100',
-    'mnist17f_pca100',
+    'fashion_mnist35f_pca25',
+    'fashion_mnist06f_pca25',
+    'mnist17f_pca25',
 ]
 
 class compare_attacks(RobustExperiments):
@@ -44,7 +44,8 @@ class compare_attacks(RobustExperiments):
             'ord': [ATTACK_NORM],
             'dataset': datasets,
             'attack': ['direct_k1', 'blackbox',
-                       'kernelsub_c1000_pgd', 'RBA_Exact_KNN_k1'],
+                       'kernelsub_c1000_pgd', 'RBA_Exact_KNN_k1'
+                       ],
             'random_seed': random_seed,
         })
         grid_params.append({
@@ -154,28 +155,28 @@ class compare_defense(RobustExperiments):
             'attack': ['RBA_Approx_RF_100'],
             'random_seed': random_seed,
         })
-        grid_params.append({
-            'model': [
-                'logistic_regression',
-                f'adv_logistic_regression_{def_strength}',
-                f'advPruning_logistic_regression_{def_strength}',
-            ],
-            'ord': [ATTACK_NORM],
-            'dataset': tree_datasets,
-            'attack': ['pgd'],
-            'random_seed': random_seed,
-        })
-        grid_params.append({
-            'model': [
-                'mlp',
-                f'adv_mlp_{def_strength}',
-                f'advPruning_mlp_{def_strength}',
-            ],
-            'ord': [ATTACK_NORM],
-            'dataset': tree_datasets,
-            'attack': ['pgd'],
-            'random_seed': random_seed,
-        })
+        #grid_params.append({
+        #    'model': [
+        #        'logistic_regression',
+        #        f'adv_logistic_regression_{def_strength}',
+        #        f'advPruning_logistic_regression_{def_strength}',
+        #    ],
+        #    'ord': [ATTACK_NORM],
+        #    'dataset': tree_datasets,
+        #    'attack': ['pgd'],
+        #    'random_seed': random_seed,
+        #})
+        #grid_params.append({
+        #    'model': [
+        #        'mlp',
+        #        f'adv_mlp_{def_strength}',
+        #        f'advPruning_mlp_{def_strength}',
+        #    ],
+        #    'ord': [ATTACK_NORM],
+        #    'dataset': tree_datasets,
+        #    'attack': ['pgd'],
+        #    'random_seed': random_seed,
+        #})
         cls.grid_params = grid_params
         return RobustExperiments.__new__(cls, *args, **kwargs)
 
