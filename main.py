@@ -91,6 +91,9 @@ def eps_accuracy(auto_var):
         idxs = np.arange(len(x_test))
         random_state.shuffle(idxs)
         tstX, tsty = x_test[idxs[:200]], y_test[idxs[:200]]
+        idxs = np.arange(len(X))
+        random_state.shuffle(idxs)
+        X, y = X[idxs], y[idxs]
 
         trnX, tstX = X.reshape((len(X), -1)), tstX.reshape((len(tstX), -1))
         trny = y
