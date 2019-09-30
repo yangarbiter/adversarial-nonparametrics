@@ -311,7 +311,7 @@ class DatasetVarClass(VariableClass, metaclass=RegisteringChoiceType):
             return X, y
         X, y = process(X, y)
         tX, ty = process(tX, ty)
-        
+
 
         if n_dims:
             pca = PCA(n_components=n_dims,
