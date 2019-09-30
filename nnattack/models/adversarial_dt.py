@@ -25,6 +25,8 @@ class AdversarialDt(DecisionTreeClassifier):
 
         if self.train_type is None:
             pass
+        elif self.train_type == 'adv':
+            self.eps = kwargs.pop('eps')
         elif self.train_type == 'robust':
             kwargs['splitter'] = 'robust'
             #kwargs['eps'] = self.eps
@@ -56,14 +58,16 @@ class AdversarialRf(RandomForestClassifier):
 
         Other Arguments follows the original scikit-learn argument (sklearn.tree.RandomForestClassifier).
         """
-            
+
         self.ord = ord
-        self.sep_measure = sep_measure 
+        self.sep_measure = sep_measure
         self.attack_model = attack_model
         self.train_type = train_type
 
         if self.train_type is None:
             pass
+        elif self.train_type == 'adv':
+            self.eps = kwargs.pop('eps')
         elif self.train_type == 'robust':
             kwargs['splitter'] = 'robust'
         elif self.train_type[:7] == 'robust_':
