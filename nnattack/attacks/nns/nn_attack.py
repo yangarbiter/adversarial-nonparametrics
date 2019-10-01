@@ -40,14 +40,11 @@ def get_half_space(a, b):
     c = sign * c
     return [w, c]
 
-glob_trnX = None
-glob_trny = None
-
 #@profile
 def get_sol(target_x, tuple_x, faropp, kdtree,
         glob_trnX, glob_trny, init_x=None, n_jobs=1):
     tuple_x = np.asarray(tuple_x)
-    trnX = glob_trnX
+    trnX = np.copy(glob_trnX)
     emb_tar = target_x
     G, h, _ = get_constraints(trnX, tuple_x, kdtree, faropp, emb_tar)
     G, h = matrix(G, tc='d'), matrix(h, tc='d')
@@ -87,7 +84,7 @@ def get_sol_l1(target_x, tuple_x, faropp, kdtree, glob_trnX,
     fet_dim = target_x.shape[0]
 
     emb_tar = target_x
-    trnX = glob_trnX
+    trnX = np.copy(glob_trnX)
     G, h, dist = get_constraints(trnX, tuple_x, kdtree, faropp, emb_tar)
     #G = np.dot(G, transformer)
 
@@ -125,7 +122,7 @@ def get_sol_linf(target_x, tuple_x, faropp, kdtree,
     fet_dim = target_x.shape[0]
 
     emb_tar = target_x
-    trnX = glob_trnX
+    trnX = np.copy(glob_trnX)
     G, h, _ = get_constraints(trnX, tuple_x, kdtree, faropp, emb_tar)
     #G = np.dot(G, transformer)
 
@@ -341,7 +338,7 @@ class NNAttack(NNOptAttack):
         for i, (target_x, target_y) in tqdm(enumerate(zip(X, y)), ascii=True, desc="Perturb"):
             ret.append(get_adv(target_x.astype(np.float64), target_y, self.tree,
                                self.n_searches, self.K, self.faropp,
-                               transformer, self.lp_sols,
+                               self.lp_sols,
                                glob_trnX=glob_trnX,
                                glob_trny=glob_trny,
                                ord=self.ord))
