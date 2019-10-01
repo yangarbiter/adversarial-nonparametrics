@@ -18,9 +18,9 @@ def solve_lp(c, G, h, n, C=None, d=None, init_x=None, n_jobs=1, solver=cp.GUROBI
     prob = cp.Problem(obj, constraints)
     if init_x is not None:
         x.value = init_x
-        prob.solve(solver=solver, warm_start=True)
+        prob.solve(solver=solver, warm_start=True, **options)
     else:
-        prob.solve(solver=solver)
+        prob.solve(solver=solver, **options)
     return prob.status, x.value
 
 def solve_qp(Q, q, G, h, n, C=None, d=None, init_x=None, solver=cp.GUROBI):

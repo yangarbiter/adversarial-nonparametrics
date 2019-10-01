@@ -44,11 +44,11 @@ glob_trnX = None
 glob_trny = None
 
 #@profile
-def get_sol(target_x, tuple_x, faropp, kdtree, transformer,
+def get_sol(target_x, tuple_x, faropp, kdtree,
         glob_trnX, glob_trny, init_x=None, n_jobs=1):
     tuple_x = np.asarray(tuple_x)
-    trnX = glob_trnX.dot(transformer.T)
-    emb_tar = target_x.dot(transformer.T)
+    trnX = glob_trnX
+    emb_tar = target_x
     G, h, _ = get_constraints(trnX, tuple_x, kdtree, faropp, emb_tar)
     G, h = matrix(G, tc='d'), matrix(h, tc='d')
 
@@ -56,9 +56,9 @@ def get_sol(target_x, tuple_x, faropp, kdtree, transformer,
     n_fets = target_x.shape[0]
 
     Q = 2 * matrix(np.eye(n_fets), tc='d')
-    T = matrix(transformer.astype(np.float64), tc='d')
+    #T = matrix(transformer.astype(np.float64), tc='d')
 
-    G = G * T
+    #G = G * T
     q = matrix(-2*target_x, tc='d')
 
     temph = h - CONSTRAINTTOL # make sure all constraints are met
@@ -81,15 +81,15 @@ def sol_sat_constraints(G, h) -> bool:
     sol = solvers.lp(c=c, G=G, h=temph, solver='glpk')
     return (sol['status'] == 'optimal')
 
-def get_sol_l1(target_x, tuple_x, faropp, kdtree, transformer, glob_trnX,
+def get_sol_l1(target_x, tuple_x, faropp, kdtree, glob_trnX,
         glob_trny, init_x=None):
     tuple_x = np.asarray(tuple_x)
     fet_dim = target_x.shape[0]
 
-    emb_tar = target_x.dot(transformer.T)
-    trnX = glob_trnX.dot(transformer.T)
+    emb_tar = target_x
+    trnX = glob_trnX
     G, h, dist = get_constraints(trnX, tuple_x, kdtree, faropp, emb_tar)
-    G = np.dot(G, transformer)
+    #G = np.dot(G, transformer)
 
     if init_x is None and not sol_sat_constraints(G, h):
         return False, None
@@ -119,15 +119,15 @@ def get_sol_l1(target_x, tuple_x, faropp, kdtree, transformer, glob_trnX,
         return False, None
 
 #@profile
-def get_sol_linf(target_x, tuple_x, faropp, kdtree, transformer,
+def get_sol_linf(target_x, tuple_x, faropp, kdtree,
         glob_trnX, glob_trny, init_x=None, n_jobs=1):
     tuple_x = np.asarray(tuple_x)
     fet_dim = target_x.shape[0]
 
-    emb_tar = target_x.dot(transformer.T)
-    trnX = glob_trnX.dot(transformer.T)
+    emb_tar = target_x
+    trnX = glob_trnX
     G, h, _ = get_constraints(trnX, tuple_x, kdtree, faropp, emb_tar)
-    G = np.dot(G, transformer)
+    #G = np.dot(G, transformer)
 
     if init_x is None and not sol_sat_constraints(G, h):
         return False, None
@@ -150,7 +150,7 @@ def get_sol_linf(target_x, tuple_x, faropp, kdtree, transformer,
         return False, None
 
 def get_adv(target_x, target_y, kdtree, n_searches, n_neighbors, faropp,
-        transformer, lp_sols, glob_trnX, glob_trny, ord=2, n_jobs=1):
+        lp_sols, glob_trnX, glob_trny, ord=2, n_jobs=1):
     ind = kdtree.query(target_x.reshape((1, -1)),
                        k=n_neighbors, return_distance=False)[0]
     if target_y != np.argmax(np.bincount(glob_trny[ind])):
@@ -186,21 +186,20 @@ def get_adv(target_x, target_y, kdtree, n_searches, n_neighbors, faropp,
     else:
         raise ValueError("Unsupported ord %d" % ord)
 
-    def _helper(comb, transformer, trnX, trny, init_x):
+    def _helper(comb, trnX, trny, init_x):
         comb_tup = tuple(ind[comb])
         ret, sol = get_sol_fn(target_x, ind[comb], faropp, kdtree,
-                              transformer, trnX, trny, init_x=init_x,
-                              n_jobs=n_jobs)
+                              trnX, trny, init_x=init_x, n_jobs=n_jobs)
         return ret, sol
     not_vacum = lambda x: tuple(ind[x]) not in lp_sols or lp_sols[tuple(ind[x])]
     combs = list(filter(not_vacum, combs))
     if n_neighbors == 1:
         sols = Parallel(n_jobs=-1, verbose=1)(
-                delayed(_helper)(comb, transformer, glob_trnX, glob_trny,
+                delayed(_helper)(comb, glob_trnX, glob_trny,
                     init_x=glob_trnX[ind[comb[0]]]) for comb in combs)
     else:
         sols = Parallel(n_jobs=-1, verbose=1)(
-                delayed(_helper)(comb, transformer, glob_trnX, glob_trny, None) for comb in combs)
+                delayed(_helper)(comb, glob_trnX, glob_trny, None) for comb in combs)
     status, sols = zip(*sols)
     sols = np.array(sols)
     for i, s in enumerate(status):
@@ -236,7 +235,7 @@ def attack_with_eps_constraint(perts, ord, eps):
         return perts
 
 def rev_get_adv(target_x, target_y, kdtree, n_searches, n_neighbors, faropp,
-        transformer, lp_sols, glob_trnX, glob_trny, ord=2, method='self',
+        lp_sols, glob_trnX, glob_trny, ord=2, method='self',
         knn: KNeighborsClassifier = None, n_jobs=1):
     if n_searches == -1:
         n_searches = glob_trnX.shape[0]
@@ -272,7 +271,7 @@ def rev_get_adv(target_x, target_y, kdtree, n_searches, n_neighbors, faropp,
             inds = kdtree.query(procedX, k=n_neighbors, return_distance=False)[0]
         inds = tuple([_ for _ in inds])
 
-        ret, sol = get_sol_fn(target_x, inds, faropp, kdtree, transformer,
+        ret, sol = get_sol_fn(target_x, inds, faropp, kdtree,
                 glob_trnX, glob_trny, init_x=glob_trnX[i], n_jobs=n_jobs)
         solsss.append(sol)
 
@@ -406,32 +405,32 @@ class RevNNAttack(NNOptAttack):
         glob_trny = self.trny
 
         knn = KNeighborsClassifier(n_neighbors=self.K)
-        knn.fit(glob_trnX.dot(transformer.T), glob_trny)
+        knn.fit(glob_trnX, glob_trny)
         X = X.astype(np.float64)
 
-        n_jobs = 1
+        n_jobs = -1
         if n_jobs == 1:
             ret = []
             for i, (target_x, target_y) in tqdm(enumerate(zip(X, y)), ascii=True, desc="Perturb"):
                 ret.append(
                     rev_get_adv(target_x.astype(np.float64), target_y,
                         self.tree, self.n_searches, self.K, self.faropp,
-                        transformer, self.lp_sols, ord=self.ord,
+                        self.lp_sols, ord=self.ord,
                         method=self.method, knn=knn, n_jobs=self.n_jobs,
                         glob_trnX=glob_trnX, glob_trny=glob_trny,
                     )
                 )
         else:
 
-            def _helper(transformer, target_x, target_y):
+            def _helper(target_x, target_y):
                 return rev_get_adv(target_x, target_y,
                     self.tree, self.n_searches, self.K, self.faropp,
-                    transformer, dict(), ord=self.ord,
+                    dict(), ord=self.ord,
                     method=self.method, knn=knn, n_jobs=1,
                     glob_trnX=glob_trnX, glob_trny=glob_trny,
                 )
             ret = Parallel(n_jobs=n_jobs, verbose=1)(
-                    delayed(_helper)(transformer, tar_x, tar_y)
+                    delayed(_helper)(tar_x, tar_y)
                         for (tar_x, tar_y) in zip(X, y))
 
         self.perts = np.asarray(ret)
