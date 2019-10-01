@@ -150,19 +150,23 @@ def get_sol_linf(target_x, tuple_x, faropp, kdtree, transformer,
         return False, None
 
 def get_adv(target_x, target_y, kdtree, n_searches, n_neighbors, faropp,
-        transformer, lp_sols, ord=2, n_jobs=1):
-    ind = kdtree.query(target_x.dot(transformer.T).reshape((1, -1)),
+        transformer, lp_sols, glob_trnX, glob_trny, ord=2, n_jobs=1):
+    ind = kdtree.query(target_x.reshape((1, -1)),
                        k=n_neighbors, return_distance=False)[0]
     if target_y != np.argmax(np.bincount(glob_trny[ind])):
         # already incorrectly predicted
         return np.zeros_like(target_x)
+
+    knn = KNeighborsClassifier(n_neighbors=n_neighbors)
+    knn.fit(glob_trnX, glob_trny)
+    pred_trny = knn.predict(glob_trnX)
 
     temp = (target_x, np.inf)
     if n_searches == -1:
         n_searches = glob_trnX.shape[0]
         ind = np.arange(glob_trnX.shape[0])
     else:
-        ind = kdtree.query(target_x.dot(transformer.T).reshape((1, -1)),
+        ind = kdtree.query(target_x.reshape((1, -1)),
                         k=n_searches, return_distance=False)
         ind = ind[0]
 
@@ -182,25 +186,38 @@ def get_adv(target_x, target_y, kdtree, n_searches, n_neighbors, faropp,
     else:
         raise ValueError("Unsupported ord %d" % ord)
 
-    def _helper(comb, transformer, trnX, trny):
+    def _helper(comb, transformer, trnX, trny, init_x):
         comb_tup = tuple(ind[comb])
         ret, sol = get_sol_fn(target_x, ind[comb], faropp, kdtree,
-                              transformer, trnX, trny, n_jobs=n_jobs)
+                              transformer, trnX, trny, init_x=init_x,
+                              n_jobs=n_jobs)
         return ret, sol
     not_vacum = lambda x: tuple(ind[x]) not in lp_sols or lp_sols[tuple(ind[x])]
     combs = list(filter(not_vacum, combs))
-    sols = Parallel(n_jobs=-1, verbose=1)(
-            delayed(_helper)(comb, transformer, glob_trnX, glob_trny) for comb in combs)
+    if n_neighbors == 1:
+        sols = Parallel(n_jobs=-1, verbose=1)(
+                delayed(_helper)(comb, transformer, glob_trnX, glob_trny,
+                    init_x=glob_trnX[ind[comb[0]]]) for comb in combs)
+    else:
+        sols = Parallel(n_jobs=-1, verbose=1)(
+                delayed(_helper)(comb, transformer, glob_trnX, glob_trny, None) for comb in combs)
     status, sols = zip(*sols)
+    sols = np.array(sols)
     for i, s in enumerate(status):
         if not s:
-            lp_sols[tuple(ind[combs[i]])] = None
+            assert sols[i] is None
+            if n_neighbors == 1:
+                # some time region is too small for solver
+                sols[i] = glob_trnX[ind[combs[i]][0]]
+                #lp_sols[tuple(ind[combs[i]])] = glob_trnX[ind[combs[i]][0]]
+            else:
+                lp_sols[tuple(ind[combs[i]])] = None
 
-    _, sols = list(zip(*list(filter(lambda s: True if s[0] else False, zip(status, sols)))))
+    #_, sols = list(zip(*list(filter(lambda s: True if s[0] else False, zip(status, sols)))))
     sols = np.array(list(filter(lambda x: np.linalg.norm(x) != 0, sols)))
     eps = np.linalg.norm(sols - target_x, axis=1, ord=ord)
-    temp = (sols[eps.argmin()], eps.min())
-    return temp[0] - target_x
+    #temp = (sols[eps.argmin()], eps.min())
+    return sols[eps.argmin()] - target_x
 
 def attack_with_eps_constraint(perts, ord, eps):
     perts = np.asarray(perts)
@@ -226,7 +243,7 @@ def rev_get_adv(target_x, target_y, kdtree, n_searches, n_neighbors, faropp,
     temp = (target_x, np.inf)
 
     # already predicted wrong
-    if knn.predict(target_x.dot(transformer.T).reshape((1, -1)))[0] != target_y:
+    if knn.predict(target_x.reshape((1, -1)))[0] != target_y:
         return temp[0] - target_x
 
     if ord == 1:
@@ -239,41 +256,44 @@ def rev_get_adv(target_x, target_y, kdtree, n_searches, n_neighbors, faropp,
         raise ValueError("Unsupported ord %d" % ord)
 
     knn = KNeighborsClassifier(n_neighbors=n_neighbors)
-    knn.fit(glob_trnX.dot(transformer.T), glob_trny)
-    pred_trny = knn.predict(glob_trnX.dot(transformer.T))
+    knn.fit(glob_trnX, glob_trny)
+    pred_trny = knn.predict(glob_trnX)
 
-    ind = kdtree.query(target_x.dot(transformer.T).reshape((1, -1)),
+    ind = kdtree.query(target_x.reshape((1, -1)),
                        k=len(glob_trnX), return_distance=False)[0]
     ind = list(filter(lambda x: pred_trny[x] != target_y, ind))[:n_searches]
 
+    solsss = []
     for i in ind:
         if method == 'self':
             inds = [i]
         elif method == 'region':
-            procedX = glob_trnX[i].dot(transformer.T).reshape((1, -1))
+            procedX = glob_trnX[i].reshape((1, -1))
             inds = kdtree.query(procedX, k=n_neighbors, return_distance=False)[0]
         inds = tuple([_ for _ in inds])
 
         ret, sol = get_sol_fn(target_x, inds, faropp, kdtree, transformer,
                 glob_trnX, glob_trny, init_x=glob_trnX[i], n_jobs=n_jobs)
+        solsss.append(sol)
 
         if method == 'region':
             #assert ret
             if not ret:
-                proc = np.array([glob_trnX[i]]).dot(transformer.T)
+                proc = np.array([glob_trnX[i]])
                 sol = np.array(glob_trnX[i])
             else:
-                proc = np.array([sol]).dot(transformer.T)
+                proc = np.array([sol])
             assert knn.predict(proc)[0] != target_y
             eps = np.linalg.norm(sol - target_x, ord=ord)
             if eps < temp[1]:
                 temp = (sol, eps)
         elif ret: # method == 'self'
-            proc = np.array([sol]).dot(transformer.T)
+            proc = np.array([sol])
             if knn.predict(proc)[0] != target_y:
                 eps = np.linalg.norm(sol - target_x, ord=ord)
                 if eps < temp[1]:
                     temp = (sol, eps)
+    solsss = np.asarray(solsss)
 
     return temp[0] - target_x
 
@@ -313,8 +333,8 @@ class NNAttack(NNOptAttack):
         else:
             transformer = np.eye(self.trnX.shape[1])
 
-        global glob_trnX
-        global glob_trny
+        #global glob_trnX
+        #global glob_trny
         glob_trnX = self.trnX
         glob_trny = self.trny
 
@@ -322,7 +342,10 @@ class NNAttack(NNOptAttack):
         for i, (target_x, target_y) in tqdm(enumerate(zip(X, y)), ascii=True, desc="Perturb"):
             ret.append(get_adv(target_x.astype(np.float64), target_y, self.tree,
                                self.n_searches, self.K, self.faropp,
-                               transformer, self.lp_sols, ord=self.ord))
+                               transformer, self.lp_sols,
+                               glob_trnX=glob_trnX,
+                               glob_trny=glob_trny,
+                               ord=self.ord))
 
         self.perts = np.asarray(ret)
         return attack_with_eps_constraint(self.perts, self.ord, eps)
@@ -386,10 +409,10 @@ class RevNNAttack(NNOptAttack):
         knn.fit(glob_trnX.dot(transformer.T), glob_trny)
         X = X.astype(np.float64)
 
-        n_jobs = 4
+        n_jobs = 1
         if n_jobs == 1:
             ret = []
-            for _, (target_x, target_y) in tqdm(enumerate(zip(X, y)), ascii=True, desc="Perturb"):
+            for i, (target_x, target_y) in tqdm(enumerate(zip(X, y)), ascii=True, desc="Perturb"):
                 ret.append(
                     rev_get_adv(target_x.astype(np.float64), target_y,
                         self.tree, self.n_searches, self.K, self.faropp,
