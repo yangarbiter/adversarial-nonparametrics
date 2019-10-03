@@ -9,8 +9,9 @@ from params import (
     compare_defense,
 
     #compare_nns,
-    #nn_k1_robustness,
-    #nn_k3_robustness,
+    nn_k1_robustness,
+    nn_k3_robustness,
+    nn_k1_approx_robustness_figs,
 
     dt_robustness_figs,
     rf_robustness_figs,
@@ -47,9 +48,10 @@ def main():
         #rf_robustness_figs(),
         #dt_robustness_figs(),
 
-        #nn_k1_robustness(),
-        #dt_robustness(),
-        #rf_robustness(),
+        dt_robustness(),
+        rf_robustness(),
+        nn_k3_robustness(),
+        nn_k1_robustness(),
         #mlp_ap_robustness(),
         #mlp_at_robustness(),
         #lr_ap_robustness(),
