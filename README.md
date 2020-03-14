@@ -1,8 +1,8 @@
-# Nonparametric Adversarial Attack and Defense
+# Robustness for Non-Parametric Classification: A Generic Attack and Defense
 
 This repo contains the implementation of experiments in the paper
 
-[Adversarial Examples for Non-Parametric Methods: Attacks, Defenses and Large Sample Limits](https://arxiv.org/abs/1906.03310)
+[Robustness for Non-Parametric Classification: A Generic Attack and Defense](https://arxiv.org/abs/1906.03310)
 
 Authors: Yao-Yuan Yang*, Cyrus Rashtchian*, Yizhen Wang, Kamalika Chaudhuri (* equal contribution)
 
