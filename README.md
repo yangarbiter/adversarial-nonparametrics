@@ -4,7 +4,7 @@ This repo contains the implementation of experiments in the paper
 
 [Robustness for Non-Parametric Classification: A Generic Attack and Defense](https://arxiv.org/abs/1906.03310)
 
-Authors: [Yao-Yuan Yang](http://yyyang.me/)*, [Cyrus Rashtchian](http://www.cyrusrashtchian.com/)*, [Yizhen Wang](http://cseweb.ucsd.edu/~yiw248/), [Kamalika Chaudhuri](http://cseweb.ucsd.edu/~kamalika/) (* equal contribution)
+Authors: [Yao-Yuan Yang*](http://yyyang.me/), [Cyrus Rashtchian*](http://www.cyrusrashtchian.com/), [Yizhen Wang](http://cseweb.ucsd.edu/~yiw248/), [Kamalika Chaudhuri](http://cseweb.ucsd.edu/~kamalika/) (* equal contribution)
 
 Appeared in AISTATS 2020 [Video](https://aistats2020.net/poster_334.html)
 
