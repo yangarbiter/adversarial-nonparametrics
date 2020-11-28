@@ -36,7 +36,7 @@ pip install --upgrade -r requirements.txt
 ### for robust splitting
 If you want to run robust splitting defense (https://arxiv.org/abs/1902.10660),
 you'll have to install the modified scikit-learn in the package with the
-following commend. More installation detail please reference to
+following commend. For more installation detail, please reference to
 https://github.com/scikit-learn/scikit-learn.
 
 ```
