@@ -1,0 +1,8 @@
+@inproceedings{yang2020robustness,
+  title={Robustness for non-parametric classification: A generic attack and defense},
+  author={Yang, Yao-Yuan and Rashtchian, Cyrus and Wang, Yizhen and Chaudhuri, Kamalika},
+  booktitle={International Conference on Artificial Intelligence and Statistics},
+  pages={941--951},
+  year={2020},
+  organization={PMLR}
+}
