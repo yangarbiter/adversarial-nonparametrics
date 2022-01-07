@@ -3,7 +3,7 @@ keras
 bistiming
 scikit-image
 cleverhans==3.0.1
-cvxopt==1.2.3
+cvxopt==1.2.7
 cvxpy==1.0.21
 Cython==0.29.5
 joblib==0.13.1
