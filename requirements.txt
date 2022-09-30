@@ -6,7 +6,7 @@ cleverhans==3.0.1
 cvxopt==1.2.3
 cvxpy==1.0.21
 Cython==0.29.5
-joblib==0.13.1
+joblib==1.2.0
 jupyter==1.0.0
 matplotlib==3.0.2
 mkdir-p==0.1.1
